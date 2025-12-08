@@ -5,7 +5,7 @@ import InputSection from './InputSection';
 import ExplanationPanel from './ExplanationPanel';
 import ChecklistPanel from './ChecklistPanel';
 import SafetyPanel from './SafetyPanel';
-import { ArrowLeft, FileText, ListChecks, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, FileText, ListChecks, ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface WorkspaceScreenProps {
@@ -26,7 +26,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   setChecklistState,
 }) => {
   const [activeTab, setActiveTab] = useState<'explain' | 'checklist' | 'safety'>('explain');
-  const { locale, result } = appState;
+  const { locale, result, isAnalyzing, error } = appState;
 
   const handleToggleChecklistStatus = (id: string) => {
     const newChecklist = appState.checklistState.map((item) => {
@@ -46,6 +46,31 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
 
   // Helper to render content based on current tab and result state
   const renderTabContent = () => {
+    if (isAnalyzing) {
+      return (
+        <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-center p-8 text-slate-400">
+          <Loader2 className="w-10 h-10 text-blue-500 animate-spin mb-4" />
+          <h3 className="text-lg font-semibold text-slate-600 mb-2">{t(locale, 'workspace.analyzing')}</h3>
+          <p className="max-w-xs mx-auto text-sm">{t(locale, 'workspace.analyzingDesc')}</p>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-center p-8 text-slate-400">
+           <div className="bg-red-50 p-4 rounded-full mb-4">
+              <AlertCircle className="w-8 h-8 text-red-500" />
+           </div>
+           <h3 className="text-lg font-semibold text-slate-800 mb-2">{t(locale, 'common.errorTitle')}</h3>
+           <p className="max-w-xs mx-auto text-sm text-slate-600">{t(locale, 'common.retry')}</p>
+           <p className="mt-4 text-xs text-red-400 font-mono bg-red-50 p-2 rounded max-w-sm truncate">
+             {error}
+           </p>
+        </div>
+      );
+    }
+
     if (!result) {
       // Empty States
       if (activeTab === 'explain') {

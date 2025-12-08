@@ -121,7 +121,7 @@ const InputSection: React.FC<InputSectionProps> = ({
             {isAnalyzing ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                {t(locale, 'workspace.analyzing')}
+                {t(locale, 'workspace.btnAnalyzing')}
               </>
             ) : (
               <>

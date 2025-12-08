@@ -7,6 +7,16 @@ import { VisaSituation, AnalysisResult, Locale } from "../types";
 const analysisSchema: Schema = {
   type: Type.OBJECT,
   properties: {
+    riskAssessment: {
+      type: Type.OBJECT,
+      properties: {
+        riskLevel: { type: Type.STRING, enum: ["Low", "Medium", "High"], description: "Conservative risk level assessment." },
+        urgencyLabel: { type: Type.STRING, description: "e.g., 'Within 7 days', 'Before program end', 'As soon as possible'" },
+        summary: { type: Type.STRING, description: "1-3 short sentences summarizing the risk/urgency. Not legal advice." },
+      },
+      required: ["riskLevel", "urgencyLabel", "summary"],
+      description: "An assessment of the urgency and risk associated with the document.",
+    },
     summary: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
@@ -28,8 +38,14 @@ const analysisSchema: Schema = {
           category: { type: Type.STRING, description: "E.g., 'Documents', 'School', 'USCIS'" },
           title: { type: Type.STRING, description: "Short action title in the target language" },
           description: { type: Type.STRING, description: "Clear instruction on what to do in the target language" },
+          dueCategory: { 
+            type: Type.STRING, 
+            enum: ["today", "this_week", "before_program_end", "after_approval", "unspecified"],
+            description: "Approximate timeframe for the task."
+          },
+          dueLabel: { type: Type.STRING, description: "Human-readable due date label, e.g. 'Within 30 days'." },
         },
-        required: ["category", "title", "description"],
+        required: ["category", "title", "description", "dueCategory", "dueLabel"],
       },
       description: "A list of concrete action items extracted from the text.",
     },
@@ -46,7 +62,7 @@ const analysisSchema: Schema = {
       description: "A glossary of complex immigration terms found in the text.",
     },
   },
-  required: ["summary", "detailedExplanation", "simpleEnglishNotes", "checklist", "safetyTerms"],
+  required: ["riskAssessment", "summary", "detailedExplanation", "simpleEnglishNotes", "checklist", "safetyTerms"],
 };
 
 export const analyzeDocument = async (
@@ -81,6 +97,11 @@ Guidelines:
 3. **Safety**: NEVER give legal advice. If a text is ambiguous, tell the user to check with their DSO (Designated School Official) or an attorney.
 4. **Context**: The user is in the situation: "${situation}".
 5. **Privacy**: Do not repeat personal data like specific names or ID numbers in the output unless necessary for context.
+
+New Requirements:
+- **Risk Assessment**: Provide a conservative risk level (Low/Medium/High) and an urgency label (e.g., 'Within 7 days', 'Before program end date', 'As soon as possible'). Never guarantee outcomes.
+- **Timeline**: For each checklist item, assign an approximate dueCategory: 'today', 'this_week', 'before_program_end', 'after_approval', or 'unspecified'. Also provide a short human-readable dueLabel. If timing is unclear, use 'unspecified'.
+- **Disclaimer**: Always remind the user to verify with official USCIS sources, their DSO, or a qualified immigration attorney. Do not promise that any action will guarantee visa approval.
 
 Input Text to analyze follows.
 `;

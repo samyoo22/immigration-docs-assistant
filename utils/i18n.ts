@@ -14,6 +14,8 @@ export const translations = {
       copyright: "© 2024 Immigration Docs Assistant Prototype",
       readMore: "Read full disclaimer",
       readLess: "Show less",
+      errorTitle: "Something went wrong",
+      retry: "Please try again in a few seconds. If the problem persists, shorten the document or refresh the page.",
     },
     landing: {
       heroTitle: "Immigration Docs",
@@ -45,8 +47,10 @@ export const translations = {
       editable: "Editable",
       placeholder: "Paste the full email or instructions here. You can edit the text before running the analysis.",
       btnAnalyze: "Explain & Generate Checklist",
+      btnAnalyzing: "Analyzing...",
       btnHelper: "We’ll analyze your document and show a plain-language explanation and checklist on the right.",
       analyzing: "Analyzing...",
+      analyzingDesc: "Analyzing your document... This may take a few seconds.",
       tabExplain: "Explanation",
       tabChecklist: "Checklist",
       tabSafety: "Safety & resources",
@@ -56,17 +60,29 @@ export const translations = {
       emptySafety: "Key terms and resources will appear here after analysis."
     },
     results: {
+      riskTitle: "Risk & Urgency",
+      riskDisclaimer: "This is an AI-generated assessment and is not legal advice.",
       summaryTitle: "Quick Summary",
       detailedTitle: "Detailed Explanation",
       copyBtn: "Copy explanation",
+      copyChecklist: "Copy checklist",
+      copyNotes: "Copy notes",
       copied: "Copied!",
       simpleEnglishTitle: "Simple English Note",
       checklistTitle: "Your Action Checklist",
+      timelineTitle: "Timeline view",
       noItems: "No action items detected yet.",
       keyTermsTitle: "Key Terms",
       officialResourcesTitle: "Official Resources",
       officialResourcesNote: "* Always rely on .gov websites or your school's (.edu) official portal for the most accurate information.",
-      termPlaceholder: "Terms will appear here after analysis."
+      termPlaceholder: "Terms will appear here after analysis.",
+      timeline: {
+        today: "Today / As soon as possible",
+        this_week: "Within the next 7 days",
+        before_program_end: "Before your program end date",
+        after_approval: "After approval / later",
+        unspecified: "Timing not specified"
+      }
     }
   },
   // Placeholders for future languages
@@ -82,6 +98,8 @@ export const translations = {
       copyright: "© 2024 Immigration Docs Assistant Prototype",
       readMore: "전체 면책 조항 읽기",
       readLess: "접기",
+      errorTitle: "문제가 발생했습니다",
+      retry: "잠시 후 다시 시도해주세요. 문제가 지속되면 문서를 짧게 줄이거나 페이지를 새로고침하세요.",
     },
     landing: {
       heroTitle: "Immigration Docs",
@@ -113,8 +131,10 @@ export const translations = {
       editable: "수정 가능",
       placeholder: "영어 이메일이나 지침을 여기에 붙여넣으세요. 분석 전에 내용을 수정할 수 있습니다.",
       btnAnalyze: "설명 및 체크리스트 생성",
+      btnAnalyzing: "분석 중...",
       btnHelper: "문서를 분석하여 쉬운 설명과 체크리스트를 오른쪽에 표시합니다.",
       analyzing: "분석 중...",
+      analyzingDesc: "문서를 분석하고 있습니다... 몇 초 정도 걸릴 수 있습니다.",
       tabExplain: "설명",
       tabChecklist: "체크리스트",
       tabSafety: "안전 및 리소스",
@@ -124,17 +144,29 @@ export const translations = {
       emptySafety: "분석 후 주요 용어와 리소스가 여기에 표시됩니다."
     },
     results: {
+      riskTitle: "위험 및 긴급도",
+      riskDisclaimer: "AI가 생성한 평가이며 법적 조언이 아닙니다.",
       summaryTitle: "빠른 요약",
       detailedTitle: "상세 설명",
       copyBtn: "설명 복사",
+      copyChecklist: "체크리스트 복사",
+      copyNotes: "노트 복사",
       copied: "복사됨!",
       simpleEnglishTitle: "쉬운 영어 노트",
       checklistTitle: "할 일 체크리스트",
+      timelineTitle: "타임라인 보기",
       noItems: "발견된 할 일이 없습니다.",
       keyTermsTitle: "주요 용어 설명",
       officialResourcesTitle: "공식 리소스",
       officialResourcesNote: "* 가장 정확한 정보는 항상 .gov 웹사이트나 학교(.edu) 공식 포털을 참고하세요.",
-      termPlaceholder: "분석 후 용어가 여기에 표시됩니다."
+      termPlaceholder: "분석 후 용어가 여기에 표시됩니다.",
+      timeline: {
+        today: "오늘 / 가능한 한 빨리",
+        this_week: "7일 이내",
+        before_program_end: "프로그램 종료 전",
+        after_approval: "승인 후 / 나중에",
+        unspecified: "시기 미지정"
+      }
     }
   },
   // Shallow copies for others initially
