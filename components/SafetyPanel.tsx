@@ -1,16 +1,33 @@
 
 import React, { useState } from 'react';
-import { SafetyTerm, Locale } from '../types';
-import { BookOpen, ExternalLink, ShieldCheck, Copy, Check } from 'lucide-react';
+import { SafetyTerm, Locale, DsoEmailDraft } from '../types';
+import { BookOpen, ExternalLink, ShieldCheck, Copy, Check, Mail, ChevronRight } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface SafetyPanelProps {
   terms: SafetyTerm[];
   locale: Locale;
+  dsoEmailDraft?: DsoEmailDraft; // Make optional as older results might not have it
 }
 
-const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale }) => {
-  const [copied, setCopied] = useState(false);
+// NOTE: Since the main AnalysisResult might be passed down, we need to ensure dsoEmailDraft is picked up from it.
+// We updated the props to include it.
+// If WorkspaceScreen doesn't pass the full result to SafetyPanel, we might need to update WorkspaceScreen too.
+// Checking WorkspaceScreen:
+// It renders: <SafetyPanel terms={result.safetyTerms} locale={locale} />
+// I need to update SafetyPanel to accept dsoEmailDraft as a prop.
+// However, the interface change here implies I need to update the parent call site in WorkspaceScreen.
+// I will update this file to accept `dsoEmailDraft` and handle the logic.
+// IMPORTANT: I must also update WorkspaceScreen to pass this prop. 
+// Wait, I can't edit WorkspaceScreen in this change block if I don't include it in the XML.
+// I will assume WorkspaceScreen needs to be updated or I can make dsoEmailDraft optional and ignore if missing.
+// Actually, I should update WorkspaceScreen to pass the draft. 
+// Let's add WorkspaceScreen to the changes list.
+
+const SafetyPanel: React.FC<{ terms: SafetyTerm[]; locale: Locale; dsoEmailDraft?: DsoEmailDraft }> = ({ terms, locale, dsoEmailDraft }) => {
+  const [copiedNotes, setCopiedNotes] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [showEmailDraft, setShowEmailDraft] = useState(false);
 
   const officialLinks = [
     { name: 'USCIS Official Site', url: 'https://www.uscis.gov' },
@@ -18,7 +35,7 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale }) => {
     { name: 'USCIS Case Status', url: 'https://egov.uscis.gov/casestatus/landing.do' },
   ];
 
-  const handleCopy = () => {
+  const handleCopyNotes = () => {
     let textToCopy = "[KEY TERMS]\n";
     terms.forEach(term => {
       textToCopy += `${term.term}: ${term.definition}\n`;
@@ -29,51 +46,33 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale }) => {
     });
 
     navigator.clipboard.writeText(textToCopy);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedNotes(true);
+    setTimeout(() => setCopiedNotes(false), 2000);
+  };
+
+  const handleCopyEmail = () => {
+    if (!dsoEmailDraft) return;
+    const textToCopy = `Subject: ${dsoEmailDraft.subject}\n\n${dsoEmailDraft.body}`;
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2000);
   };
 
   return (
-    <div className="space-y-6 animate-fade-in relative">
+    <div className="space-y-6 animate-fade-in relative pt-10">
       {/* Header Copy Button */}
-      <div className="absolute top-0 right-0 -mt-2">
+      <div className="absolute top-0 right-0">
          <button
-            onClick={handleCopy}
+            onClick={handleCopyNotes}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm border ${
-              copied 
+              copiedNotes 
                 ? 'bg-green-50 text-green-700 border-green-200' 
                 : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
             }`}
           >
-            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? t(locale, 'results.copied') : t(locale, 'results.copyNotes')}
+            {copiedNotes ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            {copiedNotes ? t(locale, 'results.copied') : t(locale, 'results.copyNotes')}
           </button>
-      </div>
-
-      {/* Glossary Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-4 bg-slate-50 border-b border-slate-200">
-           <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-emerald-600" />
-            {t(locale, 'results.keyTermsTitle')}
-          </h3>
-        </div>
-        <div className="p-0">
-          {terms.length > 0 ? (
-            <div className="divide-y divide-slate-100">
-              {terms.map((term, idx) => (
-                <div key={idx} className="p-4 hover:bg-slate-50 transition-colors">
-                  <dt className="text-sm font-bold text-slate-900 mb-1">{term.term}</dt>
-                  <dd className="text-sm text-slate-600">{term.definition}</dd>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-6 text-center text-slate-500 text-sm">
-              {t(locale, 'results.termPlaceholder')}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Official Links Section */}
@@ -101,6 +100,89 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale }) => {
         </ul>
         <div className="mt-4 text-xs text-slate-500 leading-relaxed">
           {t(locale, 'results.officialResourcesNote')}
+        </div>
+      </div>
+
+      {/* DSO Email Generator Section */}
+      {dsoEmailDraft && (
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 p-6">
+          <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 mb-2">
+            <Mail className="w-4 h-4 text-blue-600" />
+            {t(locale, 'results.dsoEmail.title')}
+          </h3>
+          <p className="text-sm text-slate-600 mb-4">
+            {t(locale, 'results.dsoEmail.desc')}
+          </p>
+
+          {!showEmailDraft ? (
+            <button
+              onClick={() => setShowEmailDraft(true)}
+              className="w-full py-3 bg-white border border-blue-200 text-blue-700 font-bold rounded-lg hover:bg-blue-50 transition-all shadow-sm flex items-center justify-center gap-2"
+            >
+              {t(locale, 'results.dsoEmail.btnGenerate')}
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <div className="bg-white rounded-lg border border-blue-200 shadow-sm animate-fade-in overflow-hidden">
+              <div className="bg-slate-50 border-b border-slate-100 px-4 py-3 flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500 uppercase">Draft Preview</span>
+                <button
+                  onClick={handleCopyEmail}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-all ${
+                    copiedEmail ? 'text-green-600 bg-green-50' : 'text-slate-500 hover:text-blue-600 hover:bg-blue-50'
+                  }`}
+                >
+                  {copiedEmail ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {copiedEmail ? t(locale, 'results.copied') : t(locale, 'results.dsoEmail.btnCopy')}
+                </button>
+              </div>
+              <div className="p-4 space-y-3">
+                 <div>
+                    <span className="text-xs text-slate-400 font-semibold block mb-1">Subject</span>
+                    <div className="text-sm font-medium text-slate-800 bg-slate-50 p-2 rounded border border-slate-100 select-all">
+                      {dsoEmailDraft.subject}
+                    </div>
+                 </div>
+                 <div>
+                    <span className="text-xs text-slate-400 font-semibold block mb-1">Body</span>
+                    <div className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed p-2 select-all">
+                      {dsoEmailDraft.body}
+                    </div>
+                 </div>
+              </div>
+              <div className="bg-amber-50 px-4 py-2 border-t border-amber-100">
+                <p className="text-[10px] text-amber-700">
+                  {t(locale, 'results.dsoEmail.disclaimer')}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Glossary Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="p-4 bg-slate-50 border-b border-slate-200">
+           <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-emerald-600" />
+            {t(locale, 'results.keyTermsTitle')}
+          </h3>
+        </div>
+        <div className="p-0">
+          {terms.length > 0 ? (
+            <div className="divide-y divide-slate-100">
+              {terms.map((term, idx) => (
+                <div key={idx} className="p-4 hover:bg-slate-50 transition-colors">
+                  <dt className="text-sm font-bold text-slate-900 mb-1">{term.term}</dt>
+                  <dd className="text-sm text-slate-600">{term.definition}</dd>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-6 text-center text-slate-500 text-sm">
+              {t(locale, 'results.termPlaceholder')}
+            </div>
+          )}
         </div>
       </div>
     </div>

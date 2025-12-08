@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { AnalysisResult, Locale, RiskLevel } from '../types';
-import { MessageSquare, Sparkles, Copy, Check, AlertTriangle, Info } from 'lucide-react';
+import { MessageSquare, Sparkles, Copy, Check, AlertTriangle, Info, Languages } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface ExplanationPanelProps {
@@ -11,6 +11,7 @@ interface ExplanationPanelProps {
 
 const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) => {
   const [copied, setCopied] = useState(false);
+  const [langMode, setLangMode] = useState<'en' | 'en_ko'>('en');
 
   const handleCopy = () => {
     let textToCopy = "";
@@ -20,6 +21,11 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) =
     }
 
     textToCopy += `[SUMMARY]\n${result.summary.map((s, i) => `${i+1}. ${s}`).join('\n')}\n\n`;
+    
+    if (langMode === 'en_ko' && result.koreanSummary) {
+       textToCopy += `[KOREAN SUMMARY]\n${result.koreanSummary.map((s, i) => `${i+1}. ${s}`).join('\n')}\n\n`;
+    }
+
     textToCopy += `[DETAILED EXPLANATION]\n${result.detailedExplanation}\n\n`;
     
     if (result.simpleEnglishNotes) {
@@ -50,9 +56,35 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) =
   };
 
   return (
-    <div className="space-y-6 animate-fade-in relative">
-      {/* Header Copy Button */}
-      <div className="absolute top-0 right-0 -mt-2">
+    <div className="space-y-6 animate-fade-in relative pt-10">
+      
+      {/* Header Controls */}
+      <div className="absolute top-0 right-0 left-0 flex items-center justify-between">
+         {/* Language Toggle */}
+         <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+            <button 
+              onClick={() => setLangMode('en')}
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                langMode === 'en' 
+                  ? 'bg-white text-blue-600 shadow-sm border border-slate-100' 
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              {t(locale, 'results.langToggle.enOnly')}
+            </button>
+            <button 
+              onClick={() => setLangMode('en_ko')}
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                langMode === 'en_ko' 
+                  ? 'bg-white text-blue-600 shadow-sm border border-slate-100' 
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              {t(locale, 'results.langToggle.enKo')}
+            </button>
+         </div>
+
+         {/* Copy Button */}
          <button
             onClick={handleCopy}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm border ${
@@ -95,7 +127,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) =
       )}
 
       {/* Summary Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mt-8">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-4">
           <Sparkles className="w-5 h-5 text-indigo-500" />
           {t(locale, 'results.summaryTitle')}
@@ -111,6 +143,24 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) =
           ))}
         </ul>
       </div>
+
+      {/* Korean Summary (Conditional) */}
+      {langMode === 'en_ko' && result.koreanSummary && (
+        <div className="bg-blue-50 rounded-xl border border-blue-100 p-6 animate-fade-in">
+           <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2 mb-4">
+            <Languages className="w-5 h-5 text-blue-600" />
+            {t(locale, 'results.koreanSummaryTitle')}
+          </h3>
+           <ul className="space-y-3">
+            {result.koreanSummary.map((point, idx) => (
+              <li key={idx} className="flex items-start gap-3 text-blue-800 leading-relaxed">
+                <span className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2"></span>
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Detailed Explanation */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">

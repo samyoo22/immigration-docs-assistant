@@ -115,7 +115,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
           />
         );
       case 'safety':
-        return <SafetyPanel terms={result.safetyTerms} locale={locale} />;
+        return <SafetyPanel terms={result.safetyTerms} dsoEmailDraft={result.dsoEmailDraft} locale={locale} />;
     }
   };
 

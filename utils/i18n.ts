@@ -63,6 +63,7 @@ export const translations = {
       riskTitle: "Risk & Urgency",
       riskDisclaimer: "This is an AI-generated assessment and is not legal advice.",
       summaryTitle: "Quick Summary",
+      koreanSummaryTitle: "Korean Summary",
       detailedTitle: "Detailed Explanation",
       copyBtn: "Copy explanation",
       copyChecklist: "Copy checklist",
@@ -82,6 +83,17 @@ export const translations = {
         before_program_end: "Before your program end date",
         after_approval: "After approval / later",
         unspecified: "Timing not specified"
+      },
+      langToggle: {
+        enOnly: "EN only",
+        enKo: "EN + KR"
+      },
+      dsoEmail: {
+        title: "Email your DSO",
+        desc: "Use this AI-generated draft email to ask your school's international advisor (DSO) for help. Please review and edit it before sending.",
+        btnGenerate: "Generate email to my DSO",
+        btnCopy: "Copy email draft",
+        disclaimer: "This is an AI-generated draft for your convenience. It is not legal advice. Always review and edit before sending."
       }
     }
   },
@@ -147,6 +159,7 @@ export const translations = {
       riskTitle: "위험 및 긴급도",
       riskDisclaimer: "AI가 생성한 평가이며 법적 조언이 아닙니다.",
       summaryTitle: "빠른 요약",
+      koreanSummaryTitle: "한국어 요약",
       detailedTitle: "상세 설명",
       copyBtn: "설명 복사",
       copyChecklist: "체크리스트 복사",
@@ -166,6 +179,17 @@ export const translations = {
         before_program_end: "프로그램 종료 전",
         after_approval: "승인 후 / 나중에",
         unspecified: "시기 미지정"
+      },
+      langToggle: {
+        enOnly: "영어만",
+        enKo: "영어 + 한국어"
+      },
+      dsoEmail: {
+        title: "DSO에게 이메일 보내기",
+        desc: "학교 담당자(DSO)에게 도움을 요청할 때 사용할 수 있는 AI 초안입니다. 보내기 전에 반드시 검토하고 수정하세요.",
+        btnGenerate: "DSO 이메일 초안 보기",
+        btnCopy: "이메일 복사",
+        disclaimer: "이 초안은 AI가 생성한 것으로 편의를 위해 제공됩니다. 법적 조언이 아니므로 보내기 전에 반드시 내용을 확인하세요."
       }
     }
   },

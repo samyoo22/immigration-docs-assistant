@@ -3,7 +3,6 @@ import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { VisaSituation, AnalysisResult, Locale } from "../types";
 
 // Define the schema for the structured response we want from Gemini
-// Note: We use generic field names like 'summary' instead of 'summaryKorean'
 const analysisSchema: Schema = {
   type: Type.OBJECT,
   properties: {
@@ -20,11 +19,16 @@ const analysisSchema: Schema = {
     summary: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: "3-6 bullet points summarizing the key content in the target language.",
+      description: "3-6 bullet points summarizing the key content in English.",
+    },
+    koreanSummary: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: "3-6 bullet points summarizing the key content in clear, simple Korean.",
     },
     detailedExplanation: {
       type: Type.STRING,
-      description: "A friendly, detailed paragraph in the target language explaining the situation as if to a friend.",
+      description: "A friendly, detailed paragraph in English explaining the situation as if to a friend.",
     },
     simpleEnglishNotes: {
       type: Type.STRING,
@@ -36,8 +40,8 @@ const analysisSchema: Schema = {
         type: Type.OBJECT,
         properties: {
           category: { type: Type.STRING, description: "E.g., 'Documents', 'School', 'USCIS'" },
-          title: { type: Type.STRING, description: "Short action title in the target language" },
-          description: { type: Type.STRING, description: "Clear instruction on what to do in the target language" },
+          title: { type: Type.STRING, description: "Short action title in English" },
+          description: { type: Type.STRING, description: "Clear instruction on what to do in English" },
           dueCategory: { 
             type: Type.STRING, 
             enum: ["today", "this_week", "before_program_end", "after_approval", "unspecified"],
@@ -55,14 +59,23 @@ const analysisSchema: Schema = {
         type: Type.OBJECT,
         properties: {
           term: { type: Type.STRING, description: "The difficult English term (e.g., 'Grace Period')" },
-          definition: { type: Type.STRING, description: "A definition of the term in the target language." },
+          definition: { type: Type.STRING, description: "A simple definition of the term in English." },
         },
         required: ["term", "definition"],
       },
       description: "A glossary of complex immigration terms found in the text.",
     },
+    dsoEmailDraft: {
+      type: Type.OBJECT,
+      properties: {
+        subject: { type: Type.STRING, description: "A clear, professional subject line for the email." },
+        body: { type: Type.STRING, description: "The email body text." },
+      },
+      required: ["subject", "body"],
+      description: "A draft email the student can send to their DSO to ask for help regarding this document.",
+    },
   },
-  required: ["riskAssessment", "summary", "detailedExplanation", "simpleEnglishNotes", "checklist", "safetyTerms"],
+  required: ["riskAssessment", "summary", "detailedExplanation", "simpleEnglishNotes", "checklist", "safetyTerms", "dsoEmailDraft"],
 };
 
 export const analyzeDocument = async (
@@ -79,10 +92,10 @@ export const analyzeDocument = async (
   // Map locale code to full language name for the prompt
   const languageMap: Record<Locale, string> = {
     en: 'Plain English',
-    ko: 'Korean (Polite/Honorific)',
-    zh: 'Simplified Chinese',
-    hi: 'Hindi',
-    ja: 'Japanese'
+    ko: 'English (with optional Korean summary)',
+    zh: 'English',
+    hi: 'English',
+    ja: 'English'
   };
 
   const targetLanguage = languageMap[targetLocale] || 'Plain English';
@@ -92,7 +105,7 @@ You are a helpful, empathetic, and precise assistant for international students 
 Your goal is to help them understand complex English immigration documents by translating and explaining them in **${targetLanguage}**.
 
 Guidelines:
-1. **Target Language**: Output all summaries, explanations, and checklist items in **${targetLanguage}**.
+1. **Target Language**: Output the main summary, detailed explanation, and checklist items in **English** (Plain English), unless specified otherwise by the schema.
 2. **Tone**: Calm, reassuring, and conservative. Do not induce panic.
 3. **Safety**: NEVER give legal advice. If a text is ambiguous, tell the user to check with their DSO (Designated School Official) or an attorney.
 4. **Context**: The user is in the situation: "${situation}".
@@ -101,6 +114,8 @@ Guidelines:
 New Requirements:
 - **Risk Assessment**: Provide a conservative risk level (Low/Medium/High) and an urgency label (e.g., 'Within 7 days', 'Before program end date', 'As soon as possible'). Never guarantee outcomes.
 - **Timeline**: For each checklist item, assign an approximate dueCategory: 'today', 'this_week', 'before_program_end', 'after_approval', or 'unspecified'. Also provide a short human-readable dueLabel. If timing is unclear, use 'unspecified'.
+- **Korean Summary**: In addition to the English content, ALWAYS provide a short **Korean summary** (3-6 bullet points) in the 'koreanSummary' field, specifically for Korean-speaking F-1 students.
+- **DSO Email Draft**: Draft a polite, professional email ('dsoEmailDraft') the student can send to their DSO to clarify the situation. Include a subject line and a body that introduces the student, explains the document briefly, and asks 2-3 relevant clarification questions based on the input text.
 - **Disclaimer**: Always remind the user to verify with official USCIS sources, their DSO, or a qualified immigration attorney. Do not promise that any action will guarantee visa approval.
 
 Input Text to analyze follows.

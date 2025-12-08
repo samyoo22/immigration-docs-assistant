@@ -37,13 +37,20 @@ export interface SafetyTerm {
   definition: string;
 }
 
+export interface DsoEmailDraft {
+  subject: string;
+  body: string;
+}
+
 export interface AnalysisResult {
   riskAssessment?: RiskAssessment;
-  summary: string[]; // Changed from summaryKorean to generic summary
+  summary: string[]; // Generic summary (English)
+  koreanSummary?: string[]; // Optional Korean summary
   detailedExplanation: string;
   simpleEnglishNotes: string;
   checklist: Omit<ChecklistItem, 'id' | 'status'>[]; 
   safetyTerms: SafetyTerm[];
+  dsoEmailDraft?: DsoEmailDraft;
 }
 
 export type Locale = 'en' | 'ko' | 'zh' | 'hi' | 'ja';
