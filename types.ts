@@ -53,6 +53,8 @@ export interface AnalysisResult {
   safetyTerms: SafetyTerm[];
   dsoEmailDraft?: DsoEmailDraft;
   dsoQuestions?: string[]; // List of suggested questions
+  topic?: string; // e.g. "pre_completion_opt"
+  topicLabel?: string; // e.g. "Pre-completion OPT"
 }
 
 export type Locale = 'en' | 'ko' | 'zh' | 'hi' | 'ja';

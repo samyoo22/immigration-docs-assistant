@@ -4,9 +4,13 @@ import { SafetyTerm, Locale, DsoEmailDraft } from '../types';
 import { BookOpen, ExternalLink, ShieldCheck, Copy, Check, Mail, ChevronRight, HelpCircle } from 'lucide-react';
 import { t } from '../utils/i18n';
 
-const SafetyPanel: React.FC<{ terms: SafetyTerm[]; locale: Locale; dsoEmailDraft?: DsoEmailDraft; dsoQuestions?: string[] }> = ({ terms, locale, dsoEmailDraft, dsoQuestions }) => {
-  const [copiedNotes, setCopiedNotes] = useState(false);
-  const [copiedEmail, setCopiedEmail] = useState(false);
+const SafetyPanel: React.FC<{ 
+  terms: SafetyTerm[]; 
+  locale: Locale; 
+  dsoEmailDraft?: DsoEmailDraft; 
+  dsoQuestions?: string[];
+  onCopy: (text: string, successMessage?: string) => void; 
+}> = ({ terms, locale, dsoEmailDraft, dsoQuestions, onCopy }) => {
   const [showEmailDraft, setShowEmailDraft] = useState(false);
 
   const officialLinks = [
@@ -31,17 +35,13 @@ const SafetyPanel: React.FC<{ terms: SafetyTerm[]; locale: Locale; dsoEmailDraft
        textToCopy += `${link.name}: ${link.url}\n`;
     });
 
-    navigator.clipboard.writeText(textToCopy);
-    setCopiedNotes(true);
-    setTimeout(() => setCopiedNotes(false), 2000);
+    onCopy(textToCopy);
   };
 
   const handleCopyEmail = () => {
     if (!dsoEmailDraft) return;
     const textToCopy = `Subject: ${dsoEmailDraft.subject}\n\n${dsoEmailDraft.body}`;
-    navigator.clipboard.writeText(textToCopy);
-    setCopiedEmail(true);
-    setTimeout(() => setCopiedEmail(false), 2000);
+    onCopy(textToCopy, t(locale, 'workspace.toast.successEmail'));
   };
 
   return (
@@ -50,14 +50,10 @@ const SafetyPanel: React.FC<{ terms: SafetyTerm[]; locale: Locale; dsoEmailDraft
       <div className="absolute top-0 right-0">
          <button
             onClick={handleCopyNotes}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm border ${
-              copiedNotes 
-                ? 'bg-green-50 text-green-700 border-green-200' 
-                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
-            }`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm border bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"
           >
-            {copiedNotes ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            {copiedNotes ? t(locale, 'results.copied') : t(locale, 'results.copyNotes')}
+            <Copy className="w-3.5 h-3.5" />
+            {t(locale, 'results.copyNotes')}
           </button>
       </div>
 
@@ -137,12 +133,10 @@ const SafetyPanel: React.FC<{ terms: SafetyTerm[]; locale: Locale; dsoEmailDraft
                 <span className="text-xs font-bold text-slate-500 uppercase">Draft Preview</span>
                 <button
                   onClick={handleCopyEmail}
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-all ${
-                    copiedEmail ? 'text-green-600 bg-green-50' : 'text-slate-500 hover:text-blue-600 hover:bg-blue-50'
-                  }`}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-all text-blue-600 bg-blue-50 hover:bg-blue-100"
                 >
-                  {copiedEmail ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                  {copiedEmail ? t(locale, 'results.copied') : t(locale, 'results.dsoEmail.btnCopy')}
+                  <Copy className="w-3 h-3" />
+                  {t(locale, 'results.dsoEmail.btnCopy')}
                 </button>
               </div>
               <div className="p-4 space-y-3">

@@ -57,9 +57,19 @@ export const translations = {
       emptyStateTitle: "Ready to Analyze",
       emptyStateDesc: "Review your document on the left, then click 'Explain & Generate Checklist' to see the results here.",
       emptyChecklist: "Checklist items will appear here after analysis.",
-      emptySafety: "Key terms and resources will appear here after analysis."
+      emptySafety: "Key terms and resources will appear here after analysis.",
+      toast: {
+        successGeneric: "Copied to clipboard.",
+        successEmail: "Email draft copied to clipboard.",
+        error: "Copy failed. Please copy manually."
+      }
     },
     results: {
+      detectedTopic: "Detected topic:",
+      detectedTopicTooltip: "This is an AI-generated guess based on your document. Always rely on your school's DSO or official USCIS guidance.",
+      sessionSummaryTitle: "Session summary",
+      sessionSummaryCopy: "Copy full summary",
+      sessionSummaryDisclaimer: "Use this as a quick overview. It is not legal advice.",
       riskTitle: "Risk & Urgency",
       riskDisclaimer: "This is an AI-generated assessment and is not legal advice.",
       firstSteps: "First steps:",
@@ -163,9 +173,19 @@ export const translations = {
       emptyStateTitle: "분석 준비 완료",
       emptyStateDesc: "왼쪽 문서를 확인한 후 '설명 및 체크리스트 생성' 버튼을 클릭하세요.",
       emptyChecklist: "분석 후 체크리스트가 여기에 표시됩니다.",
-      emptySafety: "분석 후 주요 용어와 리소스가 여기에 표시됩니다."
+      emptySafety: "분석 후 주요 용어와 리소스가 여기에 표시됩니다.",
+      toast: {
+        successGeneric: "클립보드에 복사되었습니다.",
+        successEmail: "이메일 초안이 복사되었습니다.",
+        error: "복사 실패. 수동으로 복사해주세요."
+      }
     },
     results: {
+      detectedTopic: "감지된 주제:",
+      detectedTopicTooltip: "문서를 기반으로 한 AI 추측입니다. 항상 학교 DSO나 공식 USCIS 안내를 따르세요.",
+      sessionSummaryTitle: "세션 요약",
+      sessionSummaryCopy: "전체 요약 복사",
+      sessionSummaryDisclaimer: "빠른 개요로만 사용하세요. 법적 조언이 아닙니다.",
       riskTitle: "위험 및 긴급도",
       riskDisclaimer: "AI가 생성한 평가이며 법적 조언이 아닙니다.",
       firstSteps: "첫 단계:",

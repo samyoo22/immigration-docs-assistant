@@ -8,19 +8,17 @@ interface ChecklistPanelProps {
   items: ChecklistItem[];
   onToggleStatus: (id: string) => void;
   locale: Locale;
+  onCopy: (text: string, successMessage?: string) => void;
 }
 
-const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, locale }) => {
-  const [copied, setCopied] = useState(false);
-
+const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, locale, onCopy }) => {
+  
   const handleCopy = () => {
     const textToCopy = items.map(item => 
       `[${item.status.toUpperCase()}] ${item.title}\n${item.description}\nWho: ${item.actor || 'Student'}\nDue: ${item.dueLabel || 'Unspecified'}\n`
     ).join('\n');
     
-    navigator.clipboard.writeText(textToCopy);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    onCopy(textToCopy);
   };
 
   if (items.length === 0) {
@@ -80,14 +78,10 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
       <div className="absolute top-0 right-0 -mt-2">
          <button
             onClick={handleCopy}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm border ${
-              copied 
-                ? 'bg-green-50 text-green-700 border-green-200' 
-                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
-            }`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm border bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"
           >
-            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? t(locale, 'results.copied') : t(locale, 'results.copyChecklist')}
+            <Copy className="w-3.5 h-3.5" />
+            {t(locale, 'results.copyChecklist')}
           </button>
       </div>
 

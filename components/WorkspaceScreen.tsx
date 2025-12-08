@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { VisaSituation, ChecklistItem, AppState, Locale } from '../types';
 import InputSection from './InputSection';
 import ExplanationPanel from './ExplanationPanel';
 import ChecklistPanel from './ChecklistPanel';
 import SafetyPanel from './SafetyPanel';
-import { ArrowLeft, FileText, ListChecks, ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, FileText, ListChecks, ShieldCheck, Loader2, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface WorkspaceScreenProps {
@@ -17,6 +17,12 @@ interface WorkspaceScreenProps {
   setChecklistState: (items: ChecklistItem[]) => void;
 }
 
+interface ToastState {
+  message: string;
+  type: 'success' | 'error';
+  visible: boolean;
+}
+
 const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   appState,
   setSituation,
@@ -26,7 +32,32 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   setChecklistState,
 }) => {
   const [activeTab, setActiveTab] = useState<'explain' | 'checklist' | 'safety'>('explain');
+  const [toast, setToast] = useState<ToastState>({ message: '', type: 'success', visible: false });
   const { locale, result, isAnalyzing, error } = appState;
+
+  // Clear toast after timeout
+  useEffect(() => {
+    if (toast.visible) {
+      const timer = setTimeout(() => {
+        setToast(prev => ({ ...prev, visible: false }));
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.visible]);
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type, visible: true });
+  };
+
+  const handleCopy = async (text: string, successMessage?: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(successMessage || t(locale, 'workspace.toast.successGeneric'), 'success');
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      showToast(t(locale, 'workspace.toast.error'), 'error');
+    }
+  };
 
   const handleToggleChecklistStatus = (id: string) => {
     const newChecklist = appState.checklistState.map((item) => {
@@ -105,13 +136,14 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
     // Result States
     switch (activeTab) {
       case 'explain':
-        return <ExplanationPanel result={result} locale={locale} />;
+        return <ExplanationPanel result={result} locale={locale} onCopy={handleCopy} />;
       case 'checklist':
         return (
           <ChecklistPanel 
             items={appState.checklistState} 
             onToggleStatus={handleToggleChecklistStatus} 
             locale={locale}
+            onCopy={handleCopy}
           />
         );
       case 'safety':
@@ -120,12 +152,31 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                   dsoEmailDraft={result.dsoEmailDraft} 
                   dsoQuestions={result.dsoQuestions}
                   locale={locale} 
+                  onCopy={handleCopy}
                />;
     }
   };
 
   return (
-    <div className="animate-fade-in pb-10">
+    <div className="animate-fade-in pb-10 relative">
+      {/* Toast Notification */}
+      {toast.visible && (
+        <div className="fixed bottom-6 right-6 z-50 animate-fade-in-up">
+           <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border ${
+             toast.type === 'success' 
+               ? 'bg-slate-800 text-white border-slate-700' 
+               : 'bg-red-50 text-red-800 border-red-200'
+           }`}>
+              {toast.type === 'success' ? (
+                <CheckCircle className="w-5 h-5 text-green-400" />
+              ) : (
+                <XCircle className="w-5 h-5 text-red-500" />
+              )}
+              <span className="text-sm font-medium">{toast.message}</span>
+           </div>
+        </div>
+      )}
+
       {/* Header Row: Back Button */}
       <div className="mb-6">
         <button 

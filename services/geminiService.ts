@@ -6,6 +6,15 @@ import { VisaSituation, AnalysisResult, Locale } from "../types";
 const analysisSchema: Schema = {
   type: Type.OBJECT,
   properties: {
+    topic: {
+      type: Type.STRING,
+      enum: ["pre_completion_opt", "post_completion_opt", "stem_opt_extension", "travel_and_reentry", "sevis_or_i20", "general_opt_status", "unsure"],
+      description: "Classify the main topic of the document."
+    },
+    topicLabel: {
+      type: Type.STRING,
+      description: "Human-readable label for the topic, e.g. 'STEM OPT Extension' or 'Travel & Re-entry'."
+    },
     riskAssessment: {
       type: Type.OBJECT,
       properties: {
@@ -81,7 +90,7 @@ const analysisSchema: Schema = {
       description: "3-7 specific questions the student should ask their DSO based on the risks and instructions in the text.",
     },
   },
-  required: ["riskAssessment", "summary", "detailedExplanation", "simpleEnglishNotes", "checklist", "safetyTerms", "dsoEmailDraft", "dsoQuestions"],
+  required: ["topic", "topicLabel", "riskAssessment", "summary", "detailedExplanation", "simpleEnglishNotes", "checklist", "safetyTerms", "dsoEmailDraft", "dsoQuestions"],
 };
 
 export const analyzeDocument = async (
@@ -118,6 +127,7 @@ Guidelines:
 5. **Privacy**: Do not repeat personal data like specific names or ID numbers in the output unless necessary for context.
 
 New Requirements:
+- **Topic Classification**: Classify the main topic of this document into one of the following categories: 'pre_completion_opt', 'post_completion_opt', 'stem_opt_extension', 'travel_and_reentry', 'sevis_or_i20', 'general_opt_status', 'unsure'. Output this as a 'topic' field and also provide a short human-readable 'topicLabel' like 'Pre-completion OPT'.
 - **Risk Assessment**: Provide a conservative risk level (Low/Medium/High) and an urgency label (e.g., 'Within 7 days', 'Before program end date', 'As soon as possible'). Never guarantee outcomes.
 - **Timeline**: For each checklist item, assign an approximate dueCategory: 'today', 'this_week', 'before_program_end', 'after_approval', or 'unspecified'. Also provide a short human-readable dueLabel. If timing is unclear, use 'unspecified'.
 - **Actor**: Identify who is responsible for each checklist item (e.g. Student, DSO, Employer).

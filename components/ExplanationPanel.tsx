@@ -1,20 +1,20 @@
 
 import React, { useState } from 'react';
 import { AnalysisResult, Locale, RiskLevel } from '../types';
-import { MessageSquare, Sparkles, Copy, Check, AlertTriangle, Info, Languages, ChevronDown, ChevronUp } from 'lucide-react';
+import { MessageSquare, Sparkles, Copy, Check, AlertTriangle, Info, Languages, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface ExplanationPanelProps {
   result: AnalysisResult;
   locale: Locale;
+  onCopy: (text: string, successMessage?: string) => void;
 }
 
-const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) => {
-  const [copied, setCopied] = useState(false);
+const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onCopy }) => {
   const [langMode, setLangMode] = useState<'en' | 'en_ko'>('en');
   const [isDetailedExpanded, setIsDetailedExpanded] = useState(false);
 
-  const handleCopy = () => {
+  const handleCopyExplanation = () => {
     let textToCopy = "";
     
     if (result.riskAssessment) {
@@ -33,9 +33,24 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) =
       textToCopy += `[SIMPLE ENGLISH]\n${result.simpleEnglishNotes}`;
     }
 
-    navigator.clipboard.writeText(textToCopy);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    onCopy(textToCopy);
+  };
+
+  const handleCopySessionSummary = () => {
+    let textToCopy = `Session summary\n`;
+    if (result.riskAssessment) {
+      textToCopy += `Risk: ${result.riskAssessment.riskLevel} · Urgency: ${result.riskAssessment.urgencyLabel}\n`;
+      textToCopy += `Overview: ${result.riskAssessment.summary}\n`;
+    }
+    
+    // Top 3 checklist items
+    const topActions = result.checklist.slice(0, 3);
+    if (topActions.length > 0) {
+      textToCopy += `Top actions:\n`;
+      topActions.forEach(item => textToCopy += `- ${item.title}\n`);
+    }
+
+    onCopy(textToCopy);
   };
 
   const getRiskColor = (level: RiskLevel) => {
@@ -66,46 +81,97 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) =
   };
 
   return (
-    <div className="space-y-6 animate-fade-in relative pt-10">
+    <div className="space-y-6 animate-fade-in relative pt-14 md:pt-10">
       
       {/* Header Controls */}
-      <div className="absolute top-0 right-0 left-0 flex items-center justify-between">
-         {/* Language Toggle */}
-         <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-            <button 
-              onClick={() => setLangMode('en')}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                langMode === 'en' 
-                  ? 'bg-white text-blue-600 shadow-sm border border-slate-100' 
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              {t(locale, 'results.langToggle.enOnly')}
-            </button>
-            <button 
-              onClick={() => setLangMode('en_ko')}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                langMode === 'en_ko' 
-                  ? 'bg-white text-blue-600 shadow-sm border border-slate-100' 
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              {t(locale, 'results.langToggle.enKo')}
-            </button>
+      <div className="absolute top-0 right-0 left-0 flex flex-col md:flex-row md:items-center justify-between gap-2">
+         {/* Language Toggle + Detected Topic */}
+         <div className="flex items-center gap-3">
+             <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+                <button 
+                  onClick={() => setLangMode('en')}
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                    langMode === 'en' 
+                      ? 'bg-white text-blue-600 shadow-sm border border-slate-100' 
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  {t(locale, 'results.langToggle.enOnly')}
+                </button>
+                <button 
+                  onClick={() => setLangMode('en_ko')}
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                    langMode === 'en_ko' 
+                      ? 'bg-white text-blue-600 shadow-sm border border-slate-100' 
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  {t(locale, 'results.langToggle.enKo')}
+                </button>
+             </div>
+
+             {result.topicLabel && (
+               <div className="hidden sm:inline-flex items-center px-2 py-1 rounded bg-slate-50 border border-slate-200 text-[10px] text-slate-600 font-medium" title={t(locale, 'results.detectedTopicTooltip')}>
+                 <span className="opacity-50 mr-1">{t(locale, 'results.detectedTopic')}</span>
+                 <span className="text-slate-800">{result.topicLabel}</span>
+               </div>
+             )}
          </div>
 
          {/* Copy Button */}
-         <button
-            onClick={handleCopy}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm border ${
-              copied 
-                ? 'bg-green-50 text-green-700 border-green-200' 
-                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700'
-            }`}
+         <div className="self-end md:self-auto">
+            <button
+                onClick={handleCopyExplanation}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm border bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                {t(locale, 'results.copyBtn')}
+              </button>
+         </div>
+      </div>
+
+      {/* Session Summary Card */}
+      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm relative">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+             <FileText className="w-4 h-4 text-blue-500" />
+             {t(locale, 'results.sessionSummaryTitle')}
+          </h3>
+          <button
+             onClick={handleCopySessionSummary}
+             className="text-[10px] font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors"
           >
-            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? t(locale, 'results.copied') : t(locale, 'results.copyBtn')}
+             {t(locale, 'results.sessionSummaryCopy')}
           </button>
+        </div>
+        
+        <div className="text-sm text-slate-600 space-y-2">
+           <div className="flex items-center gap-2 text-xs">
+              <span className={`font-bold px-1.5 py-0.5 rounded ${result.riskAssessment?.riskLevel === 'High' ? 'bg-red-100 text-red-700' : result.riskAssessment?.riskLevel === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
+                Risk: {result.riskAssessment?.riskLevel}
+              </span>
+              <span className="text-slate-400">|</span>
+              <span className="font-medium text-slate-700">{result.riskAssessment?.urgencyLabel}</span>
+           </div>
+           
+           <p className="leading-snug">
+              {result.riskAssessment?.summary}
+           </p>
+
+           {result.checklist.length > 0 && (
+              <div className="bg-slate-50 rounded p-2 text-xs">
+                 <span className="font-semibold text-slate-500 block mb-1 uppercase tracking-wider text-[10px]">Top Actions</span>
+                 <ul className="list-disc list-inside text-slate-700 space-y-0.5">
+                   {result.checklist.slice(0, 3).map((item, i) => (
+                     <li key={i} className="truncate">{item.title}</li>
+                   ))}
+                 </ul>
+              </div>
+           )}
+        </div>
+        <p className="mt-2 text-[10px] text-slate-400 border-t border-slate-100 pt-1">
+           {t(locale, 'results.sessionSummaryDisclaimer')}
+        </p>
       </div>
 
       {/* Risk & Urgency Card */}
