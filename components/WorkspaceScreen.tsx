@@ -5,7 +5,7 @@ import InputSection from './InputSection';
 import ExplanationPanel from './ExplanationPanel';
 import ChecklistPanel from './ChecklistPanel';
 import SafetyPanel from './SafetyPanel';
-import { ArrowLeft, Target } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface WorkspaceScreenProps {
@@ -46,6 +46,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
 
   return (
     <div className="animate-fade-in">
+      {/* Header Row: Back Button & Step Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
         <button 
           onClick={onBack}
@@ -55,9 +56,10 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
           {t(locale, 'workspace.backButton')}
         </button>
         
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200 shadow-sm text-sm text-slate-600 self-start sm:self-auto">
-          <Target className="w-4 h-4 text-blue-500" />
-          <span>{t(locale, 'workspace.goalLabel')} <span className="font-semibold text-slate-800">{appState.intent}</span></span>
+        <div className="self-start sm:self-auto">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+             {t(locale, 'workspace.step2Title')}
+          </span>
         </div>
       </div>
 
@@ -65,6 +67,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
         {/* Left Column: Input */}
         <div className="lg:col-span-5 xl:col-span-4 h-full">
           <InputSection
+            intent={appState.intent}
             situation={appState.situation}
             setSituation={setSituation}
             inputText={appState.inputText}

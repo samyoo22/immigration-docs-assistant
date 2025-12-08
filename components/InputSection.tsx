@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { VisaSituation, Locale } from '../types';
-import { ArrowRight, FileText, Loader2, ShieldAlert, Edit3 } from 'lucide-react';
+import { VisaSituation, Locale, UserIntent } from '../types';
+import { ArrowRight, Loader2, ShieldAlert, Edit3, Target } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface InputSectionProps {
+  intent: UserIntent;
   situation: VisaSituation;
   setSituation: (s: VisaSituation) => void;
   inputText: string;
@@ -15,6 +16,7 @@ interface InputSectionProps {
 }
 
 const InputSection: React.FC<InputSectionProps> = ({
+  intent,
   situation,
   setSituation,
   inputText,
@@ -25,6 +27,18 @@ const InputSection: React.FC<InputSectionProps> = ({
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col h-full">
+      
+      {/* Intent Summary */}
+      <div className="mb-4 pb-4 border-b border-slate-100">
+        <label className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 block">
+           {t(locale, 'workspace.youChose')}
+        </label>
+        <div className="flex items-start gap-2 text-sm text-slate-700">
+          <Target className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+          <span className="font-semibold">{intent}</span>
+        </div>
+      </div>
+
       <div className="mb-6">
         <label className="text-sm font-semibold text-slate-700 flex items-center gap-2 mb-2">
           {t(locale, 'workspace.contextLabel')}
