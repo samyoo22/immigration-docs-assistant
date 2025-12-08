@@ -4,9 +4,9 @@ import { Locale } from '../types';
 export const translations = {
   en: {
     common: {
-      appName: "Immigration Docs",
-      appSuffix: "Assistant",
-      tagline: "For F-1 Students",
+      appName: "Immigration Docs Assistant",
+      appSuffix: "", // Not used directly in new header logic
+      tagline: "For F-1 students & immigrants",
       poweredBy: "Powered by Gemini 3 Pro",
       legalDisclaimer: "This tool is for educational purposes only. Immigration rules change frequently. Always confirm important deadlines and requirements with your school's official advisor (DSO) or a qualified immigration attorney.",
       legalTitle: "Not Legal Advice",
@@ -16,10 +16,10 @@ export const translations = {
     landing: {
       heroTitle: "Immigration Docs",
       heroTitleSuffix: "Assistant",
-      heroSubtitle: "Paste your visa or school email, get a simple explanation and a to-do checklist.",
+      heroSubtitle: "Paste your visa or school email, get a plain explanation and a to-do checklist.",
       heroSubtitleSupport: "Easy-to-understand explanations and checklists for F-1 students and immigrants.",
-      badge: "Multilingual Support · Not legal advice",
-      step1: "Step 1 of 2 · What do you need help with?",
+      badge: "English first · Future multilingual support · Not legal advice",
+      step1: "Step 1 of 2 · Choose what you need help with",
       intentEmail: "Understand an email about my visa",
       intentOpt: "Check what I need to do for OPT",
       intentGeneral: "Understand general visa instructions",
@@ -59,9 +59,9 @@ export const translations = {
   // Placeholders for future languages
   ko: {
     common: {
-      appName: "Immigration Docs",
-      appSuffix: "Assistant",
-      tagline: "F-1 학생을 위한 도우미",
+      appName: "Immigration Docs Assistant",
+      appSuffix: "",
+      tagline: "F-1 유학생 및 이민자를 위해",
       poweredBy: "Gemini 3 Pro 기반",
       legalDisclaimer: "이 도구는 교육 및 정보 제공용이며 법적 조언이 아닙니다. 이민 규정은 자주 변경됩니다. 중요한 마감일과 요구 사항은 항상 학교 공식 고문(DSO)이나 자격 있는 이민 변호사와 확인하십시오.",
       legalTitle: "법적 조언 아님",
@@ -73,7 +73,7 @@ export const translations = {
       heroTitleSuffix: "Assistant",
       heroSubtitle: "비자나 학교 이메일을 붙여넣으면, 쉬운 설명과 할 일 체크리스트를 드립니다.",
       heroSubtitleSupport: "F-1 유학생과 이민자를 위한 쉬운 설명 및 체크리스트.",
-      badge: "다국어 지원 · 법적 조언 아님",
+      badge: "English first · 향후 다국어 지원 예정 · 법적 조언 아님",
       step1: "1단계(총 2단계) · 어떤 도움이 필요하신가요?",
       intentEmail: "비자 관련 이메일 이해하기",
       intentOpt: "OPT 관련 할 일 확인하기",

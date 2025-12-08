@@ -30,7 +30,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
       <div className="text-center mb-10 max-w-3xl">
         <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mb-4 leading-tight">
           {t(locale, 'landing.heroTitle')} <br className="hidden sm:block" />
-          <span className="text-blue-600 block sm:inline"> – {t(locale, 'landing.heroTitleSuffix')}</span>
+          <span className="text-blue-600 block sm:inline"> {t(locale, 'landing.heroTitleSuffix')}</span>
         </h1>
         
         {/* Subtitles */}
