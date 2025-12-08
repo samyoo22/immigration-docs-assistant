@@ -73,12 +73,12 @@ const InputSection: React.FC<InputSectionProps> = ({
             </button>
           </div>
           
-          <div className="relative flex-grow min-h-[320px] mb-3">
+          <div className="relative flex-grow mb-3">
             <textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder={t(locale, 'workspace.placeholder')}
-              className="w-full h-full p-4 border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none text-slate-700 leading-relaxed font-mono text-[15px] transition-colors shadow-sm placeholder:text-slate-400"
+              className="w-full h-full min-h-[320px] p-4 border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-y text-slate-700 leading-relaxed font-mono text-[15px] transition-colors shadow-sm placeholder:text-slate-400"
             />
           </div>
 
