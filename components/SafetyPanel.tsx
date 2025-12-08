@@ -1,30 +1,10 @@
 
 import React, { useState } from 'react';
 import { SafetyTerm, Locale, DsoEmailDraft } from '../types';
-import { BookOpen, ExternalLink, ShieldCheck, Copy, Check, Mail, ChevronRight } from 'lucide-react';
+import { BookOpen, ExternalLink, ShieldCheck, Copy, Check, Mail, ChevronRight, HelpCircle } from 'lucide-react';
 import { t } from '../utils/i18n';
 
-interface SafetyPanelProps {
-  terms: SafetyTerm[];
-  locale: Locale;
-  dsoEmailDraft?: DsoEmailDraft; // Make optional as older results might not have it
-}
-
-// NOTE: Since the main AnalysisResult might be passed down, we need to ensure dsoEmailDraft is picked up from it.
-// We updated the props to include it.
-// If WorkspaceScreen doesn't pass the full result to SafetyPanel, we might need to update WorkspaceScreen too.
-// Checking WorkspaceScreen:
-// It renders: <SafetyPanel terms={result.safetyTerms} locale={locale} />
-// I need to update SafetyPanel to accept dsoEmailDraft as a prop.
-// However, the interface change here implies I need to update the parent call site in WorkspaceScreen.
-// I will update this file to accept `dsoEmailDraft` and handle the logic.
-// IMPORTANT: I must also update WorkspaceScreen to pass this prop. 
-// Wait, I can't edit WorkspaceScreen in this change block if I don't include it in the XML.
-// I will assume WorkspaceScreen needs to be updated or I can make dsoEmailDraft optional and ignore if missing.
-// Actually, I should update WorkspaceScreen to pass the draft. 
-// Let's add WorkspaceScreen to the changes list.
-
-const SafetyPanel: React.FC<{ terms: SafetyTerm[]; locale: Locale; dsoEmailDraft?: DsoEmailDraft }> = ({ terms, locale, dsoEmailDraft }) => {
+const SafetyPanel: React.FC<{ terms: SafetyTerm[]; locale: Locale; dsoEmailDraft?: DsoEmailDraft; dsoQuestions?: string[] }> = ({ terms, locale, dsoEmailDraft, dsoQuestions }) => {
   const [copiedNotes, setCopiedNotes] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [showEmailDraft, setShowEmailDraft] = useState(false);
@@ -40,6 +20,12 @@ const SafetyPanel: React.FC<{ terms: SafetyTerm[]; locale: Locale; dsoEmailDraft
     terms.forEach(term => {
       textToCopy += `${term.term}: ${term.definition}\n`;
     });
+    
+    if (dsoQuestions && dsoQuestions.length > 0) {
+      textToCopy += "\n[QUESTIONS TO ASK YOUR DSO]\n";
+      dsoQuestions.forEach(q => textToCopy += `- ${q}\n`);
+    }
+
     textToCopy += "\n[OFFICIAL RESOURCES]\n";
     officialLinks.forEach(link => {
        textToCopy += `${link.name}: ${link.url}\n`;
@@ -74,6 +60,29 @@ const SafetyPanel: React.FC<{ terms: SafetyTerm[]; locale: Locale; dsoEmailDraft
             {copiedNotes ? t(locale, 'results.copied') : t(locale, 'results.copyNotes')}
           </button>
       </div>
+
+      {/* DSO Questions Section (New) */}
+      {dsoQuestions && dsoQuestions.length > 0 && (
+         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 mb-4">
+               <HelpCircle className="w-4 h-4 text-indigo-600" />
+               {t(locale, 'results.dsoQuestionsTitle')}
+            </h3>
+            <ul className="space-y-2.5">
+               {dsoQuestions.map((question, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                     <span className="flex-shrink-0 w-1.5 h-1.5 bg-indigo-300 rounded-full mt-2"></span>
+                     <span className="text-sm text-slate-700 leading-relaxed font-medium">
+                        {question}
+                     </span>
+                  </li>
+               ))}
+            </ul>
+             <div className="mt-4 text-xs text-slate-400 leading-relaxed bg-slate-50 p-2 rounded">
+               {t(locale, 'results.dsoQuestionsNote')}
+            </div>
+         </div>
+      )}
 
       {/* Official Links Section */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">

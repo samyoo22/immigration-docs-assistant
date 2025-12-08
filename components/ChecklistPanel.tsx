@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ChecklistItem, Locale, DueCategory } from '../types';
-import { CheckCircle2, Circle, Clock, ClipboardList, Copy, Check, CalendarDays } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, ClipboardList, Copy, Check, CalendarDays, User } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface ChecklistPanelProps {
@@ -15,7 +15,7 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
 
   const handleCopy = () => {
     const textToCopy = items.map(item => 
-      `[${item.status.toUpperCase()}] ${item.title}\n${item.description}\nDue: ${item.dueLabel || 'Unspecified'}\n`
+      `[${item.status.toUpperCase()}] ${item.title}\n${item.description}\nWho: ${item.actor || 'Student'}\nDue: ${item.dueLabel || 'Unspecified'}\n`
     ).join('\n');
     
     navigator.clipboard.writeText(textToCopy);
@@ -118,12 +118,16 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
                   {getStatusIcon(item.status)}
                 </div>
                 <div className="flex-grow">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider bg-white/50 px-1.5 py-0.5 rounded border border-slate-100">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-white/60 px-1.5 py-0.5 rounded border border-slate-100">
                       {item.category}
                     </span>
+                     {/* Who/Actor Pill */}
+                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                      <User className="w-3 h-3" /> {t(locale, 'results.who')} {item.actor || 'Student'}
+                    </span>
                     {item.dueLabel && (
-                       <span className="text-xs font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-1">
+                       <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-1">
                          <Clock className="w-3 h-3" /> {item.dueLabel}
                        </span>
                     )}
@@ -146,11 +150,16 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
       </div>
 
       {/* Timeline View */}
-      <div className="pt-6 border-t border-slate-200">
-         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-6">
-            <CalendarDays className="w-5 h-5 text-indigo-600" />
-            {t(locale, 'results.timelineTitle')}
-         </h3>
+      <div className="pt-8 border-t border-slate-200">
+         <div className="mb-6">
+           <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <CalendarDays className="w-5 h-5 text-indigo-600" />
+              {t(locale, 'results.timelineTitle')}
+           </h3>
+           <p className="text-sm text-slate-500 ml-7">
+             {t(locale, 'results.timelineSubtitle')}
+           </p>
+         </div>
          
          <div className="space-y-6 relative border-l-2 border-slate-100 ml-3">
             {timelineOrder.map((key) => {
@@ -168,12 +177,23 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
 
                   <div className="space-y-2">
                     {groupItems.map(item => (
-                       <div key={`tl-${item.id}`} className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex items-center justify-between">
+                       <div 
+                        key={`tl-${item.id}`} 
+                        className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors"
+                        onClick={() => onToggleStatus(item.id)}
+                       >
                           <div className="flex items-center gap-3">
                             {getStatusIcon(item.status)}
-                            <span className={`text-sm font-medium ${item.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700'}`}>
-                              {item.title}
-                            </span>
+                            <div className="flex flex-col">
+                              <span className={`text-sm font-medium ${item.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700'}`}>
+                                {item.title}
+                              </span>
+                              {item.actor && (
+                                <span className="text-[10px] text-slate-400">
+                                  {t(locale, 'results.who')} {item.actor}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           {item.dueLabel && (
                             <span className="text-xs text-slate-400 hidden sm:inline-block">

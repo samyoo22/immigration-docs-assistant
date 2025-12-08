@@ -40,6 +40,7 @@ const analysisSchema: Schema = {
         type: Type.OBJECT,
         properties: {
           category: { type: Type.STRING, description: "E.g., 'Documents', 'School', 'USCIS'" },
+          actor: { type: Type.STRING, description: "Who needs to do this? e.g. 'Student', 'School (DSO)', 'Employer'" },
           title: { type: Type.STRING, description: "Short action title in English" },
           description: { type: Type.STRING, description: "Clear instruction on what to do in English" },
           dueCategory: { 
@@ -74,8 +75,13 @@ const analysisSchema: Schema = {
       required: ["subject", "body"],
       description: "A draft email the student can send to their DSO to ask for help regarding this document.",
     },
+    dsoQuestions: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: "3-7 specific questions the student should ask their DSO based on the risks and instructions in the text.",
+    },
   },
-  required: ["riskAssessment", "summary", "detailedExplanation", "simpleEnglishNotes", "checklist", "safetyTerms", "dsoEmailDraft"],
+  required: ["riskAssessment", "summary", "detailedExplanation", "simpleEnglishNotes", "checklist", "safetyTerms", "dsoEmailDraft", "dsoQuestions"],
 };
 
 export const analyzeDocument = async (
@@ -114,8 +120,10 @@ Guidelines:
 New Requirements:
 - **Risk Assessment**: Provide a conservative risk level (Low/Medium/High) and an urgency label (e.g., 'Within 7 days', 'Before program end date', 'As soon as possible'). Never guarantee outcomes.
 - **Timeline**: For each checklist item, assign an approximate dueCategory: 'today', 'this_week', 'before_program_end', 'after_approval', or 'unspecified'. Also provide a short human-readable dueLabel. If timing is unclear, use 'unspecified'.
+- **Actor**: Identify who is responsible for each checklist item (e.g. Student, DSO, Employer).
 - **Korean Summary**: In addition to the English content, ALWAYS provide a short **Korean summary** (3-6 bullet points) in the 'koreanSummary' field, specifically for Korean-speaking F-1 students.
 - **DSO Email Draft**: Draft a polite, professional email ('dsoEmailDraft') the student can send to their DSO to clarify the situation. Include a subject line and a body that introduces the student, explains the document briefly, and asks 2-3 relevant clarification questions based on the input text.
+- **DSO Questions**: Generate a separate list of 3-7 specific questions ('dsoQuestions') that the student should ask their DSO to clarify their specific situation or risks.
 - **Disclaimer**: Always remind the user to verify with official USCIS sources, their DSO, or a qualified immigration attorney. Do not promise that any action will guarantee visa approval.
 
 Input Text to analyze follows.

@@ -24,6 +24,7 @@ export interface ChecklistItem {
   status: 'todo' | 'in-progress' | 'done';
   dueCategory?: DueCategory;
   dueLabel?: string;
+  actor?: string; // e.g. "Student", "DSO", "USCIS"
 }
 
 export interface RiskAssessment {
@@ -51,6 +52,7 @@ export interface AnalysisResult {
   checklist: Omit<ChecklistItem, 'id' | 'status'>[]; 
   safetyTerms: SafetyTerm[];
   dsoEmailDraft?: DsoEmailDraft;
+  dsoQuestions?: string[]; // List of suggested questions
 }
 
 export type Locale = 'en' | 'ko' | 'zh' | 'hi' | 'ja';

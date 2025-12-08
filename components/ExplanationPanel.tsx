@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { AnalysisResult, Locale, RiskLevel } from '../types';
-import { MessageSquare, Sparkles, Copy, Check, AlertTriangle, Info, Languages } from 'lucide-react';
+import { MessageSquare, Sparkles, Copy, Check, AlertTriangle, Info, Languages, ChevronDown, ChevronUp } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface ExplanationPanelProps {
@@ -12,6 +12,7 @@ interface ExplanationPanelProps {
 const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) => {
   const [copied, setCopied] = useState(false);
   const [langMode, setLangMode] = useState<'en' | 'en_ko'>('en');
+  const [isDetailedExpanded, setIsDetailedExpanded] = useState(false);
 
   const handleCopy = () => {
     let textToCopy = "";
@@ -20,11 +21,11 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) =
       textToCopy += `[RISK ASSESSMENT]\nLevel: ${result.riskAssessment.riskLevel}\nUrgency: ${result.riskAssessment.urgencyLabel}\nSummary: ${result.riskAssessment.summary}\n\n`;
     }
 
-    textToCopy += `[SUMMARY]\n${result.summary.map((s, i) => `${i+1}. ${s}`).join('\n')}\n\n`;
-    
     if (langMode === 'en_ko' && result.koreanSummary) {
-       textToCopy += `[KOREAN SUMMARY]\n${result.koreanSummary.map((s, i) => `${i+1}. ${s}`).join('\n')}\n\n`;
-    }
+      textToCopy += `[KOREAN SUMMARY]\n${result.koreanSummary.map((s, i) => `${i+1}. ${s}`).join('\n')}\n\n`;
+   }
+
+    textToCopy += `[SUMMARY]\n${result.summary.map((s, i) => `${i+1}. ${s}`).join('\n')}\n\n`;
 
     textToCopy += `[DETAILED EXPLANATION]\n${result.detailedExplanation}\n\n`;
     
@@ -52,6 +53,15 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) =
       case 'Medium': return <Info className="w-5 h-5" />;
       case 'Low': return <Check className="w-5 h-5" />;
       default: return <Info className="w-5 h-5" />;
+    }
+  };
+
+  const getFirstStepsText = (level: RiskLevel) => {
+    switch (level) {
+      case 'High': return t(locale, 'results.firstStepsHigh');
+      case 'Medium': return t(locale, 'results.firstStepsMedium');
+      case 'Low': return t(locale, 'results.firstStepsLow');
+      default: return t(locale, 'results.firstStepsLow');
     }
   };
 
@@ -115,14 +125,43 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) =
                        • {result.riskAssessment.urgencyLabel}
                     </span>
                  </div>
-                 <p className="text-sm leading-relaxed font-medium opacity-90 mb-2">
+                 <p className="text-sm leading-relaxed font-medium opacity-90 mb-3">
                    {result.riskAssessment.summary}
                  </p>
+                 
+                 {/* First Steps Section */}
+                 <div className="bg-white/40 rounded p-2 mb-2">
+                   <span className="text-xs font-bold uppercase tracking-wide block opacity-80 mb-1">
+                     {t(locale, 'results.firstSteps')}
+                   </span>
+                   <p className="text-sm">
+                     {getFirstStepsText(result.riskAssessment.riskLevel)}
+                   </p>
+                 </div>
+
                  <p className="text-[10px] opacity-60 uppercase tracking-wide">
                    {t(locale, 'results.riskDisclaimer')}
                  </p>
               </div>
            </div>
+        </div>
+      )}
+
+      {/* Korean Summary (Conditional - Now BEFORE Quick Summary) */}
+      {langMode === 'en_ko' && result.koreanSummary && (
+        <div className="bg-blue-50 rounded-xl border border-blue-100 p-6 animate-fade-in">
+           <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2 mb-4">
+            <Languages className="w-5 h-5 text-blue-600" />
+            {t(locale, 'results.koreanSummaryTitle')}
+          </h3>
+           <ul className="space-y-3">
+            {result.koreanSummary.map((point, idx) => (
+              <li key={idx} className="flex items-start gap-3 text-blue-800 leading-relaxed">
+                <span className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2"></span>
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -144,26 +183,8 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) =
         </ul>
       </div>
 
-      {/* Korean Summary (Conditional) */}
-      {langMode === 'en_ko' && result.koreanSummary && (
-        <div className="bg-blue-50 rounded-xl border border-blue-100 p-6 animate-fade-in">
-           <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2 mb-4">
-            <Languages className="w-5 h-5 text-blue-600" />
-            {t(locale, 'results.koreanSummaryTitle')}
-          </h3>
-           <ul className="space-y-3">
-            {result.koreanSummary.map((point, idx) => (
-              <li key={idx} className="flex items-start gap-3 text-blue-800 leading-relaxed">
-                <span className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2"></span>
-                <span>{point}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       {/* Detailed Explanation */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 transition-all">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-indigo-500" />
@@ -171,9 +192,24 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) =
           </h3>
         </div>
         
-        <div className="prose prose-slate max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap">
+        <div className={`prose prose-slate max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap ${!isDetailedExpanded ? 'line-clamp-4 mask-fade-bottom' : ''}`}>
           {result.detailedExplanation}
         </div>
+        
+        <button 
+          onClick={() => setIsDetailedExpanded(!isDetailedExpanded)}
+          className="mt-4 text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+        >
+          {isDetailedExpanded ? (
+            <>
+              {t(locale, 'results.hideFull')} <ChevronUp className="w-4 h-4" />
+            </>
+          ) : (
+            <>
+              {t(locale, 'results.showFull')} <ChevronDown className="w-4 h-4" />
+            </>
+          )}
+        </button>
       </div>
 
        {/* Simple English Notes */}
