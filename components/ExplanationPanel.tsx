@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { AnalysisResult, Locale } from '../types';
-import { MessageSquare, Sparkles } from 'lucide-react';
+import { MessageSquare, Sparkles, Copy, Check } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface ExplanationPanelProps {
@@ -10,6 +10,15 @@ interface ExplanationPanelProps {
 }
 
 const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    const textToCopy = `${result.summary.join('\n')}\n\n${result.detailedExplanation}`;
+    navigator.clipboard.writeText(textToCopy);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Summary Section */}
@@ -31,11 +40,26 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale }) =
       </div>
 
       {/* Detailed Explanation */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-4">
-          <MessageSquare className="w-5 h-5 text-indigo-500" />
-          {t(locale, 'results.detailedTitle')}
-        </h3>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-indigo-500" />
+            {t(locale, 'results.detailedTitle')}
+          </h3>
+          
+          <button
+            onClick={handleCopy}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              copied 
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+            }`}
+          >
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? t(locale, 'results.copied') : t(locale, 'results.copyBtn')}
+          </button>
+        </div>
+        
         <div className="prose prose-slate max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap">
           {result.detailedExplanation}
         </div>

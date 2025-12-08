@@ -35,9 +35,15 @@ export const translations = {
       situationTitle: "Your situation",
       contextLabel: "Situation context",
       inputLabel: "Document Text",
-      inputHelper: "Paste or edit your email or instructions here. Avoid entering passport numbers, SSNs, or other highly sensitive IDs.",
+      expand: "Expand",
+      clearText: "Clear text",
+      charCount: "{{count}} chars",
+      modalTitle: "Edit document text",
+      saveAndClose: "Save & Close",
+      cancel: "Cancel",
+      inputHelper: "Avoid entering passport numbers, SSNs, or other highly sensitive IDs.",
       editable: "Editable",
-      placeholder: "Paste your English email or instructions here...",
+      placeholder: "Paste the full email or instructions here. You can edit the text before running the analysis.",
       btnAnalyze: "Explain & Generate Checklist",
       btnHelper: "We’ll analyze your document and show a plain-language explanation and checklist on the right.",
       analyzing: "Analyzing...",
@@ -52,6 +58,8 @@ export const translations = {
     results: {
       summaryTitle: "Quick Summary",
       detailedTitle: "Detailed Explanation",
+      copyBtn: "Copy explanation",
+      copied: "Copied!",
       simpleEnglishTitle: "Simple English Note",
       checklistTitle: "Your Action Checklist",
       noItems: "No action items detected yet.",
@@ -95,9 +103,15 @@ export const translations = {
       situationTitle: "현재 상황",
       contextLabel: "상황 / 문맥",
       inputLabel: "문서 텍스트",
-      inputHelper: "이메일이나 지침을 여기에 붙여넣거나 수정하세요. 여권 번호나 주민번호 등 민감한 정보는 제외해 주세요.",
+      expand: "확대",
+      clearText: "지우기",
+      charCount: "{{count}}자",
+      modalTitle: "문서 텍스트 편집",
+      saveAndClose: "저장 후 닫기",
+      cancel: "취소",
+      inputHelper: "여권 번호나 주민번호 등 민감한 정보는 제외해 주세요.",
       editable: "수정 가능",
-      placeholder: "영어 이메일이나 지침을 여기에 붙여넣으세요...",
+      placeholder: "영어 이메일이나 지침을 여기에 붙여넣으세요. 분석 전에 내용을 수정할 수 있습니다.",
       btnAnalyze: "설명 및 체크리스트 생성",
       btnHelper: "문서를 분석하여 쉬운 설명과 체크리스트를 오른쪽에 표시합니다.",
       analyzing: "분석 중...",
@@ -112,6 +126,8 @@ export const translations = {
     results: {
       summaryTitle: "빠른 요약",
       detailedTitle: "상세 설명",
+      copyBtn: "설명 복사",
+      copied: "복사됨!",
       simpleEnglishTitle: "쉬운 영어 노트",
       checklistTitle: "할 일 체크리스트",
       noItems: "발견된 할 일이 없습니다.",
@@ -128,7 +144,7 @@ export const translations = {
 } as const;
 
 // Fallback logic
-export const t = (locale: Locale, path: string): string => {
+export const t = (locale: Locale, path: string, params?: Record<string, string | number>): string => {
   const parts = path.split('.');
   let current: any = translations[locale] || translations['en'];
   
@@ -142,9 +158,20 @@ export const t = (locale: Locale, path: string): string => {
       for (const enPart of parts) {
          enCurrent = enCurrent?.[enPart];
       }
-      return enCurrent || path;
+      current = enCurrent || path;
+      break;
     }
     current = current[part];
   }
+
+  // Handle parameter substitution (e.g., {{count}})
+  if (typeof current === 'string' && params) {
+    let result = current;
+    for (const [key, value] of Object.entries(params)) {
+      result = result.replace(new RegExp(`{{${key}}}`, 'g'), String(value));
+    }
+    return result;
+  }
+
   return current;
 };
