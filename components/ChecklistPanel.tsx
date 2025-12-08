@@ -1,18 +1,21 @@
+
 import React from 'react';
-import { ChecklistItem } from '../types';
+import { ChecklistItem, Locale } from '../types';
 import { CheckCircle2, Circle, Clock, ClipboardList } from 'lucide-react';
+import { t } from '../utils/i18n';
 
 interface ChecklistPanelProps {
   items: ChecklistItem[];
   onToggleStatus: (id: string) => void;
+  locale: Locale;
 }
 
-const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus }) => {
+const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, locale }) => {
   if (items.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-xl border border-slate-200 border-dashed">
         <ClipboardList className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-        <p className="text-slate-500">No action items detected yet.</p>
+        <p className="text-slate-500">{t(locale, 'results.noItems')}</p>
       </div>
     );
   }
@@ -44,7 +47,7 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus }
       <div className="flex items-center justify-between mb-2">
          <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
             <ClipboardList className="w-5 h-5 text-blue-600" />
-            Your Action Checklist
+            {t(locale, 'results.checklistTitle')}
           </h3>
           <span className="text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
             {items.filter(i => i.status === 'done').length} / {items.length} Done
@@ -80,7 +83,6 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus }
               </div>
             </div>
             
-            {/* Status Tooltip/Label on Hover/Active */}
              <div className="absolute top-4 right-4 text-xs font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
                 {item.status === 'todo' ? 'Click to start' : item.status === 'in-progress' ? 'Click to complete' : 'Click to undo'}
              </div>

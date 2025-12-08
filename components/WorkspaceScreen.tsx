@@ -1,10 +1,12 @@
+
 import React, { useState } from 'react';
-import { VisaSituation, ChecklistItem, AnalysisResult, AppState } from '../types';
+import { VisaSituation, ChecklistItem, AnalysisResult, AppState, Locale } from '../types';
 import InputSection from './InputSection';
 import ExplanationPanel from './ExplanationPanel';
 import ChecklistPanel from './ChecklistPanel';
 import SafetyPanel from './SafetyPanel';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Target } from 'lucide-react';
+import { t } from '../utils/i18n';
 
 interface WorkspaceScreenProps {
   appState: AppState;
@@ -24,6 +26,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   setChecklistState,
 }) => {
   const [activeTab, setActiveTab] = useState<'explain' | 'checklist'>('explain');
+  const { locale } = appState;
 
   const handleToggleChecklistStatus = (id: string) => {
     const newChecklist = appState.checklistState.map((item) => {
@@ -43,13 +46,20 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
 
   return (
     <div className="animate-fade-in">
-      <button 
-        onClick={onBack}
-        className="mb-4 text-sm text-slate-500 hover:text-blue-600 flex items-center gap-1 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Start
-      </button>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+        <button 
+          onClick={onBack}
+          className="text-sm text-slate-500 hover:text-blue-600 flex items-center gap-1 transition-colors self-start"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t(locale, 'workspace.backButton')}
+        </button>
+        
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200 shadow-sm text-sm text-slate-600 self-start sm:self-auto">
+          <Target className="w-4 h-4 text-blue-500" />
+          <span>{t(locale, 'workspace.goalLabel')} <span className="font-semibold text-slate-800">{appState.intent}</span></span>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Input */}
@@ -61,6 +71,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
             setInputText={setInputText}
             onAnalyze={onAnalyze}
             isAnalyzing={appState.isAnalyzing}
+            locale={locale}
           />
         </div>
 
@@ -79,7 +90,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                       : 'border-transparent text-slate-500 hover:text-slate-700'
                   }`}
                 >
-                  Explanation
+                  {t(locale, 'workspace.tabExplain')}
                 </button>
                 <button
                   onClick={() => setActiveTab('checklist')}
@@ -89,7 +100,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                       : 'border-transparent text-slate-500 hover:text-slate-700'
                   }`}
                 >
-                  Checklist
+                   {t(locale, 'workspace.tabChecklist')}
                   {appState.checklistState.length > 0 && (
                     <span className="ml-2 bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-xs">
                       {appState.checklistState.filter(i => i.status !== 'done').length}
@@ -101,20 +112,21 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
               {/* Tab Content */}
               <div className="space-y-6">
                 {activeTab === 'explain' && (
-                  <ExplanationPanel result={appState.result} />
+                  <ExplanationPanel result={appState.result} locale={locale} />
                 )}
                 
                 {activeTab === 'checklist' && (
                   <ChecklistPanel 
                     items={appState.checklistState} 
                     onToggleStatus={handleToggleChecklistStatus} 
+                    locale={locale}
                   />
                 )}
               </div>
 
               {/* Safety Panel */}
               <div className="border-t border-slate-200 pt-8 mt-4">
-                <SafetyPanel terms={appState.result.safetyTerms} />
+                <SafetyPanel terms={appState.result.safetyTerms} locale={locale} />
               </div>
             </>
           ) : (
@@ -123,11 +135,9 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                  <div className="bg-white p-4 rounded-full shadow-sm mb-4">
                     <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-300 font-bold">?</div>
                  </div>
-                 <h3 className="text-lg font-semibold text-slate-600 mb-2">Ready to Analyze</h3>
+                 <h3 className="text-lg font-semibold text-slate-600 mb-2">{t(locale, 'workspace.emptyStateTitle')}</h3>
                  <p className="max-w-sm mx-auto mb-6">
-                   Review your input on the left and click 
-                   <strong className="text-blue-600 mx-1">Explain & Generate Checklist</strong>
-                   to see the results here.
+                   {t(locale, 'workspace.emptyStateDesc')}
                  </p>
               </div>
           )}

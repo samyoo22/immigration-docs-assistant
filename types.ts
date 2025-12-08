@@ -1,3 +1,4 @@
+
 export enum VisaSituation {
   F1_PRE_ARRIVAL = 'F-1 – Pre-arrival (Before coming to US)',
   F1_STUDY = 'F-1 – During study (Current student)',
@@ -26,12 +27,14 @@ export interface SafetyTerm {
 }
 
 export interface AnalysisResult {
-  summaryKorean: string[];
+  summary: string[]; // Changed from summaryKorean to generic summary
   detailedExplanation: string;
   simpleEnglishNotes: string;
-  checklist: Omit<ChecklistItem, 'id' | 'status'>[]; // API returns raw items
+  checklist: Omit<ChecklistItem, 'id' | 'status'>[]; 
   safetyTerms: SafetyTerm[];
 }
+
+export type Locale = 'en' | 'ko' | 'zh' | 'hi' | 'ja';
 
 export interface AppState {
   view: 'landing' | 'workspace';
@@ -40,6 +43,7 @@ export interface AppState {
   inputText: string;
   isAnalyzing: boolean;
   result: AnalysisResult | null;
-  checklistState: ChecklistItem[]; // Local state for checklist interaction
+  checklistState: ChecklistItem[]; 
   error: string | null;
+  locale: Locale;
 }

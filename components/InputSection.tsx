@@ -1,6 +1,8 @@
+
 import React from 'react';
-import { VisaSituation } from '../types';
+import { VisaSituation, Locale } from '../types';
 import { ArrowRight, FileText, Loader2, ShieldAlert, Edit3 } from 'lucide-react';
+import { t } from '../utils/i18n';
 
 interface InputSectionProps {
   situation: VisaSituation;
@@ -9,6 +11,7 @@ interface InputSectionProps {
   setInputText: (t: string) => void;
   onAnalyze: () => void;
   isAnalyzing: boolean;
+  locale: Locale;
 }
 
 const InputSection: React.FC<InputSectionProps> = ({
@@ -18,12 +21,13 @@ const InputSection: React.FC<InputSectionProps> = ({
   setInputText,
   onAnalyze,
   isAnalyzing,
+  locale,
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col h-full">
       <div className="mb-6">
         <label className="text-sm font-semibold text-slate-700 flex items-center gap-2 mb-2">
-          Situation Context
+          {t(locale, 'workspace.contextLabel')}
         </label>
         <select
           value={situation}
@@ -41,11 +45,11 @@ const InputSection: React.FC<InputSectionProps> = ({
       <div className="flex-grow flex flex-col mb-6">
          <div className="flex items-center justify-between mb-2">
            <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-             Document Text
+             {t(locale, 'workspace.inputLabel')}
            </label>
            {inputText.length > 0 && (
              <span className="text-xs text-slate-400 flex items-center gap-1">
-               <Edit3 className="w-3 h-3" /> Editable
+               <Edit3 className="w-3 h-3" /> {t(locale, 'workspace.editable')}
              </span>
            )}
          </div>
@@ -54,14 +58,14 @@ const InputSection: React.FC<InputSectionProps> = ({
           <textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Paste your English email or instructions here..."
+            placeholder={t(locale, 'workspace.placeholder')}
             className="w-full h-80 md:h-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none text-slate-700 leading-relaxed font-mono text-sm"
           />
           {inputText.length === 0 && (
              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-center w-full px-4">
                <ShieldAlert className="w-8 h-8 mx-auto mb-2 opacity-50" />
                <p className="text-xs">
-                 Privacy Note: Do not paste full SSNs, Passport Numbers, or SEVIS IDs.
+                 {t(locale, 'common.privacyNote')}
                </p>
              </div>
           )}
@@ -80,11 +84,11 @@ const InputSection: React.FC<InputSectionProps> = ({
         {isAnalyzing ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            Analyzing...
+            {t(locale, 'workspace.analyzing')}
           </>
         ) : (
           <>
-            Explain & Generate Checklist
+            {t(locale, 'workspace.btnAnalyze')}
             <ArrowRight className="w-5 h-5" />
           </>
         )}

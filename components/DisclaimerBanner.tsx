@@ -1,7 +1,14 @@
+
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { t } from '../utils/i18n';
+import { Locale } from '../types';
 
-const DisclaimerBanner: React.FC = () => {
+interface DisclaimerBannerProps {
+  locale: Locale;
+}
+
+const DisclaimerBanner: React.FC<DisclaimerBannerProps> = ({ locale }) => {
   return (
     <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 shadow-sm">
       <div className="flex items-start">
@@ -10,12 +17,11 @@ const DisclaimerBanner: React.FC = () => {
         </div>
         <div className="ml-3">
           <h3 className="text-sm font-medium text-amber-800">
-            Not Legal Advice / 법적 조언이 아닙니다
+            {t(locale, 'common.legalTitle')}
           </h3>
           <div className="mt-1 text-sm text-amber-700">
             <p>
-              This tool is for educational purposes only. Immigration rules change frequently.
-              <strong> Always</strong> confirm important deadlines and requirements with your school's official advisor (DSO) or a qualified immigration attorney.
+              {t(locale, 'common.legalDisclaimer')}
             </p>
           </div>
         </div>

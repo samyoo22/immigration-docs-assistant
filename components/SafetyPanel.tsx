@@ -1,12 +1,15 @@
+
 import React from 'react';
-import { SafetyTerm } from '../types';
+import { SafetyTerm, Locale } from '../types';
 import { BookOpen, ExternalLink, ShieldCheck } from 'lucide-react';
+import { t } from '../utils/i18n';
 
 interface SafetyPanelProps {
   terms: SafetyTerm[];
+  locale: Locale;
 }
 
-const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms }) => {
+const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale }) => {
   const officialLinks = [
     { name: 'USCIS Official Site', url: 'https://www.uscis.gov' },
     { name: 'DHS Study in the States', url: 'https://studyinthestates.dhs.gov/students' },
@@ -20,7 +23,7 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms }) => {
         <div className="p-4 bg-slate-50 border-b border-slate-200">
            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-emerald-600" />
-            Key Terms (용어 설명)
+            {t(locale, 'results.keyTermsTitle')}
           </h3>
         </div>
         <div className="p-0">
@@ -35,7 +38,7 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms }) => {
             </div>
           ) : (
             <div className="p-6 text-center text-slate-500 text-sm">
-              Terms will appear here after analysis.
+              {t(locale, 'results.termPlaceholder')}
             </div>
           )}
         </div>
@@ -45,7 +48,7 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms }) => {
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 mb-4">
           <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          Official Resources
+          {t(locale, 'results.officialResourcesTitle')}
         </h3>
         <ul className="space-y-3">
           {officialLinks.map((link, idx) => (
@@ -65,7 +68,7 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms }) => {
           ))}
         </ul>
         <div className="mt-4 text-xs text-slate-500 leading-relaxed">
-          * Always rely on .gov websites or your school's (.edu) official portal for the most accurate information.
+          {t(locale, 'results.officialResourcesNote')}
         </div>
       </div>
     </div>

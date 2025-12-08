@@ -1,11 +1,14 @@
+
 import React, { useState } from 'react';
-import { VisaSituation, ChecklistItem, AppState, UserIntent } from './types';
+import { VisaSituation, ChecklistItem, AppState, UserIntent, Locale } from './types';
 import { analyzeDocument } from './services/geminiService';
 import { SAMPLE_OPT_EMAIL } from './data/sampleTexts';
 import LandingScreen from './components/LandingScreen';
 import WorkspaceScreen from './components/WorkspaceScreen';
 import DisclaimerBanner from './components/DisclaimerBanner';
+import LanguageSwitcher from './components/LanguageSwitcher';
 import { Layout } from 'lucide-react';
+import { t } from './utils/i18n';
 
 function App() {
   const [state, setState] = useState<AppState>({
@@ -17,6 +20,7 @@ function App() {
     result: null,
     checklistState: [],
     error: null,
+    locale: 'en', // Default locale
   });
 
   const handleStartSample = () => {
@@ -40,7 +44,7 @@ function App() {
       ...prev,
       view: 'landing',
       error: null,
-      result: null, // Optional: clear result or keep it? Clearing feels cleaner for a fresh start.
+      result: null, 
     }));
   };
 
@@ -48,7 +52,7 @@ function App() {
     setState((prev) => ({ ...prev, isAnalyzing: true, error: null }));
     
     try {
-      const result = await analyzeDocument(state.situation, state.inputText);
+      const result = await analyzeDocument(state.situation, state.inputText, state.locale);
       
       // Transform raw checklist items into stateful items with IDs and status
       const checklistWithIds: ChecklistItem[] = result.checklist.map((item, index) => ({
@@ -87,15 +91,22 @@ function App() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-slate-900 leading-none">
-                Visa Clarity
+                {t(state.locale, 'common.appName')}
               </h1>
               <p className="text-xs text-slate-500 mt-0.5">
-                For F-1 Students
+                {t(state.locale, 'common.tagline')}
               </p>
             </div>
           </div>
-          <div className="hidden sm:block text-xs font-medium text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
-            Powered by Gemini 3 Pro
+          
+          <div className="flex items-center gap-4">
+             <div className="hidden sm:block text-xs font-medium text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+               {t(state.locale, 'common.poweredBy')}
+            </div>
+            <LanguageSwitcher 
+              currentLocale={state.locale} 
+              onLocaleChange={(l) => setState(prev => ({ ...prev, locale: l }))} 
+            />
           </div>
         </div>
       </header>
@@ -119,6 +130,7 @@ function App() {
             setSituation={(s) => setState(prev => ({ ...prev, situation: s }))}
             onStartSample={handleStartSample}
             onStartCustom={handleStartCustom}
+            locale={state.locale}
           />
         ) : (
           <WorkspaceScreen 
@@ -135,9 +147,9 @@ function App() {
 
       {/* Global Footer & Disclaimer */}
       <footer className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <DisclaimerBanner />
+        <DisclaimerBanner locale={state.locale} />
         <div className="text-center py-4 text-slate-400 text-xs">
-          <p>© 2024 Visa & Document Clarity Assistant Prototype</p>
+          <p>{t(state.locale, 'common.copyright')}</p>
         </div>
       </footer>
     </div>
