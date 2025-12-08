@@ -1,10 +1,10 @@
 
 export enum VisaSituation {
-  F1_PRE_ARRIVAL = 'F-1 – Pre-arrival (Before coming to US)',
-  F1_STUDY = 'F-1 – During study (Current student)',
+  F1_PRE_ARRIVAL = 'F-1 – Before starting school',
+  F1_STUDY = 'F-1 – During study',
   F1_OPT_APPLY = 'F-1 – OPT application phase',
-  F1_OPT_ACTIVE = 'F-1 – During OPT (Working)',
-  OTHER = 'Other / Not Sure'
+  F1_OPT_ACTIVE = 'F-1 – During OPT',
+  OTHER = 'Other / not sure'
 }
 
 export enum UserIntent {

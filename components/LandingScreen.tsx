@@ -1,12 +1,10 @@
 
 import React from 'react';
-import { VisaSituation, UserIntent, Locale } from '../types';
-import { Mail, FileText, CheckSquare, ArrowRight, Shield } from 'lucide-react';
+import { VisaSituation, Locale } from '../types';
+import { ArrowRight, Shield } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface LandingScreenProps {
-  intent: UserIntent;
-  setIntent: (i: UserIntent) => void;
   situation: VisaSituation;
   setSituation: (s: VisaSituation) => void;
   onStartSample: () => void;
@@ -15,8 +13,6 @@ interface LandingScreenProps {
 }
 
 const LandingScreen: React.FC<LandingScreenProps> = ({
-  intent,
-  setIntent,
   situation,
   setSituation,
   onStartSample,
@@ -50,51 +46,25 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
       </div>
 
       {/* Quick Start Card */}
-      <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
         <div className="p-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
         
-        <div className="p-6 sm:p-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="p-8 sm:p-10">
+          <div className="flex items-center justify-between mb-8">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               {t(locale, 'landing.step1')}
             </span>
           </div>
 
-          {/* Intent Selection */}
-          <div className="grid gap-3 mb-6">
-            {[
-              { id: UserIntent.EMAIL, icon: Mail, label: t(locale, 'landing.intentEmail') },
-              { id: UserIntent.OPT, icon: CheckSquare, label: t(locale, 'landing.intentOpt') },
-              { id: UserIntent.GENERAL, icon: FileText, label: t(locale, 'landing.intentGeneral') },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setIntent(item.id)}
-                className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
-                  intent === item.id
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-slate-100 bg-white hover:border-blue-200 hover:bg-slate-50'
-                }`}
-              >
-                <div className={`p-2 rounded-lg ${intent === item.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                  <item.icon className="w-5 h-5" />
-                </div>
-                <span className={`font-medium ${intent === item.id ? 'text-blue-900' : 'text-slate-700'}`}>
-                  {item.label}
-                </span>
-              </button>
-            ))}
-          </div>
-
           {/* Situation Dropdown */}
           <div className="mb-8">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+            <label className="block text-sm font-bold text-slate-700 mb-2">
               {t(locale, 'landing.situationLabel')}
             </label>
             <select
               value={situation}
               onChange={(e) => setSituation(e.target.value as VisaSituation)}
-              className="w-full p-3 border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium"
+              className="w-full p-3 border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium text-base mb-2"
             >
               {Object.values(VisaSituation).map((s) => (
                 <option key={s} value={s}>
@@ -102,10 +72,13 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
                 </option>
               ))}
             </select>
+            <p className="text-sm text-slate-500">
+              {t(locale, 'landing.situationHelper')}
+            </p>
           </div>
 
           {/* Action Buttons */}
-          <div className="space-y-4">
+          <div className="space-y-4 pt-2">
             <button
               onClick={onStartSample}
               className="w-full py-4 px-6 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-lg"

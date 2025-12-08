@@ -67,7 +67,6 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
         {/* Left Column: Input */}
         <div className="lg:col-span-5 xl:col-span-4 h-full">
           <InputSection
-            intent={appState.intent}
             situation={appState.situation}
             setSituation={setSituation}
             inputText={appState.inputText}

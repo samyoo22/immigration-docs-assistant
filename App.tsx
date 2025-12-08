@@ -13,14 +13,14 @@ import { t } from './utils/i18n';
 function App() {
   const [state, setState] = useState<AppState>({
     view: 'landing',
-    intent: UserIntent.EMAIL,
-    situation: VisaSituation.F1_OPT_APPLY, // Default interesting case
+    intent: UserIntent.EMAIL, // Kept for type safety but unused in UI
+    situation: VisaSituation.F1_OPT_APPLY, 
     inputText: '',
     isAnalyzing: false,
     result: null,
     checklistState: [],
     error: null,
-    locale: 'en', // Default locale
+    locale: 'en',
   });
 
   const handleStartSample = () => {
@@ -124,8 +124,6 @@ function App() {
         {/* View Switcher */}
         {state.view === 'landing' ? (
           <LandingScreen 
-            intent={state.intent}
-            setIntent={(i) => setState(prev => ({ ...prev, intent: i }))}
             situation={state.situation}
             setSituation={(s) => setState(prev => ({ ...prev, situation: s }))}
             onStartSample={handleStartSample}
