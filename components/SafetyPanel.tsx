@@ -1,16 +1,21 @@
 
 import React, { useState } from 'react';
-import { SafetyTerm, Locale, DsoEmailDraft } from '../types';
-import { BookOpen, ExternalLink, ShieldCheck, Copy, Check, Mail, ChevronRight, HelpCircle } from 'lucide-react';
+import { SafetyTerm, Locale, DsoEmailDraft, AnalysisResult, VisaSituation } from '../types';
+import { BookOpen, ExternalLink, ShieldCheck, Copy, Check, Mail, ChevronRight, HelpCircle, FileText } from 'lucide-react';
 import { t } from '../utils/i18n';
 
-const SafetyPanel: React.FC<{ 
+interface SafetyPanelProps {
   terms: SafetyTerm[]; 
   locale: Locale; 
   dsoEmailDraft?: DsoEmailDraft; 
   dsoQuestions?: string[];
+  // Need the full result to build the DSO summary
+  result?: AnalysisResult; 
+  situation?: VisaSituation;
   onCopy: (text: string, successMessage?: string) => void; 
-}> = ({ terms, locale, dsoEmailDraft, dsoQuestions, onCopy }) => {
+}
+
+const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale, dsoEmailDraft, dsoQuestions, result, situation, onCopy }) => {
   const [showEmailDraft, setShowEmailDraft] = useState(false);
 
   const officialLinks = [
@@ -44,6 +49,34 @@ const SafetyPanel: React.FC<{
     onCopy(textToCopy, t(locale, 'workspace.toast.successEmail'));
   };
 
+  const handleCopyDsoSummary = () => {
+    if (!result || !situation) return;
+
+    let summaryText = `Summary of your email as I understood it:\n\n`;
+    summaryText += `Topic: ${result.topicLabel || 'Immigration Document'}\n`;
+    summaryText += `My current situation: ${situation}\n`;
+    summaryText += `Risk Assessment: ${result.riskAssessment?.riskLevel || 'N/A'} · Urgency: ${result.riskAssessment?.urgencyLabel || 'N/A'}\n\n`;
+    
+    summaryText += `Main Points:\n`;
+    result.summary.forEach(point => {
+        summaryText += `- ${point}\n`;
+    });
+
+    // Filter for School/DSO actions
+    const dsoActions = result.checklist.filter(
+        item => item.actor?.toLowerCase().includes('school') || item.actor?.toLowerCase().includes('dso')
+    );
+
+    if (dsoActions.length > 0) {
+        summaryText += `\nAction items for School/DSO:\n`;
+        dsoActions.slice(0, 3).forEach(item => {
+            summaryText += `- ${item.title}: ${item.description}\n`;
+        });
+    }
+
+    onCopy(summaryText, "DSO summary copied – please review and edit before sending.");
+  };
+
   return (
     <div className="space-y-6 animate-fade-in relative pt-10">
       {/* Header Copy Button */}
@@ -57,7 +90,7 @@ const SafetyPanel: React.FC<{
           </button>
       </div>
 
-      {/* DSO Questions Section (New) */}
+      {/* DSO Questions Section */}
       {dsoQuestions && dsoQuestions.length > 0 && (
          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 mb-4">
@@ -120,13 +153,27 @@ const SafetyPanel: React.FC<{
           </p>
 
           {!showEmailDraft ? (
-            <button
-              onClick={() => setShowEmailDraft(true)}
-              className="w-full py-3 bg-white border border-blue-200 text-blue-700 font-bold rounded-lg hover:bg-blue-50 transition-all shadow-sm flex items-center justify-center gap-2"
-            >
-              {t(locale, 'results.dsoEmail.btnGenerate')}
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            <div className="space-y-3">
+                <button
+                onClick={() => setShowEmailDraft(true)}
+                className="w-full py-3 bg-white border border-blue-200 text-blue-700 font-bold rounded-lg hover:bg-blue-50 transition-all shadow-sm flex items-center justify-center gap-2"
+                >
+                    {t(locale, 'results.dsoEmail.btnGenerate')}
+                    <ChevronRight className="w-4 h-4" />
+                </button>
+                
+                {/* Copy for DSO Summary Button */}
+                <button
+                    onClick={handleCopyDsoSummary}
+                    className="w-full py-2.5 bg-transparent border border-blue-200 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all flex items-center justify-center gap-2 text-sm"
+                >
+                    <FileText className="w-4 h-4" />
+                    Copy summary for my DSO
+                </button>
+                 <p className="text-[10px] text-center text-slate-400">
+                    Always review and edit this summary before sending it to your DSO.
+                </p>
+            </div>
           ) : (
             <div className="bg-white rounded-lg border border-blue-200 shadow-sm animate-fade-in overflow-hidden">
               <div className="bg-slate-50 border-b border-slate-100 px-4 py-3 flex items-center justify-between">

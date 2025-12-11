@@ -5,6 +5,7 @@ import InputSection from './InputSection';
 import ExplanationPanel from './ExplanationPanel';
 import ChecklistPanel from './ChecklistPanel';
 import SafetyPanel from './SafetyPanel';
+import QAPanel from './QAPanel';
 import { ArrowLeft, FileText, ListChecks, ShieldCheck, Loader2, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { t } from '../utils/i18n';
 
@@ -75,6 +76,10 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
     setChecklistState(newChecklist);
   };
 
+  const handleTabChange = (tab: 'explain' | 'checklist' | 'safety') => {
+    setActiveTab(tab);
+  };
+
   // Helper to render content based on current tab and result state
   const renderTabContent = () => {
     if (isAnalyzing) {
@@ -136,7 +141,12 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
     // Result States
     switch (activeTab) {
       case 'explain':
-        return <ExplanationPanel result={result} locale={locale} onCopy={handleCopy} />;
+        return <ExplanationPanel 
+                  result={result} 
+                  locale={locale} 
+                  onCopy={handleCopy}
+                  onTabChange={handleTabChange}
+               />;
       case 'checklist':
         return (
           <ChecklistPanel 
@@ -151,6 +161,8 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                   terms={result.safetyTerms} 
                   dsoEmailDraft={result.dsoEmailDraft} 
                   dsoQuestions={result.dsoQuestions}
+                  result={result} // Pass full result for DSO summary
+                  situation={appState.situation} // Pass situation for DSO summary
                   locale={locale} 
                   onCopy={handleCopy}
                />;
@@ -213,7 +225,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
         </div>
 
         {/* Right Column: Output (Tabs) */}
-        <div className="lg:col-span-7 xl:col-span-8">
+        <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[600px] flex flex-col">
               {/* Tab Header */}
               <div className="flex border-b border-slate-200 bg-slate-50 overflow-x-auto no-scrollbar">
@@ -259,6 +271,11 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                  {renderTabContent()}
               </div>
            </div>
+
+           {/* Follow-up Q&A Panel */}
+           {result && !isAnalyzing && (
+             <QAPanel documentText={appState.inputText} analysisResult={result} />
+           )}
         </div>
       </div>
     </div>

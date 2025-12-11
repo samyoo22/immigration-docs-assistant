@@ -58,8 +58,18 @@ const analysisSchema: Schema = {
             description: "Approximate timeframe for the task."
           },
           dueLabel: { type: Type.STRING, description: "Human-readable due date label, e.g. 'Within 30 days'." },
+          priority: { 
+            type: Type.STRING, 
+            enum: ["high", "medium", "low"],
+            description: "Importance/Risk level. 'high' if legal status is at risk or deadline is immediate."
+          },
+          timeBucket: {
+            type: Type.STRING,
+            enum: ["today", "this_week", "later", "unspecified"],
+            description: "Simplified timing bucket for filtering."
+          }
         },
-        required: ["category", "title", "description", "dueCategory", "dueLabel"],
+        required: ["category", "title", "description", "dueCategory", "dueLabel", "priority", "timeBucket"],
       },
       description: "A list of concrete action items extracted from the text.",
     },
@@ -129,8 +139,11 @@ Guidelines:
 New Requirements:
 - **Topic Classification**: Classify the main topic of this document into one of the following categories: 'pre_completion_opt', 'post_completion_opt', 'stem_opt_extension', 'travel_and_reentry', 'sevis_or_i20', 'general_opt_status', 'unsure'. Output this as a 'topic' field and also provide a short human-readable 'topicLabel' like 'Pre-completion OPT'.
 - **Risk Assessment**: Provide a conservative risk level (Low/Medium/High) and an urgency label (e.g., 'Within 7 days', 'Before program end date', 'As soon as possible'). Never guarantee outcomes.
-- **Timeline**: For each checklist item, assign an approximate dueCategory: 'today', 'this_week', 'before_program_end', 'after_approval', or 'unspecified'. Also provide a short human-readable dueLabel. If timing is unclear, use 'unspecified'.
-- **Actor**: Identify who is responsible for each checklist item (e.g. Student, DSO, Employer).
+- **Checklist**:
+  - Assign an approximate **dueCategory**: 'today', 'this_week', 'before_program_end', 'after_approval', or 'unspecified'.
+  - Assign a **priority**: 'high', 'medium', or 'low'. Use 'high' for immediate deadlines or risks to legal status.
+  - Assign a **timeBucket**: 'today', 'this_week', 'later', or 'unspecified'.
+  - Identify who is responsible (Actor).
 - **Korean Summary**: In addition to the English content, ALWAYS provide a short **Korean summary** (3-6 bullet points) in the 'koreanSummary' field, specifically for Korean-speaking F-1 students.
 - **DSO Email Draft**: Draft a polite, professional email ('dsoEmailDraft') the student can send to their DSO to clarify the situation. Include a subject line and a body that introduces the student, explains the document briefly, and asks 2-3 relevant clarification questions based on the input text.
 - **DSO Questions**: Generate a separate list of 3-7 specific questions ('dsoQuestions') that the student should ask their DSO to clarify their specific situation or risks.
@@ -169,5 +182,56 @@ Input Text to analyze follows.
   } catch (error) {
     console.error("Gemini Analysis Error:", error);
     throw new Error("Failed to analyze the document. Please try again or check your text.");
+  }
+};
+
+export const askFollowUpQuestion = async (
+  documentText: string,
+  analysisResult: AnalysisResult,
+  question: string
+): Promise<string> => {
+  if (!process.env.API_KEY) {
+    throw new Error("API Key is missing.");
+  }
+  
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+  // Prepare context
+  const contextSummary = `
+    Topic: ${analysisResult.topicLabel}
+    Risk: ${analysisResult.riskAssessment?.riskLevel}
+    Key Summary Points: ${analysisResult.summary.join('; ')}
+  `;
+
+  const systemInstruction = `
+    You are a helpful immigration assistant answering a follow-up question about a specific document.
+    
+    Context:
+    - User Situation: F-1 Student.
+    - Document Content: "${documentText.substring(0, 2000)}..." (truncated if too long)
+    - Analysis Context: ${contextSummary}
+    
+    Constraints:
+    1. Answer briefly (2-5 sentences).
+    2. Use plain English.
+    3. Do NOT provide legal advice.
+    4. If the answer involves a specific decision or legal risk, explicitly encourage contacting the DSO or an attorney.
+    5. Directly answer the user's question based on the provided document text and analysis.
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-pro-preview",
+      contents: [{ role: "user", parts: [{ text: question }] }],
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: 0.5,
+      },
+    });
+
+    return response.text || "I'm sorry, I couldn't generate an answer.";
+  } catch (error) {
+    console.error("Follow-up Q&A Error:", error);
+    throw new Error("Failed to get an answer. Please try again.");
   }
 };

@@ -1,16 +1,17 @@
 
 import React, { useState } from 'react';
 import { AnalysisResult, Locale, RiskLevel } from '../types';
-import { MessageSquare, Sparkles, Copy, Check, AlertTriangle, Info, Languages, ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import { MessageSquare, Sparkles, Copy, Check, AlertTriangle, Info, Languages, ChevronDown, ChevronUp, FileText, ArrowRight } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface ExplanationPanelProps {
   result: AnalysisResult;
   locale: Locale;
   onCopy: (text: string, successMessage?: string) => void;
+  onTabChange: (tab: 'explain' | 'checklist' | 'safety') => void;
 }
 
-const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onCopy }) => {
+const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onCopy, onTabChange }) => {
   const [langMode, setLangMode] = useState<'en' | 'en_ko'>('en');
   const [isDetailedExpanded, setIsDetailedExpanded] = useState(false);
 
@@ -80,6 +81,15 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
     }
   };
 
+  const SectionHeader = ({ label }: { label: string }) => (
+    <div className="flex items-center gap-3 mt-8 mb-4">
+      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">
+        {label}
+      </span>
+      <div className="h-px bg-slate-100 flex-grow"></div>
+    </div>
+  );
+
   return (
     <div className="space-y-6 animate-fade-in relative pt-14 md:pt-10">
       
@@ -129,6 +139,8 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
               </button>
          </div>
       </div>
+
+      <SectionHeader label="Overview" />
 
       {/* Session Summary Card */}
       <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm relative">
@@ -213,7 +225,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
         </div>
       )}
 
-      {/* Korean Summary (Conditional - Now BEFORE Quick Summary) */}
+      {/* Korean Summary (Conditional) */}
       {langMode === 'en_ko' && result.koreanSummary && (
         <div className="bg-blue-50 rounded-xl border border-blue-100 p-6 animate-fade-in">
            <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2 mb-4">
@@ -231,7 +243,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
         </div>
       )}
 
-      {/* Summary Section */}
+      {/* Quick Summary Section */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-4">
           <Sparkles className="w-5 h-5 text-indigo-500" />
@@ -247,7 +259,17 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
             </li>
           ))}
         </ul>
+        <div className="mt-4 flex justify-end">
+           <button 
+             onClick={() => onTabChange('checklist')}
+             className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors"
+           >
+             View my checklist <ArrowRight className="w-4 h-4" />
+           </button>
+        </div>
       </div>
+
+      <SectionHeader label="Details" />
 
       {/* Detailed Explanation */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 transition-all">
@@ -258,8 +280,13 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
           </h3>
         </div>
         
-        <div className={`prose prose-slate max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap ${!isDetailedExpanded ? 'line-clamp-4 mask-fade-bottom' : ''}`}>
-          {result.detailedExplanation}
+        <div className="relative">
+          <div className={`prose prose-slate max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap transition-all duration-300 ${!isDetailedExpanded ? 'max-h-[160px] overflow-hidden' : ''}`}>
+            {result.detailedExplanation}
+          </div>
+          {!isDetailedExpanded && (
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+          )}
         </div>
         
         <button 
@@ -289,6 +316,16 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
           </p>
         </div>
       )}
+
+      {/* Footer Jump Button */}
+      <div className="pt-2 pb-2 flex justify-center">
+        <button 
+            onClick={() => onTabChange('safety')}
+            className="text-sm font-medium text-slate-500 hover:text-blue-600 flex items-center gap-1 transition-colors"
+          >
+            See safety tips & official links <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 };

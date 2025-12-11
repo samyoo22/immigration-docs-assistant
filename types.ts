@@ -25,6 +25,8 @@ export interface ChecklistItem {
   dueCategory?: DueCategory;
   dueLabel?: string;
   actor?: string; // e.g. "Student", "DSO", "USCIS"
+  priority?: 'high' | 'medium' | 'low';
+  timeBucket?: 'today' | 'this_week' | 'later' | 'unspecified';
 }
 
 export interface RiskAssessment {
@@ -55,6 +57,13 @@ export interface AnalysisResult {
   dsoQuestions?: string[]; // List of suggested questions
   topic?: string; // e.g. "pre_completion_opt"
   topicLabel?: string; // e.g. "Pre-completion OPT"
+}
+
+export interface FollowUpQAEntry {
+  id: string;
+  question: string;
+  answer: string;
+  timestamp: number;
 }
 
 export type Locale = 'en' | 'ko' | 'zh' | 'hi' | 'ja';
