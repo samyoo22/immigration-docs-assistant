@@ -18,34 +18,45 @@ export const translations = {
       retry: "Please try again in a few seconds. If the problem persists, shorten the document or refresh the page.",
     },
     landing: {
-      heroTitle: "Make US immigration documents",
+      heroKicker: "For F-1 students & immigrants",
+      heroTitle: "Make your US immigration documents",
       heroTitleSuffix: "easy to understand.",
       heroSubtitle: "Immigration Docs Assistant · For F-1 students & immigrants",
-      heroSubtitleSupport: "Paste any F-1 or US immigration document text (emails, notices, instructions) and get a plain-language explanation, action checklist, and optional translations.",
+      heroSubtitleSupport: "Paste any visa email, PDF, or letter and get a plain-English explanation, a step-by-step checklist, and optional translations when you need them.",
       badge: "English first · Translations: KO, ZH, HI, JA (beta) · Not legal advice",
+      journey: {
+        label: "Typical study → work journey",
+        steps: ["F-1 Student", "OPT", "STEM OPT", "H-1B / Work Visa"]
+      },
       step1: "Step 1 of 2 · Tell us about your situation",
       situationLabel: "1. Choose your situation",
       situationHelper: "We’ll use this to tailor your explanation and checklist.",
       btnSample: "Start with sample text",
-      btnCustom: "Or paste my own email",
-      agreement: "By using this tool, you acknowledge that it does not provide legal advice. Always consult official sources.",
-      previewLabel: "Preview of your results",
+      btnCustom: "Or paste my own document",
+      examplesLabel: "Works great for:",
+      examples: [
+        "OPT application emails",
+        "STEM OPT instructions",
+        "USCIS I-20 / I-797 notices",
+        "School SEVIS warnings"
+      ],
+      previewHeader: "Preview of your results",
+      previewCaption: "You’ll get a clear explanation and checklist like this.",
       howItWorks: "How it works: Choose your situation → Paste your document text → Get a clear explanation and checklist.",
       features: {
         plainEnglish: {
-          title: "Plain-English explanation",
-          desc: "See what your visa email means in everyday language."
+          title: "Plain-language explanation",
+          desc: "Turn dense visa emails and USCIS notices into clear, friendly English."
         },
         checklist: {
           title: "Checklist & timeline",
-          desc: "Get concrete next steps organized by urgency."
+          desc: "Know exactly what to do first, what’s urgent, and what can wait."
         },
         korean: {
           title: "Multilingual summaries",
-          desc: "Translate results into Korean, Chinese, Hindi, or Japanese."
+          desc: "Optional summaries in Korean, Chinese, Hindi, and Japanese (beta)."
         }
-      },
-      previewCaption: "You’ll get a clear explanation and checklist like this."
+      }
     },
     workspace: {
       backButton: "Back to Start",

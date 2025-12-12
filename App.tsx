@@ -154,43 +154,42 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen pb-12 bg-slate-50 font-sans">
+    <div className="min-h-screen pb-12 font-sans bg-[#020617] text-slate-50 transition-colors duration-500">
       {/* Global Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-[#020617]/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div 
-            className="flex items-center gap-3 cursor-pointer" 
+            className="flex items-center gap-3 cursor-pointer group" 
             onClick={handleBackToStart}
           >
-            <div className="bg-blue-600 text-white p-1.5 rounded-lg">
+            <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
               <Layout className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900 leading-none">
+              <h1 className="text-lg font-bold leading-none text-slate-100">
                 {t(state.locale, 'common.appName')}
               </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs mt-0.5 text-slate-400">
                 {t(state.locale, 'common.tagline')}
               </p>
             </div>
           </div>
           
           <div className="flex items-center gap-4">
-             <div className="hidden sm:block text-xs font-medium text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+             <div className="hidden sm:block text-xs font-medium px-3 py-1 rounded-full border bg-slate-800/50 text-slate-400 border-slate-700">
                {t(state.locale, 'common.poweredBy')}
             </div>
-            {/* UI Language Switcher Removed as per Step 1 constraints */}
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 py-8">
         
         {/* Error Banner */}
         {state.error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg text-sm flex items-center justify-between">
+          <div className="mb-6 bg-red-950/30 border border-red-900/50 text-red-300 p-4 rounded-lg text-sm flex items-center justify-between">
             <span><strong>Error:</strong> {state.error}</span>
-            <button onClick={() => setState(prev => ({ ...prev, error: null }))} className="text-red-500 underline text-xs">Dismiss</button>
+            <button onClick={() => setState(prev => ({ ...prev, error: null }))} className="text-red-400 underline text-xs hover:text-red-300">Dismiss</button>
           </div>
         )}
 
@@ -220,7 +219,7 @@ function App() {
       {/* Global Footer & Disclaimer */}
       <footer className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <DisclaimerBanner locale={state.locale} />
-        <div className="text-center py-4 text-slate-400 text-xs">
+        <div className="text-center py-4 text-xs text-slate-600">
           <p>{t(state.locale, 'common.copyright')}</p>
         </div>
       </footer>

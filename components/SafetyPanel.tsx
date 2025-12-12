@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { SafetyTerm, Locale, DsoEmailDraft, AnalysisResult, VisaSituation, TranslatedAnalysis } from '../types';
-import { BookOpen, ExternalLink, ShieldCheck, Copy, Check, Mail, ChevronRight, HelpCircle, FileText, Languages } from 'lucide-react';
+import { BookOpen, ExternalLink, ShieldCheck, Copy, Mail, ChevronRight, HelpCircle, FileText, Languages } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface SafetyPanelProps {
@@ -9,7 +9,6 @@ interface SafetyPanelProps {
   locale: Locale; 
   dsoEmailDraft?: DsoEmailDraft; 
   dsoQuestions?: string[];
-  // Need the full result to build the DSO summary
   result?: AnalysisResult; 
   situation?: VisaSituation;
   onCopy: (text: string, successMessage?: string) => void;
@@ -64,7 +63,6 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale, dsoEmailDraft,
         summaryText += `- ${point}\n`;
     });
 
-    // Filter for School/DSO actions
     const dsoActions = result.checklist.filter(
         item => item.actor?.toLowerCase().includes('school') || item.actor?.toLowerCase().includes('dso')
     );
@@ -85,77 +83,77 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale, dsoEmailDraft,
   }
 
   return (
-    <div className="space-y-6 animate-fade-in relative pt-10">
+    <div className="space-y-6 animate-fade-in relative">
       {/* Header Copy Button */}
-      <div className="absolute top-0 right-0">
+      <div className="flex justify-end mb-2">
          <button
             onClick={handleCopyNotes}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm border bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-medium transition-all border bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-100 hover:border-slate-600"
           >
-            <Copy className="w-3.5 h-3.5" />
+            <Copy className="w-3 h-3" />
             {t(locale, 'results.copyNotes')}
           </button>
       </div>
 
       {/* DSO Questions Section */}
       {dsoQuestions && dsoQuestions.length > 0 && (
-         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 mb-4">
-               <HelpCircle className="w-4 h-4 text-indigo-600" />
+         <div className="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-4">
+            <h3 className="text-xs font-semibold text-slate-100 flex items-center gap-2 mb-3">
+               <HelpCircle className="w-4 h-4 text-indigo-400" />
                {t(locale, 'results.dsoQuestionsTitle')}
             </h3>
-            <ul className="space-y-2.5">
+            <ul className="space-y-3">
                {dsoQuestions.map((question, idx) => (
                   <li key={idx} className="flex items-start gap-3">
-                     <span className="flex-shrink-0 w-1.5 h-1.5 bg-indigo-300 rounded-full mt-2"></span>
-                     <span className="text-sm text-slate-700 leading-relaxed font-medium">
+                     <span className="flex-shrink-0 w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2"></span>
+                     <span className="text-sm text-slate-300 leading-relaxed">
                         {question}
                      </span>
                   </li>
                ))}
             </ul>
-             <div className="mt-4 text-xs text-slate-400 leading-relaxed bg-slate-50 p-2 rounded">
+             <div className="mt-4 text-[10px] text-slate-500 leading-relaxed bg-slate-950/50 p-2 rounded border border-slate-800">
                {t(locale, 'results.dsoQuestionsNote')}
             </div>
          </div>
       )}
 
       {/* Official Links Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 mb-4">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+      <div className="rounded-xl border border-slate-800 bg-slate-900/90 px-4 py-4">
+        <h3 className="text-xs font-semibold text-slate-100 flex items-center gap-2 mb-3">
+          <ShieldCheck className="w-4 h-4 text-emerald-400" />
           {t(locale, 'results.officialResourcesTitle')}
         </h3>
-        <ul className="space-y-3">
+        <ul className="space-y-2">
           {officialLinks.map((link, idx) => (
             <li key={idx}>
               <a
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between group p-3 rounded-lg border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all"
+                className="flex items-center justify-between group p-2.5 rounded-lg border border-slate-800 bg-slate-950/50 hover:border-emerald-500/30 hover:bg-emerald-950/10 transition-all"
               >
-                <span className="text-sm font-medium text-slate-700 group-hover:text-emerald-800">
+                <span className="text-sm font-medium text-slate-300 group-hover:text-emerald-300">
                   {link.name}
                 </span>
-                <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-emerald-600" />
+                <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-emerald-400" />
               </a>
             </li>
           ))}
         </ul>
-        <div className="mt-4 text-xs text-slate-500 leading-relaxed">
+        <div className="mt-4 text-[10px] text-slate-500 leading-relaxed">
           {t(locale, 'results.officialResourcesNote')}
         </div>
       </div>
 
       {/* DSO Email Generator Section */}
       {dsoEmailDraft && (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 p-6">
-          <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 mb-2">
-            <Mail className="w-4 h-4 text-blue-600" />
+        <div className="rounded-xl border border-blue-900/30 bg-blue-950/10 px-4 py-4">
+          <h3 className="text-xs font-semibold text-slate-100 flex items-center gap-2 mb-2">
+            <Mail className="w-4 h-4 text-blue-400" />
             {t(locale, 'results.dsoEmail.title')}
           </h3>
-          <p className="text-sm text-slate-600 mb-4">
+          <p className="text-xs text-slate-400 mb-4 leading-relaxed">
             {t(locale, 'results.dsoEmail.desc')}
           </p>
 
@@ -163,31 +161,27 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale, dsoEmailDraft,
             <div className="space-y-3">
                 <button
                 onClick={() => setShowEmailDraft(true)}
-                className="w-full py-3 bg-white border border-blue-200 text-blue-700 font-bold rounded-lg hover:bg-blue-50 transition-all shadow-sm flex items-center justify-center gap-2"
+                className="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 text-sm"
                 >
                     {t(locale, 'results.dsoEmail.btnGenerate')}
                     <ChevronRight className="w-4 h-4" />
                 </button>
                 
-                {/* Copy for DSO Summary Button */}
                 <button
                     onClick={handleCopyDsoSummary}
-                    className="w-full py-2.5 bg-transparent border border-blue-200 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all flex items-center justify-center gap-2 text-sm"
+                    className="w-full py-2.5 bg-transparent border border-slate-700 text-slate-300 font-medium rounded-lg hover:bg-slate-800 hover:text-white transition-all flex items-center justify-center gap-2 text-xs"
                 >
-                    <FileText className="w-4 h-4" />
+                    <FileText className="w-3.5 h-3.5" />
                     Copy summary for my DSO
                 </button>
-                 <p className="text-[10px] text-center text-slate-400">
-                    Always review and edit this summary before sending it to your DSO.
-                </p>
             </div>
           ) : (
-            <div className="bg-white rounded-lg border border-blue-200 shadow-sm animate-fade-in overflow-hidden">
-              <div className="bg-slate-50 border-b border-slate-100 px-4 py-3 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase">Draft Preview</span>
+            <div className="bg-slate-900 rounded-lg border border-blue-900/30 overflow-hidden">
+              <div className="bg-slate-950 border-b border-slate-800 px-3 py-2 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">Draft Preview</span>
                 <button
                   onClick={handleCopyEmail}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-all text-blue-600 bg-blue-50 hover:bg-blue-100"
+                  className="flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-medium transition-all text-blue-300 bg-blue-950 hover:bg-blue-900"
                 >
                   <Copy className="w-3 h-3" />
                   {t(locale, 'results.dsoEmail.btnCopy')}
@@ -195,33 +189,28 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale, dsoEmailDraft,
               </div>
               <div className="p-4 space-y-3">
                  <div>
-                    <span className="text-xs text-slate-400 font-semibold block mb-1">Subject</span>
-                    <div className="text-sm font-medium text-slate-800 bg-slate-50 p-2 rounded border border-slate-100 select-all">
+                    <span className="text-[10px] text-slate-500 font-semibold block mb-1">Subject</span>
+                    <div className="text-sm font-medium text-slate-200 bg-slate-950 p-2 rounded border border-slate-800 select-all">
                       {dsoEmailDraft.subject}
                     </div>
                  </div>
                  <div>
-                    <span className="text-xs text-slate-400 font-semibold block mb-1">Body</span>
-                    <div className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed p-2 select-all">
+                    <span className="text-[10px] text-slate-500 font-semibold block mb-1">Body</span>
+                    <div className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed p-2 select-all font-mono text-xs">
                       {dsoEmailDraft.body}
                     </div>
                  </div>
                  {translationResult?.dsoEmailNote && (
-                   <div className="mt-2 bg-amber-50 p-3 rounded border border-amber-100">
-                      <div className="flex items-center gap-1.5 mb-1 text-amber-700 font-bold text-xs">
+                   <div className="mt-2 bg-amber-950/20 p-3 rounded border border-amber-900/30">
+                      <div className="flex items-center gap-1.5 mb-1 text-amber-500 font-bold text-[10px]">
                          <Languages className="w-3 h-3" />
                          <span>Note in {translationResult.language === 'ko' ? 'Korean' : translationResult.language}</span>
                       </div>
-                      <p className="text-xs text-amber-800 leading-relaxed">
+                      <p className="text-xs text-amber-200/80 leading-relaxed">
                         {translationResult.dsoEmailNote}
                       </p>
                    </div>
                  )}
-              </div>
-              <div className="bg-amber-50 px-4 py-2 border-t border-amber-100">
-                <p className="text-[10px] text-amber-700">
-                  {t(locale, 'results.dsoEmail.disclaimer')}
-                </p>
               </div>
             </div>
           )}
@@ -229,25 +218,25 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale, dsoEmailDraft,
       )}
 
       {/* Glossary Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-4 bg-slate-50 border-b border-slate-200">
-           <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-emerald-600" />
+      <div className="rounded-xl border border-slate-800 bg-slate-900/90 overflow-hidden">
+        <div className="px-4 py-3 bg-slate-950/50 border-b border-slate-800">
+           <h3 className="text-xs font-semibold text-slate-100 flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-emerald-400" />
             {t(locale, 'results.keyTermsTitle')}
           </h3>
         </div>
         <div className="p-0">
           {terms.length > 0 ? (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-800">
               {terms.map((term, idx) => {
                 const translatedExplanation = getTranslatedTerm(term.term);
                 return (
-                <div key={idx} className="p-4 hover:bg-slate-50 transition-colors">
-                  <dt className="text-sm font-bold text-slate-900 mb-1">{term.term}</dt>
-                  <dd className="text-sm text-slate-600">{term.definition}</dd>
+                <div key={idx} className="p-4 hover:bg-slate-800/50 transition-colors">
+                  <dt className="text-sm font-bold text-slate-200 mb-1">{term.term}</dt>
+                  <dd className="text-xs text-slate-400 leading-relaxed">{term.definition}</dd>
                   {translatedExplanation && (
-                     <dd className="text-xs text-slate-500 mt-2 pt-2 border-t border-slate-200/50 flex gap-2">
-                        <Languages className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
+                     <dd className="text-xs text-slate-500 mt-2 pt-2 border-t border-slate-800/50 flex gap-2">
+                        <Languages className="w-3 h-3 text-slate-600 mt-0.5 shrink-0" />
                         <span>{translatedExplanation}</span>
                      </dd>
                   )}
@@ -255,7 +244,7 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale, dsoEmailDraft,
               )})}
             </div>
           ) : (
-            <div className="p-6 text-center text-slate-500 text-sm">
+            <div className="p-6 text-center text-slate-600 text-xs">
               {t(locale, 'results.termPlaceholder')}
             </div>
           )}

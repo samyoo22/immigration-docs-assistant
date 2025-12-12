@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { VisaSituation, ChecklistItem, AppState, Locale, TranslationLanguageCode, SUPPORTED_TRANSLATION_LANGUAGES } from '../types';
+import { VisaSituation, ChecklistItem, AppState, TranslationLanguageCode, SUPPORTED_TRANSLATION_LANGUAGES } from '../types';
 import InputSection from './InputSection';
 import ExplanationPanel from './ExplanationPanel';
 import ChecklistPanel from './ChecklistPanel';
 import SafetyPanel from './SafetyPanel';
 import QAPanel from './QAPanel';
-import { ArrowLeft, FileText, ListChecks, ShieldCheck, Loader2, AlertCircle, CheckCircle, XCircle, Globe, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, FileText, ListChecks, ShieldCheck, Globe, ChevronDown } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface WorkspaceScreenProps {
@@ -78,18 +78,13 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
     setChecklistState(newChecklist);
   };
 
-  const handleTabChange = (tab: 'explain' | 'checklist' | 'safety') => {
-    setActiveTab(tab);
-  };
-
-  // Helper to render content based on current tab and result state
   const renderTabContent = () => {
     if (isAnalyzing) {
       return (
-        <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400 min-h-[400px]">
-          <Loader2 className="w-10 h-10 text-blue-500 animate-spin mb-4" />
-          <h3 className="text-lg font-semibold text-slate-600 mb-2">{t(locale, 'workspace.analyzing')}</h3>
-          <p className="max-w-xs mx-auto text-sm">{t(locale, 'workspace.analyzingDesc')}</p>
+        <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500 min-h-[400px]">
+          <Loader2 className="w-10 h-10 text-sky-500 animate-spin mb-4" />
+          <h3 className="text-lg font-semibold text-slate-300 mb-2">{t(locale, 'workspace.analyzing')}</h3>
+          <p className="max-w-xs mx-auto text-sm text-slate-500">{t(locale, 'workspace.analyzingDesc')}</p>
         </div>
       );
     }
@@ -97,47 +92,31 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
     if (error) {
       return (
         <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400 min-h-[400px]">
-           <div className="bg-red-50 p-4 rounded-full mb-4">
-              <AlertCircle className="w-8 h-8 text-red-500" />
+           <div className="bg-red-500/10 p-4 rounded-full mb-4 border border-red-500/20">
+              <AlertCircle className="w-8 h-8 text-red-400" />
            </div>
-           <h3 className="text-lg font-semibold text-slate-800 mb-2">{t(locale, 'common.errorTitle')}</h3>
-           <p className="max-w-xs mx-auto text-sm text-slate-600">{t(locale, 'common.retry')}</p>
-           <p className="mt-4 text-xs text-red-400 font-mono bg-red-50 p-2 rounded max-w-sm truncate">
-             {error}
-           </p>
+           <h3 className="text-lg font-semibold text-slate-200 mb-2">{t(locale, 'common.errorTitle')}</h3>
+           <p className="max-w-xs mx-auto text-sm text-slate-400">{t(locale, 'common.retry')}</p>
         </div>
       );
     }
 
     if (!result) {
-      // Empty States
-      if (activeTab === 'explain') {
-        return (
-          <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400 min-h-[400px]">
-             <div className="bg-slate-50 p-4 rounded-full mb-4">
-                <FileText className="w-8 h-8 text-slate-300" />
-             </div>
-             <h3 className="text-lg font-semibold text-slate-600 mb-2">{t(locale, 'workspace.emptyStateTitle')}</h3>
-             <p className="max-w-xs mx-auto text-sm">{t(locale, 'workspace.emptyStateDesc')}</p>
-          </div>
-        );
-      }
-      if (activeTab === 'checklist') {
-        return (
-           <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400 min-h-[400px]">
-             <ListChecks className="w-10 h-10 text-slate-200 mb-3" />
-             <p className="text-sm">{t(locale, 'workspace.emptyChecklist')}</p>
-          </div>
-        );
-      }
-      if (activeTab === 'safety') {
-        return (
-           <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400 min-h-[400px]">
-             <ShieldCheck className="w-10 h-10 text-slate-200 mb-3" />
-             <p className="text-sm">{t(locale, 'workspace.emptySafety')}</p>
-          </div>
-        );
-      }
+      const Icon = activeTab === 'explain' ? FileText : activeTab === 'checklist' ? ListChecks : ShieldCheck;
+      const title = activeTab === 'explain' ? t(locale, 'workspace.emptyStateTitle') : '';
+      const desc = activeTab === 'explain' ? t(locale, 'workspace.emptyStateDesc') 
+                  : activeTab === 'checklist' ? t(locale, 'workspace.emptyChecklist') 
+                  : t(locale, 'workspace.emptySafety');
+
+      return (
+        <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500 min-h-[400px]">
+           <div className="bg-slate-800/50 p-4 rounded-full mb-4">
+              <Icon className="w-8 h-8 text-slate-600" />
+           </div>
+           {title && <h3 className="text-lg font-semibold text-slate-400 mb-2">{title}</h3>}
+           <p className="max-w-xs mx-auto text-sm text-slate-500">{desc}</p>
+        </div>
+      );
     }
 
     // Result States
@@ -147,7 +126,7 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                   result={result} 
                   locale={locale} 
                   onCopy={handleCopy}
-                  onTabChange={handleTabChange}
+                  onTabChange={setActiveTab}
                   translationResult={translationResult}
                   translationLanguage={translationLanguage}
                   isTranslating={isTranslating}
@@ -168,8 +147,8 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                   terms={result.safetyTerms} 
                   dsoEmailDraft={result.dsoEmailDraft} 
                   dsoQuestions={result.dsoQuestions}
-                  result={result} // Pass full result for DSO summary
-                  situation={appState.situation} // Pass situation for DSO summary
+                  result={result} 
+                  situation={appState.situation} 
                   locale={locale} 
                   onCopy={handleCopy}
                   translationResult={translationResult}
@@ -179,51 +158,50 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   };
 
   return (
-    <div className="animate-fade-in pb-12">
+    <div className="animate-fade-in">
       {/* Toast Notification */}
       {toast.visible && (
         <div className="fixed bottom-6 right-6 z-50 animate-fade-in-up">
-           <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border ${
+           <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border backdrop-blur-md ${
              toast.type === 'success' 
-               ? 'bg-slate-800 text-white border-slate-700' 
-               : 'bg-red-50 text-red-800 border-red-200'
+               ? 'bg-slate-800/90 text-white border-slate-700' 
+               : 'bg-red-900/90 text-red-100 border-red-800'
            }`}>
-              {toast.type === 'success' ? (
-                <CheckCircle className="w-5 h-5 text-green-400" />
-              ) : (
-                <XCircle className="w-5 h-5 text-red-500" />
-              )}
               <span className="text-sm font-medium">{toast.message}</span>
            </div>
         </div>
       )}
 
-      {/* Back Button Row */}
-      <div className="mb-6">
-        <button 
-          onClick={onBack}
-          className="text-sm text-slate-500 hover:text-blue-600 flex items-center gap-1 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {t(locale, 'workspace.backButton')}
-        </button>
+      {/* Header Area */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+           <div className="flex items-center gap-2 mb-1">
+             <button 
+                onClick={onBack}
+                className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-sky-300 transition-colors"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                {t(locale, 'workspace.backButton')}
+              </button>
+              <span className="text-slate-600 text-xs">•</span>
+              <span className="text-[11px] tracking-[0.25em] uppercase text-slate-500 font-bold">
+                 {t(locale, 'workspace.step2Header')}
+              </span>
+           </div>
+           <h2 className="text-xl sm:text-2xl font-semibold text-slate-50 leading-tight">
+             {t(locale, 'workspace.step2Subtitle')}
+           </h2>
+           <p className="mt-1 text-xs sm:text-sm text-slate-400">
+             {t(locale, 'workspace.btnHelper')}
+           </p>
+        </div>
       </div>
 
       {/* Main Two-Column Layout */}
-      <div className="flex flex-col lg:flex-row gap-8 items-start">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr),minmax(0,1.2fr)] items-start">
         
         {/* Left Column: Context & Input */}
-        {/* Fixed width on desktop, full width on mobile/tablet */}
-        <div className="w-full lg:w-[360px] xl:w-[380px] lg:shrink-0 flex flex-col gap-4 lg:sticky lg:top-24">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-600 block mb-1">
-               {t(locale, 'workspace.step2Header')}
-            </span>
-            <h2 className="text-xl font-bold text-slate-900 leading-tight">
-               {t(locale, 'workspace.step2Subtitle')}
-            </h2>
-          </div>
-
+        <div className="flex flex-col gap-4">
           <InputSection
             situation={appState.situation}
             setSituation={setSituation}
@@ -235,94 +213,92 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
           />
         </div>
 
-        {/* Right Column: Output (Results Card) */}
-        {/* Flexible width on desktop */}
-        <div className="flex-1 min-w-0 w-full flex flex-col gap-6">
-           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[600px] relative">
+        {/* Right Column: Results Card */}
+        <div className="flex flex-col gap-6">
+           <div className="rounded-3xl border border-slate-800 bg-slate-900/90 backdrop-blur px-4 py-5 sm:px-5 sm:py-6 relative min-h-[600px]">
               
-              {/* 1. Translation Mode Header */}
-              <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
+              {/* 1. Header Row */}
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                  <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                       <Globe className="w-4 h-4 text-slate-500" />
-                       <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Translation Mode</h3>
+                       <h3 className="text-[11px] font-medium uppercase tracking-[0.2em] text-slate-400">
+                          Translation Mode
+                       </h3>
                     </div>
-                    <p className="text-xs text-slate-500 leading-relaxed max-w-lg">
+                    <p className="text-[11px] text-slate-500 max-w-xs leading-relaxed">
                        Translations are for convenience only. Always rely on the English version and official sources.
                     </p>
                  </div>
                  
-                 <div className="shrink-0 w-full sm:w-auto">
-                    <div className="relative">
-                       <select
-                         value={translationLanguage}
-                         onChange={(e) => onTranslate(e.target.value as TranslationLanguageCode)}
-                         className="w-full sm:w-48 appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-sm font-medium rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                         disabled={isAnalyzing || !result}
-                       >
-                         <option value="none">English only</option>
-                         {SUPPORTED_TRANSLATION_LANGUAGES.map((lang) => (
-                           <option key={lang.code} value={lang.code}>{lang.label}</option>
-                         ))}
-                       </select>
-                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
+                 <div className="shrink-0 w-full sm:w-auto relative">
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                    <select
+                      value={translationLanguage}
+                      onChange={(e) => onTranslate(e.target.value as TranslationLanguageCode)}
+                      className="w-full sm:w-auto appearance-none rounded-xl border border-slate-700 bg-slate-950/70 pl-9 pr-8 py-1.5 text-[11px] text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500 hover:border-slate-600 transition-colors cursor-pointer"
+                      disabled={isAnalyzing || !result}
+                    >
+                      <option value="none">English only</option>
+                      {SUPPORTED_TRANSLATION_LANGUAGES.map((lang) => (
+                        <option key={lang.code} value={lang.code}>{lang.label}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
                  </div>
               </div>
 
-              {/* 2. Tabs Row (Refactored to Grid/Pills) */}
-              <div className="px-6 pb-2 pt-4 bg-white">
-                <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100/70 rounded-xl">
+              {/* 2. Tabs Row */}
+              <div className="inline-flex w-full rounded-full bg-slate-950/80 border border-slate-800 p-1">
                   {['explain', 'checklist', 'safety'].map(tabKey => {
                     const isActive = activeTab === tabKey;
                     return (
                        <button
                          key={tabKey}
                          onClick={() => setActiveTab(tabKey as any)}
-                         className={`relative h-10 text-xs sm:text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2 select-none ${
+                         className={`flex-1 relative h-9 text-[11px] sm:text-xs font-medium rounded-full transition-all flex items-center justify-center gap-2 select-none ${
                             isActive
-                              ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200' 
-                              : 'text-slate-500 hover:text-slate-700 hover:bg-white/40'
+                              ? 'bg-sky-500 text-slate-950 shadow-sm' 
+                              : 'text-slate-400 hover:text-slate-100 hover:bg-white/5'
                          }`}
                        >
-                          <span className="truncate">
+                          <span>
                             {tabKey === 'explain' && t(locale, 'workspace.tabExplain')}
                             {tabKey === 'checklist' && t(locale, 'workspace.tabChecklist')}
                             {tabKey === 'safety' && t(locale, 'workspace.tabSafety')}
                           </span>
-                          
                           {/* Badge for Checklist */}
                           {tabKey === 'checklist' && appState.checklistState.length > 0 && (
-                             <span className={`hidden sm:inline-flex px-1.5 py-0.5 rounded-full text-[10px] leading-none ${isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>
+                             <span className={`hidden sm:inline-flex px-1.5 py-0.5 rounded-full text-[9px] leading-none font-bold ${isActive ? 'bg-slate-950/20 text-slate-900' : 'bg-slate-800 text-slate-400'}`}>
                                 {appState.checklistState.filter(i => i.status !== 'done').length}
                              </span>
                           )}
                        </button>
                     );
                   })}
-                </div>
               </div>
 
               {/* 3. Content Area */}
-              <div className="p-6 md:p-8 flex-grow relative">
-                 {/* Translation Loading Overlay */}
-                 {isTranslating && (
-                   <div className="absolute inset-0 bg-white/60 z-20 flex items-start justify-center pt-20 backdrop-blur-[1px]">
-                     <div className="bg-white p-3 pr-5 rounded-full shadow-lg border border-slate-100 flex items-center gap-3">
-                       <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
-                       <span className="text-sm font-medium text-slate-700">Translating...</span>
+              <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/80 px-4 py-4 sm:px-5 sm:py-5 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                 <div className="relative">
+                   {isTranslating && (
+                     <div className="absolute inset-0 z-20 flex items-start justify-center pt-20">
+                       <div className="bg-slate-900 p-3 pr-5 rounded-full shadow-lg border border-slate-700 flex items-center gap-3">
+                         <Loader2 className="w-4 h-4 text-sky-500 animate-spin" />
+                         <span className="text-xs font-medium text-slate-300">Translating...</span>
+                       </div>
                      </div>
-                   </div>
-                 )}
+                   )}
+                   {renderTabContent()}
+                 </div>
                  
-                 {renderTabContent()}
+                 {/* Follow-up Q&A Panel (only in Explain tab and if result exists) */}
+                 {result && !isAnalyzing && activeTab === 'explain' && (
+                    <div className="mt-6 pt-6 border-t border-slate-800">
+                        <QAPanel documentText={appState.inputText} analysisResult={result} />
+                    </div>
+                 )}
               </div>
            </div>
-
-           {/* Follow-up Q&A Panel */}
-           {result && !isAnalyzing && (
-             <QAPanel documentText={appState.inputText} analysisResult={result} />
-           )}
         </div>
       </div>
     </div>

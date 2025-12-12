@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { ChecklistItem, Locale, DueCategory, TranslatedAnalysis } from '../types';
-import { CheckCircle2, Circle, Clock, ClipboardList, Copy, Check, CalendarDays, User, Filter, AlertCircle, Globe } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, ClipboardList, Copy, AlertCircle, Globe, User, CalendarDays } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface ChecklistPanelProps {
@@ -19,8 +19,6 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
   const [filter, setFilter] = useState<FilterType>('all');
   
   const handleCopy = () => {
-    // Copy only visible items if filtered? Or all? Usually copy all is safer, but "Copy visible" matches WYSIWYG.
-    // Let's copy filtered items to respect the user's view.
     const itemsToCopy = getFilteredItems();
     const textToCopy = itemsToCopy.map(item => 
       `[${item.status.toUpperCase()}] ${item.title} (${item.priority ? item.priority.toUpperCase() + ' PRIORITY' : ''})\n${item.description}\nWho: ${item.actor || 'Student'}\nDue: ${item.dueLabel || 'Unspecified'}\n`
@@ -51,9 +49,9 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-xl border border-slate-200 border-dashed">
-        <ClipboardList className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-        <p className="text-slate-500">{t(locale, 'results.noItems')}</p>
+      <div className="text-center py-12 rounded-xl border border-dashed border-slate-800 bg-slate-900/50">
+        <ClipboardList className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+        <p className="text-slate-500 text-sm">{t(locale, 'results.noItems')}</p>
       </div>
     );
   }
@@ -61,37 +59,37 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
   const getStatusIcon = (status: ChecklistItem['status']) => {
     switch (status) {
       case 'done':
-        return <CheckCircle2 className="w-6 h-6 text-green-500" />;
+        return <CheckCircle2 className="w-5 h-5 text-emerald-500" />;
       case 'in-progress':
-        return <Clock className="w-6 h-6 text-amber-500" />;
+        return <Clock className="w-5 h-5 text-amber-500" />;
       default:
-        return <Circle className="w-6 h-6 text-slate-300" />;
+        return <Circle className="w-5 h-5 text-slate-600" />;
     }
   };
 
   const getStatusClass = (status: ChecklistItem['status']) => {
     switch (status) {
       case 'done':
-        return 'bg-green-50 border-green-200 opacity-75';
+        return 'bg-emerald-950/10 border-emerald-900/30 opacity-60';
       case 'in-progress':
-        return 'bg-amber-50 border-amber-200 ring-1 ring-amber-200';
+        return 'bg-amber-950/10 border-amber-900/30';
       default:
-        return 'bg-white border-slate-200 hover:border-blue-300';
+        return 'bg-slate-900/90 border-slate-800 hover:border-slate-600';
     }
   };
 
   const getPriorityBadge = (priority?: string) => {
     if (priority === 'high') {
       return (
-        <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-100 flex items-center gap-1">
-          <AlertCircle className="w-3 h-3" /> High Priority
+        <span className="text-[10px] font-bold text-red-400 bg-red-950/30 px-1.5 py-0.5 rounded border border-red-900/30 flex items-center gap-1">
+          <AlertCircle className="w-3 h-3" /> High
         </span>
       );
     }
     if (priority === 'medium') {
       return (
-        <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
-          Medium Priority
+        <span className="text-[10px] font-bold text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded border border-amber-900/30">
+          Medium
         </span>
       );
     }
@@ -116,32 +114,26 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
   });
 
   const timelineOrder: DueCategory[] = ['today', 'this_week', 'before_program_end', 'after_approval', 'unspecified'];
-  const doneCount = filteredItems.filter(i => i.status === 'done').length;
 
   return (
-    <div className="space-y-6 animate-fade-in relative max-w-4xl mx-auto">
+    <div className="space-y-6 animate-fade-in">
       
-      {/* 1. Header Row (Title + Progress + Copy) */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-         <div>
-             <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <ClipboardList className="w-5 h-5 text-blue-600" />
-                {t(locale, 'results.checklistTitle')}
-             </h3>
-             <p className="text-xs text-slate-500 mt-1 ml-1 font-medium">
-               {doneCount} / {filteredItems.length} items completed
-             </p>
-         </div>
-
+      {/* 1. Header Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
          <div className="flex items-center gap-2">
-            <button
-                onClick={handleCopy}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-blue-600 transition-all text-xs font-medium"
-              >
-                <Copy className="w-3.5 h-3.5" />
-                {t(locale, 'results.copyChecklist')}
-              </button>
+            <ClipboardList className="w-4 h-4 text-sky-500" />
+            <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wide">
+               Action Checklist
+            </h3>
          </div>
+         
+         <button
+            onClick={handleCopy}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-700 bg-slate-900 text-slate-400 hover:text-slate-100 hover:border-slate-500 transition-all text-[11px] font-medium"
+          >
+            <Copy className="w-3 h-3" />
+            Copy list
+          </button>
       </div>
 
       {/* 2. Filter Bar */}
@@ -150,162 +142,128 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
              <button
                key={f}
                onClick={() => setFilter(f)}
-               className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+               className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-medium transition-all border ${
                  filter === f 
-                   ? 'bg-slate-800 text-white border-slate-800' 
-                   : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                   ? 'bg-sky-500 text-slate-950 border-sky-500' 
+                   : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
                }`}
              >
                {f === 'all' && 'All'}
                {f === 'high' && 'High priority'}
-               {f === 'today' && 'For today'}
-               {f === 'week' && 'For this week'}
+               {f === 'today' && 'Today'}
+               {f === 'week' && 'This week'}
              </button>
            ))}
       </div>
 
       {/* 3. Main Checklist Items */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {filteredItems.length === 0 ? (
-           <div className="p-8 text-center text-slate-400 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+           <div className="p-8 text-center text-slate-500 bg-slate-900/30 rounded-xl border border-dashed border-slate-800">
              No items match this filter.
            </div>
         ) : (
-          <div className="space-y-4">
-            {filteredItems.map((item) => {
+            filteredItems.map((item) => {
               const translated = getTranslatedItem(item.id);
-              
               return (
                 <div
                   key={item.id}
                   onClick={() => onToggleStatus(item.id)}
-                  className={`
-                    relative p-4 md:p-5 rounded-2xl border transition-all cursor-pointer group
-                    ${getStatusClass(item.status)}
-                  `}
+                  className={`relative p-4 rounded-xl border transition-all cursor-pointer group ${getStatusClass(item.status)}`}
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 mt-1 transition-transform group-hover:scale-110">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 mt-0.5">
                       {getStatusIcon(item.status)}
                     </div>
-                    <div className="flex-grow">
-                      {/* Tags Row - Wrapped nicely */}
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-white/60 px-2 py-0.5 rounded border border-slate-100">
+                    <div className="flex-grow min-w-0">
+                      {/* Meta Tags */}
+                      <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-950/50 px-2 py-0.5 rounded border border-slate-800">
                           {item.category}
                         </span>
                         {getPriorityBadge(item.priority)}
-                        
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded flex items-center gap-1">
-                          <User className="w-3 h-3" /> {t(locale, 'results.who')} {item.actor || 'Student'}
+                        <span className="text-[10px] font-medium text-slate-500 flex items-center gap-1">
+                           <User className="w-3 h-3" /> {item.actor || 'Student'}
                         </span>
-                        
                         {item.dueLabel && (
-                          <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 flex items-center gap-1">
+                          <span className="text-[10px] font-medium text-sky-400 bg-sky-950/20 px-2 py-0.5 rounded border border-sky-900/30 flex items-center gap-1 truncate">
                             <Clock className="w-3 h-3" /> {item.dueLabel}
                           </span>
                         )}
                       </div>
                       
-                      {/* English Title & Description */}
-                      <h4 className={`font-semibold text-slate-800 mb-1 leading-snug ${item.status === 'done' ? 'line-through text-slate-500' : ''}`}>
+                      {/* Title & Desc */}
+                      <h4 className={`font-semibold text-sm mb-1 leading-snug ${item.status === 'done' ? 'line-through text-slate-500' : 'text-slate-200'}`}>
                         {item.title}
                       </h4>
-                      <p className={`text-sm text-slate-600 leading-relaxed ${item.status === 'done' ? 'line-through text-slate-400' : ''}`}>
+                      <p className={`text-xs text-slate-400 leading-relaxed ${item.status === 'done' ? 'line-through text-slate-600' : ''}`}>
                         {item.description}
                       </p>
 
-                      {/* Translated Title & Description */}
+                      {/* Translated */}
                       {translated && (
-                         <div className={`mt-3 pt-3 border-t border-slate-200/60 ${item.status === 'done' ? 'opacity-50' : ''}`}>
-                            <h4 className="text-sm font-semibold text-slate-700 mb-0.5 flex items-center gap-1.5">
-                              <Globe className="w-3 h-3 text-slate-400" />
+                         <div className={`mt-2 pt-2 border-t border-slate-700/50 ${item.status === 'done' ? 'opacity-50' : ''}`}>
+                            <h4 className="text-xs font-semibold text-slate-300 mb-0.5 flex items-center gap-1.5">
+                              <Globe className="w-3 h-3 text-slate-500" />
                               {translated.title}
                             </h4>
-                            <p className="text-xs text-slate-500 leading-relaxed">
+                            <p className="text-[11px] text-slate-500 leading-relaxed">
                               {translated.description}
                             </p>
                          </div>
                       )}
                     </div>
                   </div>
-                  
-                  <div className="absolute top-4 right-4 text-xs font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
-                      {item.status === 'todo' ? 'Click to start' : item.status === 'in-progress' ? 'Click to complete' : 'Click to undo'}
-                  </div>
                 </div>
               );
-            })}
-          </div>
+            })
         )}
       </div>
 
       {/* 4. Timeline View */}
-      <div className="pt-8 border-t border-slate-200">
-         <div className="mb-6">
-           <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-              <CalendarDays className="w-5 h-5 text-indigo-600" />
+      <div className="pt-6 border-t border-slate-800">
+         <div className="mb-4">
+           <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <CalendarDays className="w-4 h-4 text-slate-400" />
               {t(locale, 'results.timelineTitle')}
            </h3>
-           <p className="text-sm text-slate-500 ml-7">
-             {filter !== 'all' ? 'Timeline is filtered based on selection.' : t(locale, 'results.timelineSubtitle')}
-           </p>
          </div>
          
-         <div className="space-y-6 relative border-l-2 border-slate-100 ml-3">
+         <div className="space-y-4 relative border-l border-slate-800 ml-2">
             {timelineOrder.map((key) => {
               const groupItems = timelineGroups[key];
               if (!groupItems || groupItems.length === 0) return null;
 
               return (
-                <div key={key} className="pl-6 relative">
-                  {/* Timeline Dot */}
-                  <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-white border-2 border-indigo-200"></div>
+                <div key={key} className="pl-5 relative">
+                  <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-600"></div>
                   
-                  <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-3">
+                  <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-2">
                      {t(locale, `results.timeline.${key}`)}
                   </h4>
 
                   <div className="space-y-2">
-                    {groupItems.map(item => {
-                       const translated = getTranslatedItem(item.id);
-
-                       return (
+                    {groupItems.map(item => (
                        <div 
                         key={`tl-${item.id}`} 
-                        className="bg-slate-50 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"
+                        className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800 hover:border-slate-700 cursor-pointer transition-colors"
                         onClick={() => onToggleStatus(item.id)}
                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
-                              {getStatusIcon(item.status)}
-                              <div className="flex flex-col">
-                                <span className={`text-sm font-medium ${item.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700'}`}>
-                                  {item.title}
-                                </span>
-                                {translated && (
-                                   <span className={`text-xs text-slate-500 mt-0.5 ${item.status === 'done' ? 'line-through text-slate-300' : ''}`}>
-                                     {translated.title}
-                                   </span>
-                                )}
-                                <div className="flex flex-wrap gap-2 mt-1">
-                                  {item.actor && (
-                                    <span className="text-[10px] text-slate-400">
-                                      {t(locale, 'results.who')} {item.actor}
-                                    </span>
-                                  )}
-                                  {item.priority === 'high' && <span className="text-[10px] text-red-500 font-bold">High</span>}
-                                </div>
-                              </div>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="shrink-0">{getStatusIcon(item.status)}</div>
+                              <span className={`text-xs font-medium truncate ${item.status === 'done' ? 'line-through text-slate-500' : 'text-slate-300'}`}>
+                                {item.title}
+                              </span>
                             </div>
                             {item.dueLabel && (
-                              <span className="text-xs text-slate-400 hidden sm:inline-block">
+                              <span className="text-[10px] text-slate-500 shrink-0">
                                 {item.dueLabel}
                               </span>
                             )}
                           </div>
                        </div>
-                    )})}
+                    ))}
                   </div>
                 </div>
               );
