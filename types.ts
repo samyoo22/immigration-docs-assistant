@@ -48,7 +48,6 @@ export interface DsoEmailDraft {
 export interface AnalysisResult {
   riskAssessment?: RiskAssessment;
   summary: string[]; // Generic summary (English)
-  koreanSummary?: string[]; // Optional Korean summary
   detailedExplanation: string;
   simpleEnglishNotes: string;
   checklist: Omit<ChecklistItem, 'id' | 'status'>[]; 
@@ -66,13 +65,20 @@ export interface FollowUpQAEntry {
   timestamp: number;
 }
 
-export type Locale = 'en' | 'ko' | 'zh' | 'hi' | 'ja';
+export type Locale = 'en'; // UI is English-only for now
 
-// New types for multilingual support
-export type SupportedLanguage = "none" | "ko" | "zh-CN" | "hi" | "ja";
+// Supported Translation Languages Configuration
+export const SUPPORTED_TRANSLATION_LANGUAGES = [
+  { code: "ko", label: "Korean" },
+  { code: "zh-CN", label: "Chinese (Simplified)" },
+  { code: "hi", label: "Hindi" },
+  { code: "ja", label: "Japanese" },
+] as const;
+
+export type TranslationLanguageCode = "none" | typeof SUPPORTED_TRANSLATION_LANGUAGES[number]["code"];
 
 export interface TranslatedAnalysis {
-  language: SupportedLanguage;
+  language: TranslationLanguageCode;
   riskCard?: {
     riskLevel: string; // Translated level name
     urgencyLabel: string; // Translated urgency
@@ -97,7 +103,7 @@ export interface AppState {
   error: string | null;
   locale: Locale;
   // Translation state
-  translationLanguage: SupportedLanguage;
+  translationLanguage: TranslationLanguageCode;
   translationResult: TranslatedAnalysis | null;
   isTranslating: boolean;
 }

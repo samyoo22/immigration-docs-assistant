@@ -1,12 +1,11 @@
 
 import React, { useState } from 'react';
-import { VisaSituation, ChecklistItem, AppState, UserIntent, Locale, SupportedLanguage } from './types';
+import { VisaSituation, ChecklistItem, AppState, UserIntent, TranslationLanguageCode } from './types';
 import { analyzeDocument, translateAnalysis } from './services/geminiService';
 import { SAMPLE_OPT_EMAIL } from './data/sampleTexts';
 import LandingScreen from './components/LandingScreen';
 import WorkspaceScreen from './components/WorkspaceScreen';
 import DisclaimerBanner from './components/DisclaimerBanner';
-import LanguageSwitcher from './components/LanguageSwitcher';
 import { Layout } from 'lucide-react';
 import { t } from './utils/i18n';
 
@@ -31,7 +30,7 @@ function App() {
     result: null,
     checklistState: [],
     error: null,
-    locale: 'en',
+    locale: 'en', // Force English UI
     translationLanguage: 'none',
     translationResult: null,
     isTranslating: false,
@@ -69,7 +68,7 @@ function App() {
     setState((prev) => ({ ...prev, isAnalyzing: true, error: null, translationResult: null, translationLanguage: 'none' }));
     
     try {
-      const result = await analyzeDocument(state.situation, state.inputText, state.locale);
+      const result = await analyzeDocument(state.situation, state.inputText);
       
       // Load saved status from local storage
       const contentHash = simpleHash(state.inputText + state.situation);
@@ -121,7 +120,7 @@ function App() {
     }
   };
 
-  const handleTranslate = async (lang: SupportedLanguage) => {
+  const handleTranslate = async (lang: TranslationLanguageCode) => {
     if (lang === 'none') {
       setState(prev => ({ ...prev, translationLanguage: 'none', translationResult: null }));
       return;
@@ -149,10 +148,8 @@ function App() {
       setState(prev => ({
         ...prev,
         isTranslating: false,
-        // Optional: show a toast or error for translation failure, but keep main state valid
         translationLanguage: 'none' // Revert on fail
       }));
-      // Could add a specific translation error state if needed
     }
   };
 
@@ -182,10 +179,7 @@ function App() {
              <div className="hidden sm:block text-xs font-medium text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
                {t(state.locale, 'common.poweredBy')}
             </div>
-            <LanguageSwitcher 
-              currentLocale={state.locale} 
-              onLocaleChange={(l) => setState(prev => ({ ...prev, locale: l }))} 
-            />
+            {/* UI Language Switcher Removed as per Step 1 constraints */}
           </div>
         </div>
       </header>

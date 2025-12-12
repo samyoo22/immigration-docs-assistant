@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { AnalysisResult, Locale, RiskLevel, TranslatedAnalysis, SupportedLanguage } from '../types';
+import { AnalysisResult, Locale, RiskLevel, TranslatedAnalysis, TranslationLanguageCode, SUPPORTED_TRANSLATION_LANGUAGES } from '../types';
 import { MessageSquare, Sparkles, Copy, Check, AlertTriangle, Info, Languages, ChevronDown, ChevronUp, FileText, ArrowRight } from 'lucide-react';
 import { t } from '../utils/i18n';
 
@@ -10,7 +10,7 @@ interface ExplanationPanelProps {
   onCopy: (text: string, successMessage?: string) => void;
   onTabChange: (tab: 'explain' | 'checklist' | 'safety') => void;
   translationResult: TranslatedAnalysis | null;
-  translationLanguage: SupportedLanguage;
+  translationLanguage: TranslationLanguageCode;
   isTranslating: boolean;
 }
 
@@ -100,6 +100,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
   );
 
   const hasTranslation = translationLanguage !== 'none' && translationResult !== null;
+  const translationLabel = SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === translationLanguage)?.label || translationLanguage;
 
   return (
     <div className="space-y-6 animate-fade-in relative pt-14 md:pt-10">
@@ -219,7 +220,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
              <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/50">
                <div className="flex items-center gap-2 mb-2">
                   <Languages className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="text-xs font-bold text-slate-500 uppercase">In {translationResult.language === 'ko' ? 'Korean' : translationResult.language}</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase">In {translationLabel}</span>
                </div>
                <div className="flex items-center gap-2 mb-1 text-sm text-slate-800 font-semibold">
                   <span>{translationResult.riskCard.riskLevel}</span>
@@ -262,7 +263,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
              <div className="pt-4 border-t border-indigo-50">
                <div className="flex items-center gap-2 mb-3">
                   <Languages className="w-4 h-4 text-indigo-400" />
-                  <span className="text-xs font-bold text-indigo-400 uppercase">In {translationResult.language === 'ko' ? 'Korean' : translationResult.language}</span>
+                  <span className="text-xs font-bold text-indigo-400 uppercase">In {translationLabel}</span>
                </div>
                <ul className="space-y-3">
                 {translationResult.summaryBullets.map((point, idx) => (
@@ -308,7 +309,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
              <div className={`border-t border-slate-100 pt-6 ${!isDetailedExpanded ? 'hidden' : 'block'}`}>
                 <div className="flex items-center gap-2 mb-2">
                   <Languages className="w-4 h-4 text-slate-400" />
-                  <span className="text-xs font-bold text-slate-400 uppercase">In {translationResult.language === 'ko' ? 'Korean' : translationResult.language}</span>
+                  <span className="text-xs font-bold text-slate-400 uppercase">In {translationLabel}</span>
                </div>
                <div className="text-slate-600 leading-relaxed whitespace-pre-wrap">
                  {translationResult.detailedExplanation}

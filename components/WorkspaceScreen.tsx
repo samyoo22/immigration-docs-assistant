@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { VisaSituation, ChecklistItem, AppState, Locale, SupportedLanguage } from '../types';
+import { VisaSituation, ChecklistItem, AppState, Locale, TranslationLanguageCode, SUPPORTED_TRANSLATION_LANGUAGES } from '../types';
 import InputSection from './InputSection';
 import ExplanationPanel from './ExplanationPanel';
 import ChecklistPanel from './ChecklistPanel';
@@ -16,7 +16,7 @@ interface WorkspaceScreenProps {
   onAnalyze: () => void;
   onBack: () => void;
   setChecklistState: (items: ChecklistItem[]) => void;
-  onTranslate: (lang: SupportedLanguage) => void;
+  onTranslate: (lang: TranslationLanguageCode) => void;
 }
 
 interface ToastState {
@@ -24,14 +24,6 @@ interface ToastState {
   type: 'success' | 'error';
   visible: boolean;
 }
-
-const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
-  none: "English only",
-  ko: "Korean (한국어)",
-  "zh-CN": "Chinese (简体中文)",
-  hi: "Hindi (हिंदी)",
-  ja: "Japanese (日本語)"
-};
 
 const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   appState,
@@ -257,12 +249,13 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                    <div className="relative w-full sm:w-auto">
                      <select
                        value={translationLanguage}
-                       onChange={(e) => onTranslate(e.target.value as SupportedLanguage)}
+                       onChange={(e) => onTranslate(e.target.value as TranslationLanguageCode)}
                        className="w-full sm:w-48 appearance-none bg-white border border-slate-300 hover:border-blue-400 text-slate-700 text-sm rounded-lg pl-3 pr-8 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer font-medium"
                        disabled={isAnalyzing || !result}
                      >
-                       {Object.entries(LANGUAGE_LABELS).map(([key, label]) => (
-                         <option key={key} value={key}>{label}</option>
+                       <option value="none">English only</option>
+                       {SUPPORTED_TRANSLATION_LANGUAGES.map((lang) => (
+                         <option key={lang.code} value={lang.code}>{lang.label}</option>
                        ))}
                      </select>
                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />

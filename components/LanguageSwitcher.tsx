@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Locale } from '../types';
 import { Globe } from 'lucide-react';
@@ -11,11 +10,16 @@ interface LanguageSwitcherProps {
 const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ currentLocale, onLocaleChange }) => {
   const languages: { code: Locale; label: string }[] = [
     { code: 'en', label: 'English' },
-    { code: 'ko', label: '한국어' },
-    { code: 'zh', label: '中文' },
-    { code: 'hi', label: 'हिन्दी' },
-    { code: 'ja', label: '日本語' },
+    // Temporarily disabled to match strict Locale type 'en'
+    // { code: 'ko', label: '한국어' },
+    // { code: 'zh', label: '中文' },
+    // { code: 'hi', label: 'हिन्दी' },
+    // { code: 'ja', label: '日本語' },
   ];
+
+  if (languages.length <= 1) {
+    return null;
+  }
 
   return (
     <div className="relative group">

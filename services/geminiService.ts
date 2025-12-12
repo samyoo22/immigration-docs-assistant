@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { VisaSituation, AnalysisResult, Locale, SupportedLanguage, ChecklistItem, TranslatedAnalysis } from "../types";
+import { VisaSituation, AnalysisResult, TranslationLanguageCode, ChecklistItem, TranslatedAnalysis, SUPPORTED_TRANSLATION_LANGUAGES } from "../types";
 
 // Define the schema for the structured response we want from Gemini
 const analysisSchema: Schema = {
@@ -29,11 +29,6 @@ const analysisSchema: Schema = {
       type: Type.ARRAY,
       items: { type: Type.STRING },
       description: "3-6 bullet points summarizing the key content in English.",
-    },
-    koreanSummary: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING },
-      description: "3-6 bullet points summarizing the key content in clear, simple Korean.",
     },
     detailedExplanation: {
       type: Type.STRING,
@@ -105,8 +100,7 @@ const analysisSchema: Schema = {
 
 export const analyzeDocument = async (
   situation: VisaSituation,
-  text: string,
-  targetLocale: Locale
+  text: string
 ): Promise<AnalysisResult> => {
   if (!process.env.API_KEY) {
     throw new Error("API Key is missing. Please check your environment configuration.");
@@ -114,40 +108,27 @@ export const analyzeDocument = async (
 
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-  // Map locale code to full language name for the prompt
-  const languageMap: Record<Locale, string> = {
-    en: 'Plain English',
-    ko: 'English (with optional Korean summary)',
-    zh: 'English',
-    hi: 'English',
-    ja: 'English'
-  };
-
-  const targetLanguage = languageMap[targetLocale] || 'Plain English';
-
   const systemInstruction = `
 You are a helpful, empathetic, and precise assistant for international students (specifically F-1 visa holders) in the US.
-Your goal is to help them understand complex English immigration documents by translating and explaining them in **${targetLanguage}**.
+Your goal is to help them understand complex English immigration documents by explaining them in **Plain English**.
 
 Guidelines:
-1. **Target Language**: Output the main summary, detailed explanation, and checklist items in **English** (Plain English), unless specified otherwise by the schema.
+1. **Language**: Output ALL content in **English** (Plain English).
 2. **Tone**: Calm, reassuring, and conservative. Do not induce panic.
 3. **Safety**: NEVER give legal advice. If a text is ambiguous, tell the user to check with their DSO (Designated School Official) or an attorney.
 4. **Context**: The user is in the situation: "${situation}".
 5. **Privacy**: Do not repeat personal data like specific names or ID numbers in the output unless necessary for context.
 
-New Requirements:
-- **Topic Classification**: Classify the main topic of this document into one of the following categories: 'pre_completion_opt', 'post_completion_opt', 'stem_opt_extension', 'travel_and_reentry', 'sevis_or_i20', 'general_opt_status', 'unsure'. Output this as a 'topic' field and also provide a short human-readable 'topicLabel' like 'Pre-completion OPT'.
-- **Risk Assessment**: Provide a conservative risk level (Low/Medium/High) and an urgency label (e.g., 'Within 7 days', 'Before program end date', 'As soon as possible'). Never guarantee outcomes.
+Requirements:
+- **Topic Classification**: Classify the main topic of this document.
+- **Risk Assessment**: Provide a conservative risk level (Low/Medium/High) and an urgency label. Never guarantee outcomes.
 - **Checklist**:
-  - Assign an approximate **dueCategory**: 'today', 'this_week', 'before_program_end', 'after_approval', or 'unspecified'.
-  - Assign a **priority**: 'high', 'medium', or 'low'. Use 'high' for immediate deadlines or risks to legal status.
-  - Assign a **timeBucket**: 'today', 'this_week', 'later', or 'unspecified'.
+  - Assign an approximate **dueCategory**.
+  - Assign a **priority**. Use 'high' for immediate deadlines or risks to legal status.
   - Identify who is responsible (Actor).
-- **Korean Summary**: In addition to the English content, ALWAYS provide a short **Korean summary** (3-6 bullet points) in the 'koreanSummary' field, specifically for Korean-speaking F-1 students.
-- **DSO Email Draft**: Draft a polite, professional email ('dsoEmailDraft') the student can send to their DSO to clarify the situation. Include a subject line and a body that introduces the student, explains the document briefly, and asks 2-3 relevant clarification questions based on the input text.
-- **DSO Questions**: Generate a separate list of 3-7 specific questions ('dsoQuestions') that the student should ask their DSO to clarify their specific situation or risks.
-- **Disclaimer**: Always remind the user to verify with official USCIS sources, their DSO, or a qualified immigration attorney. Do not promise that any action will guarantee visa approval.
+- **DSO Email Draft**: Draft a polite, professional email ('dsoEmailDraft') the student can send to their DSO.
+- **DSO Questions**: Generate a separate list of 3-7 specific questions ('dsoQuestions') that the student should ask their DSO.
+- **Disclaimer**: Always remind the user to verify with official USCIS sources, their DSO, or a qualified immigration attorney.
 
 Input Text to analyze follows.
 `;
@@ -188,7 +169,7 @@ Input Text to analyze follows.
 export const translateAnalysis = async (
   analysis: AnalysisResult,
   checklistItems: ChecklistItem[],
-  targetLang: SupportedLanguage
+  targetLang: TranslationLanguageCode
 ): Promise<TranslatedAnalysis> => {
   if (!process.env.API_KEY) {
     throw new Error("API Key is missing.");
@@ -200,13 +181,9 @@ export const translateAnalysis = async (
 
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-  const langMap: Record<string, string> = {
-    'ko': 'Korean',
-    'zh-CN': 'Simplified Chinese',
-    'hi': 'Hindi',
-    'ja': 'Japanese'
-  };
-  const targetLanguageName = langMap[targetLang] || targetLang;
+  // Get readable label for the language
+  const languageOption = SUPPORTED_TRANSLATION_LANGUAGES.find(l => l.code === targetLang);
+  const targetLanguageName = languageOption ? languageOption.label : targetLang;
 
   const translationSchema: Schema = {
     type: Type.OBJECT,
