@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { VisaSituation, Locale } from '../types';
 import { ArrowRight, Shield, MessageSquare, CheckCircle, Languages, Plane, ChevronRight, FileText, Globe } from 'lucide-react';
@@ -58,6 +57,78 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
           <div className="absolute top-[80px] left-[20%] animate-[float_10s_ease-in-out_infinite]">
              <Plane className="w-6 h-6 text-sky-400 rotate-12 drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
           </div>
+      </div>
+
+      {/* NEW: AMBIENT DECORATIONS (Passport, Plane, Stamp, Tickets) */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        
+        {/* Top Left: Passport Card */}
+        <div className="hidden 2xl:block absolute top-32 left-12 -rotate-12 opacity-40 hover:opacity-60 transition-opacity duration-700">
+           <div className="rounded-2xl border border-slate-700/50 bg-slate-900/40 backdrop-blur-sm p-4 w-48 shadow-2xl">
+              <div className="flex items-center gap-3 mb-4 border-b border-slate-800/50 pb-3">
+                 <div className="w-8 h-8 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center">
+                    <Globe className="w-4 h-4 text-sky-400/70" />
+                 </div>
+                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Passport</div>
+              </div>
+              <div className="space-y-2">
+                 <div className="h-2 w-2/3 rounded-full bg-slate-700/50"></div>
+                 <div className="h-2 w-full rounded-full bg-slate-800/50"></div>
+                 <div className="h-2 w-5/6 rounded-full bg-slate-800/50"></div>
+              </div>
+           </div>
+        </div>
+
+        {/* Top Right: Extra Plane Trail (Complementing the main one) */}
+        <div className="hidden xl:block absolute top-20 right-20 opacity-30">
+           <div className="relative w-64 h-32">
+              <svg className="absolute inset-0 w-full h-full text-sky-500/30" viewBox="0 0 200 100" fill="none">
+                 <path d="M0,100 Q80,20 200,40" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
+              </svg>
+              <div className="absolute top-8 right-0 translate-x-1/2 -translate-y-1/2">
+                 <Plane className="w-5 h-5 text-sky-400 rotate-12" />
+              </div>
+           </div>
+        </div>
+
+        {/* Bottom Left: Visa Stamp */}
+        <div className="hidden 2xl:block absolute bottom-32 left-16 rotate-12 opacity-30">
+           <div className="w-40 h-40 rounded-full border-[3px] border-double border-emerald-500/30 flex items-center justify-center bg-emerald-500/5 backdrop-blur-sm">
+              <div className="text-center transform -rotate-12">
+                 <div className="text-[10px] font-black text-emerald-500/40 uppercase tracking-[0.25em] mb-1">Entry</div>
+                 <div className="text-xs font-bold text-emerald-400/50 uppercase border-y border-emerald-500/20 py-1">Class: F-1</div>
+                 <div className="text-[9px] font-medium text-emerald-500/30 uppercase mt-1">Admitted</div>
+              </div>
+           </div>
+        </div>
+
+        {/* Bottom Right: Boarding Pass / Ticket */}
+        <div className="hidden 2xl:flex absolute bottom-40 right-12 flex-col gap-3 -rotate-6 opacity-40">
+           {/* Ticket 1 */}
+           <div className="w-56 rounded-xl border border-slate-700/50 bg-slate-900/60 backdrop-blur-sm p-4 shadow-xl">
+              <div className="flex justify-between items-center mb-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                 <span>Boarding Pass</span>
+                 <Plane className="w-3 h-3 text-slate-600" />
+              </div>
+              <div className="flex justify-between items-center">
+                 <div>
+                    <div className="text-xl font-bold text-slate-300">JFK</div>
+                    <div className="text-[9px] text-slate-500">New York</div>
+                 </div>
+                 <div className="h-px flex-1 bg-slate-700/50 mx-3 relative">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-slate-600"></div>
+                 </div>
+                 <div className="text-right">
+                    <div className="text-xl font-bold text-sky-400/80">LHR</div>
+                    <div className="text-[9px] text-slate-500">London</div>
+                 </div>
+              </div>
+           </div>
+           
+           {/* Ticket 2 (Stacked behind) */}
+           <div className="w-52 h-16 rounded-xl border border-slate-800/50 bg-slate-950/40 backdrop-blur-sm absolute top-4 left-4 -z-10"></div>
+        </div>
+
       </div>
 
       {/* Hero Content */}
