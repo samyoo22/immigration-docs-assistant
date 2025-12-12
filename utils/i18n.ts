@@ -18,10 +18,10 @@ export const translations = {
       retry: "Please try again in a few seconds. If the problem persists, shorten the document or refresh the page.",
     },
     landing: {
-      heroTitle: "Understand your US visa emails",
-      heroTitleSuffix: "in plain English.",
+      heroTitle: "Make US immigration documents",
+      heroTitleSuffix: "easy to understand.",
       heroSubtitle: "Immigration Docs Assistant · For F-1 students & immigrants",
-      heroSubtitleSupport: "Paste an F-1 or visa-related email and get a plain-English explanation, action checklist, and optional translations.",
+      heroSubtitleSupport: "Paste any F-1 or US immigration document text (emails, notices, instructions) and get a plain-language explanation, action checklist, and optional translations.",
       badge: "English first · Translations: KO, ZH, HI, JA (beta) · Not legal advice",
       step1: "Step 1 of 2 · Tell us about your situation",
       situationLabel: "1. Choose your situation",
