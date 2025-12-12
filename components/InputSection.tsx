@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { VisaSituation, Locale } from '../types';
-import { ArrowRight, Loader2, ShieldAlert, Trash2, UploadCloud, FileText, AlertCircle, X } from 'lucide-react';
+import { ArrowRight, Loader2, Shield, Trash2, UploadCloud, FileText, AlertCircle } from 'lucide-react';
 import { t } from '../utils/i18n';
 // @ts-ignore
 import * as pdfjsLib from 'pdfjs-dist';
@@ -143,61 +143,71 @@ const InputSection: React.FC<InputSectionProps> = ({
       </div>
 
       {/* 2. Document Text Section */}
-      <div className="flex-grow flex flex-col mb-6">
+      <div className="flex-grow flex flex-col">
         {/* Label */}
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-2">
           <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
             {t(locale, 'workspace.inputLabel')}
           </label>
         </div>
         
-        {/* Improved PDF Control Row */}
-        <div className="mb-3 flex flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <input
-              ref={pdfInputRef}
-              type="file"
-              accept="application/pdf"
-              className="hidden"
-              onChange={handlePdfFileChange}
-            />
-            <button
-              type="button"
-              onClick={handlePdfUploadClick}
-              disabled={isParsingPdf || isAnalyzing}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Extract text from a PDF file"
-            >
-              {isParsingPdf ? <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" /> : <UploadCloud className="w-3.5 h-3.5 text-blue-600" />}
-              Upload PDF (beta)
-            </button>
-            <p className="text-xs text-slate-500">
-              or paste the document text below.
-            </p>
-          </div>
-
-          {/* PDF Status Row */}
-          <div className="flex flex-wrap items-center gap-2 text-xs min-h-[20px]">
-            {pdfFileName ? (
-              <>
-                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-blue-700 border border-blue-100 max-w-[220px]">
-                  <FileText className="w-3 h-3 shrink-0" />
-                  <span className="truncate font-medium">{pdfFileName}</span>
+        {/* PDF Upload Card */}
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                    <input
+                        ref={pdfInputRef}
+                        type="file"
+                        accept="application/pdf"
+                        className="hidden"
+                        onChange={handlePdfFileChange}
+                    />
+                    <button
+                        type="button"
+                        onClick={handlePdfUploadClick}
+                        disabled={isParsingPdf || isAnalyzing}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        title="Extract text from a PDF file"
+                    >
+                        {isParsingPdf ? <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" /> : <UploadCloud className="w-3.5 h-3.5 text-blue-600" />}
+                        Upload PDF (beta)
+                    </button>
+                    <span className="text-xs text-slate-500 hidden sm:inline">or paste the text below.</span>
+                </div>
+            </div>
+            
+            {/* PDF Status Row */}
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+                {pdfFileName ? (
+                <>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white border border-blue-200 px-2 py-1 text-blue-700 shadow-sm max-w-[200px]">
+                    <FileText className="w-3 h-3 shrink-0" />
+                    <span className="truncate font-medium">{pdfFileName}</span>
+                    </span>
+                    <div className="flex items-center gap-2 ml-1">
+                        <button
+                            type="button"
+                            className="text-slate-500 hover:text-blue-600 font-medium transition-colors"
+                            onClick={handlePdfUploadClick}
+                        >
+                            Change
+                        </button>
+                        <span className="text-slate-300">|</span>
+                        <button
+                            type="button"
+                            className="text-slate-500 hover:text-red-600 font-medium transition-colors"
+                            onClick={handleClearPdfMeta}
+                        >
+                            Remove
+                        </button>
+                    </div>
+                </>
+                ) : (
+                <span className="text-slate-400 italic">
+                    No PDF uploaded yet.
                 </span>
-                <button
-                  type="button"
-                  className="text-slate-400 hover:text-red-500 underline-offset-2 hover:underline transition-colors ml-1"
-                  onClick={handleClearPdfMeta}
-                >
-                  Remove PDF tag
-                </button>
-              </>
-            ) : (
-              <span className="text-slate-400 italic">
-                No PDF uploaded yet.
-              </span>
-            )}
-          </div>
+                )}
+            </div>
         </div>
         
         {/* Text Area */}
@@ -206,7 +216,7 @@ const InputSection: React.FC<InputSectionProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder={t(locale, 'workspace.placeholder')}
-            className="w-full h-full min-h-[320px] p-4 border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-y text-slate-700 leading-relaxed font-mono text-[15px] transition-colors shadow-sm placeholder:text-slate-400"
+            className="w-full h-full min-h-[320px] p-3 border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-y text-slate-700 leading-relaxed font-mono text-sm transition-colors shadow-sm placeholder:text-slate-400"
           />
            {/* Loading Overlay for PDF */}
            {isParsingPdf && (
@@ -227,63 +237,57 @@ const InputSection: React.FC<InputSectionProps> = ({
            </div>
         )}
 
-        {/* Footer Row: Helper + Utilities */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 text-xs pt-2">
-          <div className="flex flex-col gap-1 text-slate-400 max-w-sm">
-             <p className="leading-relaxed">
-               <span className="flex items-center gap-1.5 text-slate-500 font-medium mb-0.5">
-                 <ShieldAlert className="w-3 h-3" /> Privacy Note
-               </span>
-               Avoid entering passport numbers, SSNs, or other highly sensitive IDs.
-               <br className="mb-1 block" />
-               PDF uploads are processed locally in your browser. Scanned image PDFs may not work; try pasting text manually if parsing fails.
-             </p>
-          </div>
-          
-          <div className="flex items-center gap-4 justify-between sm:justify-end border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0 shrink-0">
-             {inputText.length > 0 && (
-               <span className="text-slate-400 font-mono">
-                 {t(locale, 'workspace.charCount', { count: inputText.length })}
-               </span>
-             )}
-             <button
-              onClick={() => setInputText('')}
-              disabled={inputText.length === 0}
-              className="flex items-center gap-1 text-slate-500 hover:text-red-500 disabled:opacity-30 disabled:hover:text-slate-500 transition-colors"
-             >
-               <Trash2 className="w-3.5 h-3.5" />
-               {t(locale, 'workspace.clearText')}
-             </button>
-          </div>
+        {/* Privacy Note */}
+        <div className="mb-4">
+             <div className="flex items-start gap-1.5 text-[11px] text-slate-400 leading-tight">
+                 <Shield className="w-3 h-3 shrink-0 mt-0.5" />
+                 <p>
+                   Avoid entering passport numbers, SSNs, or other highly sensitive IDs.
+                   PDF uploads are processed locally to extract text only. Scanned-image PDFs may not work; if that happens, please paste the text manually.
+                 </p>
+             </div>
         </div>
-      </div>
-
-      {/* 3. Action Button Section */}
-      <div>
-        <button
-          onClick={onAnalyze}
-          disabled={isAnalyzing || inputText.trim().length < 10}
-          className={`w-full py-3.5 px-6 rounded-lg font-bold text-white flex items-center justify-center gap-2 transition-all shadow-md ${
-            isAnalyzing || inputText.trim().length < 10
-              ? 'bg-slate-300 cursor-not-allowed shadow-none'
-              : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg'
-          }`}
-        >
-          {isAnalyzing ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              {t(locale, 'workspace.btnAnalyzing')}
-            </>
-          ) : (
-            <>
-              {t(locale, 'workspace.btnAnalyze')}
-              <ArrowRight className="w-5 h-5" />
-            </>
-          )}
-        </button>
-        <p className="mt-3 text-center text-xs text-slate-400">
-          {t(locale, 'workspace.btnHelper')}
-        </p>
+        
+        {/* Footer Row: Utilities + Action Button */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-slate-100 pt-4 mt-auto">
+             <div className="flex items-center gap-4 text-xs">
+                {inputText.length > 0 && (
+                <span className="text-slate-400 font-mono">
+                    {t(locale, 'workspace.charCount', { count: inputText.length })}
+                </span>
+                )}
+                <button
+                    onClick={() => setInputText('')}
+                    disabled={inputText.length === 0}
+                    className="flex items-center gap-1 text-slate-400 hover:text-red-500 disabled:opacity-30 disabled:hover:text-slate-400 transition-colors"
+                >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    {t(locale, 'workspace.clearText')}
+                </button>
+             </div>
+             
+             <button
+                onClick={onAnalyze}
+                disabled={isAnalyzing || inputText.trim().length < 10}
+                className={`py-2.5 px-5 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 transition-all shadow-md ${
+                    isAnalyzing || inputText.trim().length < 10
+                    ? 'bg-slate-300 cursor-not-allowed shadow-none'
+                    : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg'
+                }`}
+                >
+                {isAnalyzing ? (
+                    <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {t(locale, 'workspace.btnAnalyzing')}
+                    </>
+                ) : (
+                    <>
+                    {t(locale, 'workspace.btnAnalyze')}
+                    <ArrowRight className="w-4 h-4" />
+                    </>
+                )}
+            </button>
+        </div>
       </div>
     </div>
   );
