@@ -270,29 +270,37 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                  </div>
               </div>
 
-              {/* 2. Tabs Row */}
-              <div className="flex border-b border-slate-100 bg-white overflow-x-auto no-scrollbar px-6 gap-6">
-                {['explain', 'checklist', 'safety'].map(tabKey => (
-                   <button
-                     key={tabKey}
-                     onClick={() => setActiveTab(tabKey as any)}
-                     className={`py-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 ${
-                        activeTab === tabKey 
-                          ? 'border-blue-600 text-blue-600' 
-                          : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-200'
-                     }`}
-                   >
-                      {tabKey === 'explain' && t(locale, 'workspace.tabExplain')}
-                      {tabKey === 'checklist' && t(locale, 'workspace.tabChecklist')}
-                      {tabKey === 'safety' && t(locale, 'workspace.tabSafety')}
-                      
-                      {tabKey === 'checklist' && appState.checklistState.length > 0 && (
-                         <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'checklist' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
-                            {appState.checklistState.filter(i => i.status !== 'done').length}
-                         </span>
-                      )}
-                   </button>
-                ))}
+              {/* 2. Tabs Row (Refactored to Grid/Pills) */}
+              <div className="px-6 pb-2 pt-4 bg-white">
+                <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100/70 rounded-xl">
+                  {['explain', 'checklist', 'safety'].map(tabKey => {
+                    const isActive = activeTab === tabKey;
+                    return (
+                       <button
+                         key={tabKey}
+                         onClick={() => setActiveTab(tabKey as any)}
+                         className={`relative h-10 text-xs sm:text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2 select-none ${
+                            isActive
+                              ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200' 
+                              : 'text-slate-500 hover:text-slate-700 hover:bg-white/40'
+                         }`}
+                       >
+                          <span className="truncate">
+                            {tabKey === 'explain' && t(locale, 'workspace.tabExplain')}
+                            {tabKey === 'checklist' && t(locale, 'workspace.tabChecklist')}
+                            {tabKey === 'safety' && t(locale, 'workspace.tabSafety')}
+                          </span>
+                          
+                          {/* Badge for Checklist */}
+                          {tabKey === 'checklist' && appState.checklistState.length > 0 && (
+                             <span className={`hidden sm:inline-flex px-1.5 py-0.5 rounded-full text-[10px] leading-none ${isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>
+                                {appState.checklistState.filter(i => i.status !== 'done').length}
+                             </span>
+                          )}
+                       </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* 3. Content Area */}

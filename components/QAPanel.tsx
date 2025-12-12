@@ -53,28 +53,28 @@ const QAPanel: React.FC<QAPanelProps> = ({ documentText, analysisResult }) => {
           Follow-up questions
         </h3>
         <p className="text-xs text-slate-500 mt-1">
-          Ask short questions about this email or checklist.
+          Ask short questions about this document or checklist.
         </p>
       </div>
 
       <div className="p-6">
         {/* Input Area */}
-        <div className="flex gap-2 mb-6">
+        <div className="relative mb-6">
           <input
             type="text"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Example: What happens if I miss this deadline?"
-            className="flex-grow p-3 text-sm border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+            className="w-full p-3 pr-12 text-sm text-slate-900 placeholder:text-slate-400 bg-white border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm"
             disabled={isAsking}
           />
           <button
             onClick={handleAsk}
             disabled={!question.trim() || isAsking}
-            className="bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center min-w-[50px]"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isAsking ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+            {isAsking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </div>
 

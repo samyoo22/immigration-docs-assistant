@@ -116,18 +116,36 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
   });
 
   const timelineOrder: DueCategory[] = ['today', 'this_week', 'before_program_end', 'after_approval', 'unspecified'];
+  const doneCount = filteredItems.filter(i => i.status === 'done').length;
 
   return (
-    <div className="space-y-6 animate-fade-in relative">
+    <div className="space-y-6 animate-fade-in relative max-w-4xl mx-auto">
       
-      {/* Header & Filter Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <ClipboardList className="w-5 h-5 text-blue-600" />
-            {t(locale, 'results.checklistTitle')}
-         </h3>
-         
-         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+      {/* 1. Header Row (Title + Progress + Copy) */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+         <div>
+             <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <ClipboardList className="w-5 h-5 text-blue-600" />
+                {t(locale, 'results.checklistTitle')}
+             </h3>
+             <p className="text-xs text-slate-500 mt-1 ml-1 font-medium">
+               {doneCount} / {filteredItems.length} items completed
+             </p>
+         </div>
+
+         <div className="flex items-center gap-2">
+            <button
+                onClick={handleCopy}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-blue-600 transition-all text-xs font-medium"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                {t(locale, 'results.copyChecklist')}
+              </button>
+         </div>
+      </div>
+
+      {/* 2. Filter Bar */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
            {(['all', 'high', 'today', 'week'] as const).map((f) => (
              <button
                key={f}
@@ -144,40 +162,16 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
                {f === 'week' && 'For this week'}
              </button>
            ))}
-         </div>
-
-         <div className="absolute top-0 right-0 -mt-2 hidden sm:block">
-            <button
-                onClick={handleCopy}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm border bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"
-              >
-                <Copy className="w-3.5 h-3.5" />
-                {t(locale, 'results.copyChecklist')}
-              </button>
-         </div>
       </div>
 
-      {/* Main Checklist View */}
+      {/* 3. Main Checklist Items */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between mb-2">
-             <span className="text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
-               {filteredItems.filter(i => i.status === 'done').length} / {filteredItems.length} Done
-            </span>
-             {/* Mobile copy button */}
-             <button
-                onClick={handleCopy}
-                className="sm:hidden text-xs font-medium text-slate-500 hover:text-blue-600"
-              >
-                {t(locale, 'results.copyChecklist')}
-              </button>
-        </div>
-       
         {filteredItems.length === 0 ? (
            <div className="p-8 text-center text-slate-400 bg-slate-50 rounded-lg border border-dashed border-slate-200">
              No items match this filter.
            </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {filteredItems.map((item) => {
               const translated = getTranslatedItem(item.id);
               
@@ -186,7 +180,7 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
                   key={item.id}
                   onClick={() => onToggleStatus(item.id)}
                   className={`
-                    relative p-4 rounded-xl border transition-all cursor-pointer group
+                    relative p-4 md:p-5 rounded-2xl border transition-all cursor-pointer group
                     ${getStatusClass(item.status)}
                   `}
                 >
@@ -195,28 +189,29 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
                       {getStatusIcon(item.status)}
                     </div>
                     <div className="flex-grow">
-                      <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-white/60 px-1.5 py-0.5 rounded border border-slate-100">
+                      {/* Tags Row - Wrapped nicely */}
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-white/60 px-2 py-0.5 rounded border border-slate-100">
                           {item.category}
                         </span>
                         {getPriorityBadge(item.priority)}
                         
-                        {/* Who/Actor Pill */}
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded flex items-center gap-1">
                           <User className="w-3 h-3" /> {t(locale, 'results.who')} {item.actor || 'Student'}
                         </span>
+                        
                         {item.dueLabel && (
-                          <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-1">
+                          <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 flex items-center gap-1">
                             <Clock className="w-3 h-3" /> {item.dueLabel}
                           </span>
                         )}
                       </div>
                       
                       {/* English Title & Description */}
-                      <h4 className={`font-semibold text-slate-800 mb-1 ${item.status === 'done' ? 'line-through text-slate-500' : ''}`}>
+                      <h4 className={`font-semibold text-slate-800 mb-1 leading-snug ${item.status === 'done' ? 'line-through text-slate-500' : ''}`}>
                         {item.title}
                       </h4>
-                      <p className={`text-sm text-slate-600 leading-snug ${item.status === 'done' ? 'line-through text-slate-400' : ''}`}>
+                      <p className={`text-sm text-slate-600 leading-relaxed ${item.status === 'done' ? 'line-through text-slate-400' : ''}`}>
                         {item.description}
                       </p>
 
@@ -235,7 +230,7 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
                     </div>
                   </div>
                   
-                  <div className="absolute top-4 right-4 text-xs font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-4 right-4 text-xs font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
                       {item.status === 'todo' ? 'Click to start' : item.status === 'in-progress' ? 'Click to complete' : 'Click to undo'}
                   </div>
                 </div>
@@ -245,7 +240,7 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
         )}
       </div>
 
-      {/* Timeline View */}
+      {/* 4. Timeline View */}
       <div className="pt-8 border-t border-slate-200">
          <div className="mb-6">
            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -293,7 +288,7 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
                                      {translated.title}
                                    </span>
                                 )}
-                                <div className="flex gap-2 mt-1">
+                                <div className="flex flex-wrap gap-2 mt-1">
                                   {item.actor && (
                                     <span className="text-[10px] text-slate-400">
                                       {t(locale, 'results.who')} {item.actor}
