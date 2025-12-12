@@ -30,7 +30,7 @@ export const translations = {
       btnCustom: "Or paste my own email",
       agreement: "By using this tool, you acknowledge that it does not provide legal advice. Always consult official sources.",
       previewLabel: "Preview of your results",
-      howItWorks: "How it works: 1) Choose your situation · 2) Paste your email · 3) Get a clear explanation and checklist.",
+      howItWorks: "How it works: Choose your situation → Paste your document text → Get a clear explanation and checklist.",
       features: {
         plainEnglish: {
           title: "Plain-English explanation",
