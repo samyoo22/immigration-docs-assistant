@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { VisaSituation, Locale } from '../types';
-import { ArrowRight, Shield, MessageSquare, CheckCircle, Languages, Plane, ChevronRight, FileText } from 'lucide-react';
+import { ArrowRight, Shield, MessageSquare, CheckCircle, Languages, Plane, ChevronRight, FileText, Globe } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface LandingScreenProps {
@@ -33,7 +33,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
   const examples = t(locale, 'landing.examples') as unknown as string[];
 
   return (
-    <div className="relative isolate pt-20 pb-16 animate-fade-in overflow-hidden">
+    <div className="relative isolate pt-12 lg:pt-20 pb-16 animate-fade-in overflow-hidden">
       
       {/* BACKGROUND DECORATIONS */}
       {/* World Map Grid (Abstract) */}
@@ -42,7 +42,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
       </div>
       
       {/* Flight Path Animation Container */}
-      <div className="absolute top-[10%] left-0 right-0 h-[300px] -z-10 pointer-events-none overflow-hidden select-none">
+      <div className="absolute top-[5%] left-0 right-0 h-[400px] -z-10 pointer-events-none overflow-hidden select-none">
           {/* A large curved SVG path representing a flight/journey */}
           <svg className="w-full h-full opacity-20" preserveAspectRatio="none">
              <path d="M-100,250 C300,50 800,50 1600,250" fill="none" stroke="url(#gradient-path)" strokeWidth="2" strokeDasharray="8 8" />
@@ -55,14 +55,37 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
              </defs>
           </svg>
           {/* Floating Plane Icon */}
-          <div className="absolute top-[80px] left-[20%] animate-[float_8s_ease-in-out_infinite]">
-             <Plane className="w-6 h-6 text-sky-500/40 rotate-12" />
+          <div className="absolute top-[80px] left-[20%] animate-[float_10s_ease-in-out_infinite]">
+             <Plane className="w-6 h-6 text-sky-400 rotate-12 drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
           </div>
       </div>
 
       {/* Hero Content */}
       <div className="flex flex-col items-center">
         
+        {/* IMMIGRATION ICON STRIP */}
+        <div className="mb-8 inline-flex flex-wrap items-center justify-center gap-3 rounded-full bg-slate-900/60 border border-slate-800 px-5 py-2 backdrop-blur-md shadow-lg">
+            <div className="flex items-center gap-1.5">
+                <div className="flex items-center justify-center text-[14px]">🎓</div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">F-1 / OPT</span>
+            </div>
+            <div className="w-px h-3 bg-slate-700"></div>
+            <div className="flex items-center gap-1.5">
+                <div className="flex items-center justify-center text-[14px]">🧪</div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">STEM OPT</span>
+            </div>
+            <div className="w-px h-3 bg-slate-700"></div>
+             <div className="flex items-center gap-1.5">
+                <div className="flex items-center justify-center text-[14px]">📄</div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">I-20 & SEVIS</span>
+            </div>
+             <div className="w-px h-3 bg-slate-700 hidden sm:block"></div>
+             <div className="hidden sm:flex items-center gap-1.5">
+                <div className="flex items-center justify-center text-[14px]">🏛️</div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">USCIS Notices</span>
+            </div>
+        </div>
+
         {/* HERO TEXT */}
         <div className="text-center max-w-4xl mx-auto px-4">
           <p className="text-xs uppercase tracking-[0.25em] text-sky-300/70 mb-4 font-semibold">
@@ -108,7 +131,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
 
         {/* MAIN INTERACTION CARD ("Boarding Pass" Style) */}
         <div className="mt-12 w-full max-w-5xl px-4 lg:px-0">
-          <div className="relative rounded-3xl border border-slate-700/70 bg-slate-900/80 shadow-[0_0_60px_rgba(56,189,248,0.15)] backdrop-blur-md p-6 sm:p-8 lg:p-10 transition-colors duration-500 hover:border-sky-500/30">
+          <div className="relative rounded-3xl border border-sky-500/20 bg-slate-950/80 shadow-[0_0_60px_rgba(56,189,248,0.15)] backdrop-blur-md p-6 sm:p-8 lg:p-10 transition-colors duration-500">
             
             <div className="grid lg:grid-cols-[minmax(0,1.1fr),minmax(0,1fr)] gap-8 lg:gap-12">
               
@@ -170,7 +193,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
                     </p>
                     <div className="flex flex-wrap gap-2">
                        {examples.map((ex, idx) => (
-                         <span key={idx} className="inline-flex items-center rounded-full border border-slate-700/70 bg-slate-900/60 px-3 py-1 text-[11px] text-slate-300">
+                         <span key={idx} className="inline-flex items-center rounded-full border border-slate-700 bg-slate-950/80 px-3 py-1 text-[11px] text-slate-300">
                            {ex}
                          </span>
                        ))}
@@ -178,64 +201,60 @@ const LandingScreen: React.FC<LandingScreenProps> = ({
                  </div>
               </div>
 
-              {/* RIGHT COL: Preview Skeleton */}
-              <div className="relative hidden lg:block">
-                 <div className="absolute -top-4 -right-4 -left-4 -bottom-4 bg-sky-500/5 rounded-[40px] blur-2xl"></div>
-                 
-                 <div className="relative h-full flex flex-col justify-center">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3 text-center">
-                       {t(locale, 'landing.previewHeader')}
-                    </p>
-
-                    <div className="rounded-2xl border border-slate-700/80 bg-slate-950/80 p-5 shadow-2xl relative overflow-hidden">
-                       {/* Subtle internal gloss */}
-                       <div className="absolute top-0 right-0 w-[100px] h-[100px] bg-white/5 blur-[50px] rounded-full pointer-events-none"></div>
-
-                       {/* Fake Header */}
-                       <div className="flex items-center gap-3 border-b border-slate-800 pb-4 mb-4">
-                          <div className="h-8 w-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                             <Shield className="h-4 w-4 text-emerald-400" />
-                          </div>
-                          <div className="flex-1 space-y-1.5">
-                             <div className="h-2.5 w-32 rounded-full bg-slate-700"></div>
-                             <div className="h-1.5 w-20 rounded-full bg-slate-800"></div>
-                          </div>
-                       </div>
-
-                       {/* Fake Body Content */}
-                       <div className="space-y-4">
-                          {/* Summary Lines */}
-                          <div className="space-y-2 p-1">
-                             <div className="h-2 w-full rounded-full bg-slate-800/80"></div>
-                             <div className="h-2 w-[92%] rounded-full bg-slate-800/80"></div>
-                             <div className="h-2 w-[85%] rounded-full bg-slate-800/80"></div>
-                          </div>
-
-                          {/* Checklist Items */}
-                          <div className="space-y-2.5 pt-2">
-                             <div className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-900/50 border border-slate-800">
-                                <div className="h-4 w-4 rounded-full border-2 border-slate-600"></div>
-                                <div className="h-2 w-3/4 rounded-full bg-slate-700"></div>
-                             </div>
-                             <div className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-900/50 border border-slate-800">
-                                <div className="h-4 w-4 rounded-full border-2 border-slate-600"></div>
-                                <div className="h-2 w-1/2 rounded-full bg-slate-700"></div>
-                             </div>
-                          </div>
+              {/* RIGHT COL: Visa Pack Illustration */}
+              <div className="relative hidden lg:block h-full min-h-[300px]">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="relative w-[320px] h-[320px] scale-90 xl:scale-100">
                           
-                          {/* Timeline Bar */}
-                          <div className="pt-2 flex gap-1">
-                             <div className="h-1 flex-1 rounded-full bg-emerald-500/40"></div>
-                             <div className="h-1 flex-1 rounded-full bg-slate-800"></div>
-                             <div className="h-1 flex-1 rounded-full bg-slate-800"></div>
+                          {/* 1. Document Sheet (Back layer) */}
+                          <div className="absolute bottom-8 right-0 w-[220px] rounded-2xl border border-slate-700/60 bg-slate-900/90 shadow-2xl p-4 rotate-3 transform transition-transform hover:rotate-6 duration-500 backdrop-blur-sm">
+                              <div className="space-y-3 opacity-60">
+                                  <div className="h-1.5 w-1/3 rounded-full bg-slate-600"></div>
+                                  <div className="h-1.5 w-full rounded-full bg-slate-700"></div>
+                                  <div className="h-1.5 w-full rounded-full bg-slate-700"></div>
+                                  <div className="h-1.5 w-3/4 rounded-full bg-slate-700"></div>
+                                  <div className="h-2 w-1/2 rounded-full bg-sky-500/40 mt-2"></div>
+                              </div>
                           </div>
-                       </div>
-                    </div>
-                    
-                    <p className="mt-4 text-center text-xs font-medium text-slate-500">
-                       {t(locale, 'landing.previewCaption')}
-                    </p>
-                 </div>
+
+                          {/* 2. Passport Card (Front layer) */}
+                          <div className="absolute top-4 left-4 w-[160px] h-[220px] rounded-2xl border border-slate-600 bg-slate-900 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] p-4 flex flex-col -rotate-3 transform transition-transform hover:rotate-0 duration-500 z-10">
+                              <div className="flex justify-between items-start mb-4">
+                                  <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+                                      <Globe className="w-4 h-4 text-slate-500" />
+                                  </div>
+                                  <div className="w-4 h-4 opacity-50">
+                                       <div className="w-full h-full border-2 border-slate-700 rounded-full"></div>
+                                  </div>
+                              </div>
+                              <div className="w-16 h-20 bg-slate-800 rounded-lg mb-4 border border-slate-700 self-start opacity-50"></div>
+                              <div className="space-y-2 mb-auto">
+                                  <div className="h-1 w-full rounded-full bg-slate-700"></div>
+                                  <div className="h-1 w-2/3 rounded-full bg-slate-700"></div>
+                              </div>
+                              <div className="mt-2 inline-flex items-center px-2 py-1 rounded bg-sky-950/50 border border-sky-900 text-[9px] font-bold text-sky-400 uppercase">
+                                  F-1 STUDENT
+                              </div>
+                          </div>
+
+                          {/* 3. Visa Stamp (Top Right) */}
+                          <div className="absolute top-0 right-4 z-20 transform rotate-6 hover:rotate-12 transition-transform duration-300 cursor-default">
+                              <div className="rounded-lg border-2 border-rose-500/40 bg-rose-500/5 px-3 py-1.5 backdrop-blur-sm shadow-sm">
+                                  <p className="text-[10px] font-bold text-rose-300 uppercase tracking-widest text-center leading-none">
+                                      VISA<br/>RISK
+                                  </p>
+                              </div>
+                          </div>
+
+                          {/* 4. Legend */}
+                          <div className="absolute -bottom-6 left-0 right-0 text-center">
+                              <p className="text-[11px] text-slate-400/80 font-medium">
+                                  OPT email → Checklist → Timeline
+                              </p>
+                          </div>
+
+                      </div>
+                  </div>
               </div>
 
             </div>
