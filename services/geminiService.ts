@@ -318,38 +318,60 @@ export const translateAnalysis = async (
 };
 
 export const askFollowUpQuestion = async (
-  documentText: string,
-  analysisResult: AnalysisResult,
-  question: string
+  documentText: string | null,
+  analysisResult: AnalysisResult | null,
+  question: string,
+  mode: 'document' | 'general'
 ): Promise<string> => {
   if (!process.env.API_KEY) {
     throw new Error("API Key is missing.");
   }
   
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  let systemInstruction = '';
 
-  // Prepare context
-  const contextSummary = `
-    Topic: ${analysisResult.topicLabel}
-    Risk: ${analysisResult.riskAssessment?.riskLevel}
-    Key Summary Points: ${analysisResult.summary.join('; ')}
-  `;
+  if (mode === 'document') {
+    if (!documentText || !analysisResult) {
+      // Fallback if missing context, though UI should prevent this
+      return "I can't answer questions about the document because the document context is missing.";
+    }
 
-  const systemInstruction = `
-    You are a helpful immigration assistant answering a follow-up question about a specific document.
-    
-    Context:
-    - User Situation: F-1 Student.
-    - Document Content: "${documentText.substring(0, 2000)}..." (truncated if too long)
-    - Analysis Context: ${contextSummary}
-    
-    Constraints:
-    1. Answer briefly (2-5 sentences).
-    2. Use plain English.
-    3. Do NOT provide legal advice.
-    4. If the answer involves a specific decision or legal risk, explicitly encourage contacting the DSO or an attorney.
-    5. Directly answer the user's question based on the provided document text and analysis.
-  `;
+    const contextSummary = `
+      Topic: ${analysisResult.topicLabel}
+      Risk: ${analysisResult.riskAssessment?.riskLevel}
+      Key Summary Points: ${analysisResult.summary.join('; ')}
+    `;
+
+    systemInstruction = `
+      You are a helpful immigration assistant answering a follow-up question about a specific document.
+      
+      Context:
+      - User Situation: F-1 Student.
+      - Document Content: "${documentText.substring(0, 2000)}..." (truncated if too long)
+      - Analysis Context: ${contextSummary}
+      
+      Constraints:
+      1. Answer briefly (2-5 sentences).
+      2. Use plain English.
+      3. Do NOT provide legal advice.
+      4. If the answer involves a specific decision or legal risk, explicitly encourage contacting the DSO or an attorney.
+      5. Directly answer the user's question based on the provided document text and analysis.
+    `;
+  } else {
+    // General mode
+    systemInstruction = `
+      You are a helpful educational assistant for US immigration topics (specifically F-1 student visas and OPT/STEM OPT).
+      
+      User Question: "${question}"
+
+      Constraints:
+      1. Answer based on general public knowledge of US F-1 visa rules.
+      2. Do NOT provide legal advice.
+      3. Be concise (2-5 sentences).
+      4. If the question is about specific case details you don't know, suggest contacting their Designated School Official (DSO).
+      5. Do NOT make up facts. If you are unsure, say so.
+    `;
+  }
 
   try {
     const response = await ai.models.generateContent({

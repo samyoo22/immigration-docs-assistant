@@ -63,6 +63,7 @@ export interface FollowUpQAEntry {
   question: string;
   answer: string;
   timestamp: number;
+  mode: 'document' | 'general';
 }
 
 export type Locale = 'en'; // UI is English-only for now
