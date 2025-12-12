@@ -22,7 +22,7 @@ export const translations = {
       heroTitleSuffix: "in plain English.",
       heroSubtitle: "Immigration Docs Assistant · For F-1 students & immigrants",
       heroSubtitleSupport: "Paste an F-1 or visa-related email and get a plain-English explanation, action checklist, and optional Korean summary.",
-      badge: "English first · EN+KR prototype · Not legal advice",
+      badge: "English first · Multilingual prototype (KO · ZH · HI · JA) · Not legal advice",
       step1: "Step 1 of 2 · Tell us about your situation",
       situationLabel: "1. Choose your situation",
       situationHelper: "We’ll use this to tailor your explanation and checklist.",

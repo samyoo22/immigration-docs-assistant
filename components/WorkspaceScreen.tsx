@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { VisaSituation, ChecklistItem, AppState, Locale } from '../types';
+import { VisaSituation, ChecklistItem, AppState, Locale, SupportedLanguage } from '../types';
 import InputSection from './InputSection';
 import ExplanationPanel from './ExplanationPanel';
 import ChecklistPanel from './ChecklistPanel';
 import SafetyPanel from './SafetyPanel';
 import QAPanel from './QAPanel';
-import { ArrowLeft, FileText, ListChecks, ShieldCheck, Loader2, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, FileText, ListChecks, ShieldCheck, Loader2, AlertCircle, CheckCircle, XCircle, Globe, ChevronDown } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface WorkspaceScreenProps {
@@ -16,6 +16,7 @@ interface WorkspaceScreenProps {
   onAnalyze: () => void;
   onBack: () => void;
   setChecklistState: (items: ChecklistItem[]) => void;
+  onTranslate: (lang: SupportedLanguage) => void;
 }
 
 interface ToastState {
@@ -24,6 +25,14 @@ interface ToastState {
   visible: boolean;
 }
 
+const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
+  none: "English only",
+  ko: "Korean (한국어)",
+  "zh-CN": "Chinese (简体中文)",
+  hi: "Hindi (हिंदी)",
+  ja: "Japanese (日本語)"
+};
+
 const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   appState,
   setSituation,
@@ -31,10 +40,11 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   onAnalyze,
   onBack,
   setChecklistState,
+  onTranslate,
 }) => {
   const [activeTab, setActiveTab] = useState<'explain' | 'checklist' | 'safety'>('explain');
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'success', visible: false });
-  const { locale, result, isAnalyzing, error } = appState;
+  const { locale, result, isAnalyzing, error, translationLanguage, translationResult, isTranslating } = appState;
 
   // Clear toast after timeout
   useEffect(() => {
@@ -146,6 +156,9 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                   locale={locale} 
                   onCopy={handleCopy}
                   onTabChange={handleTabChange}
+                  translationResult={translationResult}
+                  translationLanguage={translationLanguage}
+                  isTranslating={isTranslating}
                />;
       case 'checklist':
         return (
@@ -154,6 +167,8 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
             onToggleStatus={handleToggleChecklistStatus} 
             locale={locale}
             onCopy={handleCopy}
+            translationResult={translationResult}
+            isTranslating={isTranslating}
           />
         );
       case 'safety':
@@ -165,6 +180,8 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
                   situation={appState.situation} // Pass situation for DSO summary
                   locale={locale} 
                   onCopy={handleCopy}
+                  translationResult={translationResult}
+                  isTranslating={isTranslating}
                />;
     }
   };
@@ -226,7 +243,40 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
 
         {/* Right Column: Output (Tabs) */}
         <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
-           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[600px] flex flex-col">
+           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[600px] flex flex-col relative">
+              
+              {/* Translation Controls (Absolute Position or Above Tabs) */}
+              {/* Placing it above the tabs for better visibility and access across all tabs */}
+              <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                 <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-slate-500" />
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">Translation Mode</span>
+                 </div>
+                 
+                 <div className="flex items-center gap-2 w-full sm:w-auto">
+                   <div className="relative w-full sm:w-auto">
+                     <select
+                       value={translationLanguage}
+                       onChange={(e) => onTranslate(e.target.value as SupportedLanguage)}
+                       className="w-full sm:w-48 appearance-none bg-white border border-slate-300 hover:border-blue-400 text-slate-700 text-sm rounded-lg pl-3 pr-8 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer font-medium"
+                       disabled={isAnalyzing || !result}
+                     >
+                       {Object.entries(LANGUAGE_LABELS).map(([key, label]) => (
+                         <option key={key} value={key}>{label}</option>
+                       ))}
+                     </select>
+                     <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                   </div>
+                 </div>
+              </div>
+              
+              {/* Helper Text for Translation */}
+              <div className="bg-blue-50/50 px-4 py-2 border-b border-blue-100/50">
+                <p className="text-[10px] text-center text-slate-500">
+                  Translations are for convenience only. Always rely on the English version and official sources.
+                </p>
+              </div>
+
               {/* Tab Header */}
               <div className="flex border-b border-slate-200 bg-slate-50 overflow-x-auto no-scrollbar">
                 <button
@@ -267,7 +317,16 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
               </div>
 
               {/* Tab Content Area */}
-              <div className="p-6 md:p-8 flex-grow">
+              <div className="p-6 md:p-8 flex-grow relative">
+                 {/* Overlay loading state for translation */}
+                 {isTranslating && (
+                   <div className="absolute inset-0 bg-white/80 z-20 flex items-center justify-center backdrop-blur-[1px]">
+                     <div className="bg-white p-4 rounded-xl shadow-lg border border-slate-100 flex flex-col items-center">
+                       <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-2" />
+                       <span className="text-sm font-medium text-slate-700">Translating content...</span>
+                     </div>
+                   </div>
+                 )}
                  {renderTabContent()}
               </div>
            </div>

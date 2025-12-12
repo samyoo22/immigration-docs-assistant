@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { SafetyTerm, Locale, DsoEmailDraft, AnalysisResult, VisaSituation } from '../types';
-import { BookOpen, ExternalLink, ShieldCheck, Copy, Check, Mail, ChevronRight, HelpCircle, FileText } from 'lucide-react';
+import { SafetyTerm, Locale, DsoEmailDraft, AnalysisResult, VisaSituation, TranslatedAnalysis } from '../types';
+import { BookOpen, ExternalLink, ShieldCheck, Copy, Check, Mail, ChevronRight, HelpCircle, FileText, Languages } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface SafetyPanelProps {
@@ -12,10 +12,12 @@ interface SafetyPanelProps {
   // Need the full result to build the DSO summary
   result?: AnalysisResult; 
   situation?: VisaSituation;
-  onCopy: (text: string, successMessage?: string) => void; 
+  onCopy: (text: string, successMessage?: string) => void;
+  translationResult: TranslatedAnalysis | null;
+  isTranslating: boolean;
 }
 
-const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale, dsoEmailDraft, dsoQuestions, result, situation, onCopy }) => {
+const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale, dsoEmailDraft, dsoQuestions, result, situation, onCopy, translationResult }) => {
   const [showEmailDraft, setShowEmailDraft] = useState(false);
 
   const officialLinks = [
@@ -76,6 +78,11 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale, dsoEmailDraft,
 
     onCopy(summaryText, "DSO summary copied – please review and edit before sending.");
   };
+
+  const getTranslatedTerm = (term: string) => {
+    if (!translationResult?.keyTerms) return null;
+    return translationResult.keyTerms.find(t => t.term === term)?.explanation;
+  }
 
   return (
     <div className="space-y-6 animate-fade-in relative pt-10">
@@ -199,6 +206,17 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale, dsoEmailDraft,
                       {dsoEmailDraft.body}
                     </div>
                  </div>
+                 {translationResult?.dsoEmailNote && (
+                   <div className="mt-2 bg-amber-50 p-3 rounded border border-amber-100">
+                      <div className="flex items-center gap-1.5 mb-1 text-amber-700 font-bold text-xs">
+                         <Languages className="w-3 h-3" />
+                         <span>Note in {translationResult.language === 'ko' ? 'Korean' : translationResult.language}</span>
+                      </div>
+                      <p className="text-xs text-amber-800 leading-relaxed">
+                        {translationResult.dsoEmailNote}
+                      </p>
+                   </div>
+                 )}
               </div>
               <div className="bg-amber-50 px-4 py-2 border-t border-amber-100">
                 <p className="text-[10px] text-amber-700">
@@ -221,12 +239,20 @@ const SafetyPanel: React.FC<SafetyPanelProps> = ({ terms, locale, dsoEmailDraft,
         <div className="p-0">
           {terms.length > 0 ? (
             <div className="divide-y divide-slate-100">
-              {terms.map((term, idx) => (
+              {terms.map((term, idx) => {
+                const translatedExplanation = getTranslatedTerm(term.term);
+                return (
                 <div key={idx} className="p-4 hover:bg-slate-50 transition-colors">
                   <dt className="text-sm font-bold text-slate-900 mb-1">{term.term}</dt>
                   <dd className="text-sm text-slate-600">{term.definition}</dd>
+                  {translatedExplanation && (
+                     <dd className="text-xs text-slate-500 mt-2 pt-2 border-t border-slate-200/50 flex gap-2">
+                        <Languages className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
+                        <span>{translatedExplanation}</span>
+                     </dd>
+                  )}
                 </div>
-              ))}
+              )})}
             </div>
           ) : (
             <div className="p-6 text-center text-slate-500 text-sm">

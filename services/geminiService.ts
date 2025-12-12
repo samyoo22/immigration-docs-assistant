@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { VisaSituation, AnalysisResult, Locale } from "../types";
+import { VisaSituation, AnalysisResult, Locale, SupportedLanguage, ChecklistItem, TranslatedAnalysis } from "../types";
 
 // Define the schema for the structured response we want from Gemini
 const analysisSchema: Schema = {
@@ -182,6 +182,148 @@ Input Text to analyze follows.
   } catch (error) {
     console.error("Gemini Analysis Error:", error);
     throw new Error("Failed to analyze the document. Please try again or check your text.");
+  }
+};
+
+export const translateAnalysis = async (
+  analysis: AnalysisResult,
+  checklistItems: ChecklistItem[],
+  targetLang: SupportedLanguage
+): Promise<TranslatedAnalysis> => {
+  if (!process.env.API_KEY) {
+    throw new Error("API Key is missing.");
+  }
+
+  if (targetLang === 'none') {
+    throw new Error("No target language specified.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+  const langMap: Record<string, string> = {
+    'ko': 'Korean',
+    'zh-CN': 'Simplified Chinese',
+    'hi': 'Hindi',
+    'ja': 'Japanese'
+  };
+  const targetLanguageName = langMap[targetLang] || targetLang;
+
+  const translationSchema: Schema = {
+    type: Type.OBJECT,
+    properties: {
+      riskCard: {
+        type: Type.OBJECT,
+        properties: {
+          riskLevel: { type: Type.STRING, description: `Translate '${analysis.riskAssessment?.riskLevel}' to ${targetLanguageName}` },
+          urgencyLabel: { type: Type.STRING, description: `Translate '${analysis.riskAssessment?.urgencyLabel}' to ${targetLanguageName}` },
+          summary: { type: Type.STRING, description: "Translate the risk summary" },
+        },
+        required: ["riskLevel", "urgencyLabel", "summary"]
+      },
+      summaryBullets: {
+        type: Type.ARRAY,
+        items: { type: Type.STRING },
+        description: `Translate the main summary bullets to ${targetLanguageName}`
+      },
+      detailedExplanation: {
+        type: Type.STRING,
+        description: `Translate the detailed explanation to ${targetLanguageName}. Keep paragraph structure.`
+      },
+      simpleEnglishNote: {
+        type: Type.STRING,
+        description: `Translate the simple English note to ${targetLanguageName}`
+      },
+      checklistItems: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            id: { type: Type.STRING, description: "Keep this EXACTLY as provided in the input." },
+            title: { type: Type.STRING, description: `Translate the checklist item title to ${targetLanguageName}` },
+            description: { type: Type.STRING, description: `Translate the checklist item description to ${targetLanguageName}` },
+          },
+          required: ["id", "title", "description"]
+        }
+      },
+      keyTerms: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            term: { type: Type.STRING, description: "The original English term (do not translate)." },
+            explanation: { type: Type.STRING, description: `Translate the definition/explanation to ${targetLanguageName}` },
+          },
+          required: ["term", "explanation"]
+        }
+      },
+      dsoEmailNote: {
+        type: Type.STRING,
+        description: `Write a short note in ${targetLanguageName} explaining that the email draft above is in English because it must be sent to the school official in English.`
+      }
+    },
+    required: ["riskCard", "summaryBullets", "detailedExplanation", "checklistItems", "keyTerms", "dsoEmailNote"]
+  };
+
+  const checklistInput = checklistItems.map(item => ({
+    id: item.id,
+    title: item.title,
+    description: item.description
+  }));
+
+  const termsInput = analysis.safetyTerms.map(t => ({
+    term: t.term,
+    definition: t.definition
+  }));
+
+  const inputData = {
+    riskAssessment: analysis.riskAssessment,
+    summary: analysis.summary,
+    detailedExplanation: analysis.detailedExplanation,
+    simpleEnglishNotes: analysis.simpleEnglishNotes,
+    checklist: checklistInput,
+    safetyTerms: termsInput
+  };
+
+  const systemInstruction = `
+    You are a translation assistant for an immigration document explanation app.
+    Your task is to translate the provided content into **${targetLanguageName}**.
+    
+    Guidelines:
+    1. Use natural, everyday language suitable for international students.
+    2. Do NOT add new legal advice. Translate the meaning accurately.
+    3. Keep the "id" fields in checklist items EXACTLY the same as the input.
+    4. For key terms, keep the "term" in English, but translate the "explanation/definition".
+    5. Be concise.
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-pro-preview",
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: JSON.stringify(inputData) }]
+        }
+      ],
+      config: {
+        systemInstruction: systemInstruction,
+        responseMimeType: "application/json",
+        responseSchema: translationSchema,
+        temperature: 0.3
+      }
+    });
+
+    const jsonText = response.text;
+    if (!jsonText) throw new Error("No translation generated");
+    
+    const result = JSON.parse(jsonText);
+    return {
+      language: targetLang,
+      ...result
+    };
+  } catch (error) {
+    console.error("Translation Error:", error);
+    throw new Error("Failed to translate content.");
   }
 };
 

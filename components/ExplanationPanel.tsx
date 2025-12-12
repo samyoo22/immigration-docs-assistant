@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { AnalysisResult, Locale, RiskLevel } from '../types';
+import { AnalysisResult, Locale, RiskLevel, TranslatedAnalysis, SupportedLanguage } from '../types';
 import { MessageSquare, Sparkles, Copy, Check, AlertTriangle, Info, Languages, ChevronDown, ChevronUp, FileText, ArrowRight } from 'lucide-react';
 import { t } from '../utils/i18n';
 
@@ -9,10 +9,19 @@ interface ExplanationPanelProps {
   locale: Locale;
   onCopy: (text: string, successMessage?: string) => void;
   onTabChange: (tab: 'explain' | 'checklist' | 'safety') => void;
+  translationResult: TranslatedAnalysis | null;
+  translationLanguage: SupportedLanguage;
+  isTranslating: boolean;
 }
 
-const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onCopy, onTabChange }) => {
-  const [langMode, setLangMode] = useState<'en' | 'en_ko'>('en');
+const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ 
+  result, 
+  locale, 
+  onCopy, 
+  onTabChange,
+  translationResult,
+  translationLanguage,
+}) => {
   const [isDetailedExpanded, setIsDetailedExpanded] = useState(false);
 
   const handleCopyExplanation = () => {
@@ -22,9 +31,9 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
       textToCopy += `[RISK ASSESSMENT]\nLevel: ${result.riskAssessment.riskLevel}\nUrgency: ${result.riskAssessment.urgencyLabel}\nSummary: ${result.riskAssessment.summary}\n\n`;
     }
 
-    if (langMode === 'en_ko' && result.koreanSummary) {
-      textToCopy += `[KOREAN SUMMARY]\n${result.koreanSummary.map((s, i) => `${i+1}. ${s}`).join('\n')}\n\n`;
-   }
+    if (translationResult) {
+      textToCopy += `[TRANSLATED SUMMARY]\n${translationResult.summaryBullets.map((s, i) => `${i+1}. ${s}`).join('\n')}\n\n`;
+    }
 
     textToCopy += `[SUMMARY]\n${result.summary.map((s, i) => `${i+1}. ${s}`).join('\n')}\n\n`;
 
@@ -90,38 +99,17 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
     </div>
   );
 
+  const hasTranslation = translationLanguage !== 'none' && translationResult !== null;
+
   return (
     <div className="space-y-6 animate-fade-in relative pt-14 md:pt-10">
       
       {/* Header Controls */}
       <div className="absolute top-0 right-0 left-0 flex flex-col md:flex-row md:items-center justify-between gap-2">
-         {/* Language Toggle + Detected Topic */}
+         {/* Detected Topic */}
          <div className="flex items-center gap-3">
-             <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-                <button 
-                  onClick={() => setLangMode('en')}
-                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                    langMode === 'en' 
-                      ? 'bg-white text-blue-600 shadow-sm border border-slate-100' 
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  {t(locale, 'results.langToggle.enOnly')}
-                </button>
-                <button 
-                  onClick={() => setLangMode('en_ko')}
-                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
-                    langMode === 'en_ko' 
-                      ? 'bg-white text-blue-600 shadow-sm border border-slate-100' 
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  {t(locale, 'results.langToggle.enKo')}
-                </button>
-             </div>
-
              {result.topicLabel && (
-               <div className="hidden sm:inline-flex items-center px-2 py-1 rounded bg-slate-50 border border-slate-200 text-[10px] text-slate-600 font-medium" title={t(locale, 'results.detectedTopicTooltip')}>
+               <div className="inline-flex items-center px-2 py-1 rounded bg-slate-50 border border-slate-200 text-[10px] text-slate-600 font-medium" title={t(locale, 'results.detectedTopicTooltip')}>
                  <span className="opacity-50 mr-1">{t(locale, 'results.detectedTopic')}</span>
                  <span className="text-slate-800">{result.topicLabel}</span>
                </div>
@@ -188,58 +176,61 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
 
       {/* Risk & Urgency Card */}
       {result.riskAssessment && (
-        <div className={`p-5 rounded-xl border ${getRiskColor(result.riskAssessment.riskLevel)}`}>
-           <div className="flex items-start gap-3">
-              <div className="mt-0.5">{getRiskIcon(result.riskAssessment.riskLevel)}</div>
-              <div>
-                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-xs font-bold uppercase tracking-wider opacity-80">
-                      {t(locale, 'results.riskTitle')}
-                    </span>
-                    <span className="px-2 py-0.5 bg-white/50 rounded text-xs font-bold border border-black/5">
-                       {result.riskAssessment.riskLevel}
-                    </span>
-                    <span className="text-sm font-semibold">
-                       • {result.riskAssessment.urgencyLabel}
-                    </span>
-                 </div>
-                 <p className="text-sm leading-relaxed font-medium opacity-90 mb-3">
-                   {result.riskAssessment.summary}
-                 </p>
-                 
-                 {/* First Steps Section */}
-                 <div className="bg-white/40 rounded p-2 mb-2">
-                   <span className="text-xs font-bold uppercase tracking-wide block opacity-80 mb-1">
-                     {t(locale, 'results.firstSteps')}
-                   </span>
-                   <p className="text-sm">
-                     {getFirstStepsText(result.riskAssessment.riskLevel)}
+        <div className="space-y-2">
+          {/* English Risk */}
+          <div className={`p-5 rounded-xl border ${getRiskColor(result.riskAssessment.riskLevel)}`}>
+             <div className="flex items-start gap-3">
+                <div className="mt-0.5">{getRiskIcon(result.riskAssessment.riskLevel)}</div>
+                <div>
+                   <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-xs font-bold uppercase tracking-wider opacity-80">
+                        {t(locale, 'results.riskTitle')}
+                      </span>
+                      <span className="px-2 py-0.5 bg-white/50 rounded text-xs font-bold border border-black/5">
+                         {result.riskAssessment.riskLevel}
+                      </span>
+                      <span className="text-sm font-semibold">
+                         • {result.riskAssessment.urgencyLabel}
+                      </span>
+                   </div>
+                   <p className="text-sm leading-relaxed font-medium opacity-90 mb-3">
+                     {result.riskAssessment.summary}
                    </p>
-                 </div>
+                   
+                   {/* First Steps Section */}
+                   <div className="bg-white/40 rounded p-2 mb-2">
+                     <span className="text-xs font-bold uppercase tracking-wide block opacity-80 mb-1">
+                       {t(locale, 'results.firstSteps')}
+                     </span>
+                     <p className="text-sm">
+                       {getFirstStepsText(result.riskAssessment.riskLevel)}
+                     </p>
+                   </div>
 
-                 <p className="text-[10px] opacity-60 uppercase tracking-wide">
-                   {t(locale, 'results.riskDisclaimer')}
-                 </p>
-              </div>
-           </div>
-        </div>
-      )}
-
-      {/* Korean Summary (Conditional) */}
-      {langMode === 'en_ko' && result.koreanSummary && (
-        <div className="bg-blue-50 rounded-xl border border-blue-100 p-6 animate-fade-in">
-           <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2 mb-4">
-            <Languages className="w-5 h-5 text-blue-600" />
-            {t(locale, 'results.koreanSummaryTitle')}
-          </h3>
-           <ul className="space-y-3">
-            {result.koreanSummary.map((point, idx) => (
-              <li key={idx} className="flex items-start gap-3 text-blue-800 leading-relaxed">
-                <span className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2"></span>
-                <span>{point}</span>
-              </li>
-            ))}
-          </ul>
+                   <p className="text-[10px] opacity-60 uppercase tracking-wide">
+                     {t(locale, 'results.riskDisclaimer')}
+                   </p>
+                </div>
+             </div>
+          </div>
+          
+          {/* Translated Risk */}
+          {hasTranslation && translationResult?.riskCard && (
+             <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+               <div className="flex items-center gap-2 mb-2">
+                  <Languages className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="text-xs font-bold text-slate-500 uppercase">In {translationResult.language === 'ko' ? 'Korean' : translationResult.language}</span>
+               </div>
+               <div className="flex items-center gap-2 mb-1 text-sm text-slate-800 font-semibold">
+                  <span>{translationResult.riskCard.riskLevel}</span>
+                  <span className="text-slate-300">•</span>
+                  <span>{translationResult.riskCard.urgencyLabel}</span>
+               </div>
+               <p className="text-sm text-slate-600">
+                  {translationResult.riskCard.summary}
+               </p>
+             </div>
+          )}
         </div>
       )}
 
@@ -249,16 +240,42 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
           <Sparkles className="w-5 h-5 text-indigo-500" />
           {t(locale, 'results.summaryTitle')}
         </h3>
-        <ul className="space-y-3">
-          {result.summary.map((point, idx) => (
-            <li key={idx} className="flex items-start gap-3 text-slate-700 leading-relaxed">
-              <span className="flex-shrink-0 w-6 h-6 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
-                {idx + 1}
-              </span>
-              <span>{point}</span>
-            </li>
-          ))}
-        </ul>
+        
+        <div className="space-y-6">
+          {/* English Summary */}
+          <div>
+            {hasTranslation && <div className="text-xs font-bold text-indigo-200 mb-2 uppercase">English</div>}
+            <ul className="space-y-3">
+              {result.summary.map((point, idx) => (
+                <li key={idx} className="flex items-start gap-3 text-slate-700 leading-relaxed">
+                  <span className="flex-shrink-0 w-6 h-6 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                    {idx + 1}
+                  </span>
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Translated Summary */}
+          {hasTranslation && translationResult && (
+             <div className="pt-4 border-t border-indigo-50">
+               <div className="flex items-center gap-2 mb-3">
+                  <Languages className="w-4 h-4 text-indigo-400" />
+                  <span className="text-xs font-bold text-indigo-400 uppercase">In {translationResult.language === 'ko' ? 'Korean' : translationResult.language}</span>
+               </div>
+               <ul className="space-y-3">
+                {translationResult.summaryBullets.map((point, idx) => (
+                  <li key={idx} className="flex items-start gap-3 text-slate-600 leading-relaxed">
+                    <span className="flex-shrink-0 w-1.5 h-1.5 bg-indigo-200 rounded-full mt-2 ml-2"></span>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+             </div>
+          )}
+        </div>
+
         <div className="mt-4 flex justify-end">
            <button 
              onClick={() => onTabChange('checklist')}
@@ -280,10 +297,25 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
           </h3>
         </div>
         
-        <div className="relative">
-          <div className={`prose prose-slate max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap transition-all duration-300 ${!isDetailedExpanded ? 'max-h-[160px] overflow-hidden' : ''}`}>
+        <div className="relative space-y-6">
+           {/* English Detail */}
+           <div className={`prose prose-slate max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap transition-all duration-300 ${!isDetailedExpanded ? 'max-h-[160px] overflow-hidden' : ''}`}>
             {result.detailedExplanation}
           </div>
+          
+           {/* Translated Detail */}
+           {hasTranslation && translationResult && (
+             <div className={`border-t border-slate-100 pt-6 ${!isDetailedExpanded ? 'hidden' : 'block'}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Languages className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs font-bold text-slate-400 uppercase">In {translationResult.language === 'ko' ? 'Korean' : translationResult.language}</span>
+               </div>
+               <div className="text-slate-600 leading-relaxed whitespace-pre-wrap">
+                 {translationResult.detailedExplanation}
+               </div>
+             </div>
+           )}
+
           {!isDetailedExpanded && (
             <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
           )}
@@ -307,13 +339,24 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ result, locale, onC
 
        {/* Simple English Notes */}
        {result.simpleEnglishNotes && (
-        <div className="bg-indigo-50 rounded-xl border border-indigo-100 p-6">
-          <h3 className="text-sm font-bold text-indigo-800 uppercase tracking-wide mb-2">
-             {t(locale, 'results.simpleEnglishTitle')}
-          </h3>
-          <p className="text-indigo-900 font-medium leading-relaxed">
-            {result.simpleEnglishNotes}
-          </p>
+        <div className="bg-indigo-50 rounded-xl border border-indigo-100 p-6 space-y-4">
+          <div>
+            <h3 className="text-sm font-bold text-indigo-800 uppercase tracking-wide mb-2">
+              {t(locale, 'results.simpleEnglishTitle')}
+            </h3>
+            <p className="text-indigo-900 font-medium leading-relaxed">
+              {result.simpleEnglishNotes}
+            </p>
+          </div>
+          
+          {/* Translated Simple English */}
+          {hasTranslation && translationResult?.simpleEnglishNote && (
+            <div className="pt-4 border-t border-indigo-200/50">
+               <p className="text-indigo-800/80 font-medium leading-relaxed">
+                  {translationResult.simpleEnglishNote}
+               </p>
+            </div>
+          )}
         </div>
       )}
 

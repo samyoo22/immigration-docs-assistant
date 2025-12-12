@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { VisaSituation, ChecklistItem, AppState, UserIntent, Locale } from './types';
-import { analyzeDocument } from './services/geminiService';
+import { VisaSituation, ChecklistItem, AppState, UserIntent, Locale, SupportedLanguage } from './types';
+import { analyzeDocument, translateAnalysis } from './services/geminiService';
 import { SAMPLE_OPT_EMAIL } from './data/sampleTexts';
 import LandingScreen from './components/LandingScreen';
 import WorkspaceScreen from './components/WorkspaceScreen';
@@ -32,6 +32,9 @@ function App() {
     checklistState: [],
     error: null,
     locale: 'en',
+    translationLanguage: 'none',
+    translationResult: null,
+    isTranslating: false,
   });
 
   const handleStartSample = () => {
@@ -55,12 +58,15 @@ function App() {
       ...prev,
       view: 'landing',
       error: null,
-      result: null, 
+      result: null,
+      checklistState: [],
+      translationResult: null,
+      translationLanguage: 'none',
     }));
   };
 
   const handleAnalyze = async () => {
-    setState((prev) => ({ ...prev, isAnalyzing: true, error: null }));
+    setState((prev) => ({ ...prev, isAnalyzing: true, error: null, translationResult: null, translationLanguage: 'none' }));
     
     try {
       const result = await analyzeDocument(state.situation, state.inputText, state.locale);
@@ -112,6 +118,41 @@ function App() {
       });
       
       localStorage.setItem(storageKey, JSON.stringify(statusMap));
+    }
+  };
+
+  const handleTranslate = async (lang: SupportedLanguage) => {
+    if (lang === 'none') {
+      setState(prev => ({ ...prev, translationLanguage: 'none', translationResult: null }));
+      return;
+    }
+    
+    // If we already have this language translated, just switch
+    if (state.translationResult?.language === lang) {
+      setState(prev => ({ ...prev, translationLanguage: lang }));
+      return;
+    }
+
+    if (!state.result) return;
+
+    setState(prev => ({ ...prev, isTranslating: true, translationLanguage: lang }));
+
+    try {
+      const translation = await translateAnalysis(state.result, state.checklistState, lang);
+      setState(prev => ({
+        ...prev,
+        isTranslating: false,
+        translationResult: translation
+      }));
+    } catch (error: any) {
+      console.error(error);
+      setState(prev => ({
+        ...prev,
+        isTranslating: false,
+        // Optional: show a toast or error for translation failure, but keep main state valid
+        translationLanguage: 'none' // Revert on fail
+      }));
+      // Could add a specific translation error state if needed
     }
   };
 
@@ -176,6 +217,7 @@ function App() {
             onAnalyze={handleAnalyze}
             onBack={handleBackToStart}
             setChecklistState={handleUpdateChecklist}
+            onTranslate={handleTranslate}
           />
         )}
 

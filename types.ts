@@ -68,6 +68,24 @@ export interface FollowUpQAEntry {
 
 export type Locale = 'en' | 'ko' | 'zh' | 'hi' | 'ja';
 
+// New types for multilingual support
+export type SupportedLanguage = "none" | "ko" | "zh-CN" | "hi" | "ja";
+
+export interface TranslatedAnalysis {
+  language: SupportedLanguage;
+  riskCard?: {
+    riskLevel: string; // Translated level name
+    urgencyLabel: string; // Translated urgency
+    summary: string; // Translated summary
+  };
+  summaryBullets: string[];
+  detailedExplanation: string;
+  simpleEnglishNote?: string;
+  checklistItems: { id: string; title: string; description: string }[];
+  keyTerms?: { term: string; explanation: string }[]; // term kept in EN, explanation translated
+  dsoEmailNote?: string; // Explanation of the email draft
+}
+
 export interface AppState {
   view: 'landing' | 'workspace';
   intent: UserIntent;
@@ -78,4 +96,8 @@ export interface AppState {
   checklistState: ChecklistItem[]; 
   error: string | null;
   locale: Locale;
+  // Translation state
+  translationLanguage: SupportedLanguage;
+  translationResult: TranslatedAnalysis | null;
+  isTranslating: boolean;
 }

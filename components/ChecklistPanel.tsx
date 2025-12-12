@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { ChecklistItem, Locale, DueCategory } from '../types';
-import { CheckCircle2, Circle, Clock, ClipboardList, Copy, Check, CalendarDays, User, Filter, AlertCircle } from 'lucide-react';
+import { ChecklistItem, Locale, DueCategory, TranslatedAnalysis } from '../types';
+import { CheckCircle2, Circle, Clock, ClipboardList, Copy, Check, CalendarDays, User, Filter, AlertCircle, Globe } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface ChecklistPanelProps {
@@ -9,11 +9,13 @@ interface ChecklistPanelProps {
   onToggleStatus: (id: string) => void;
   locale: Locale;
   onCopy: (text: string, successMessage?: string) => void;
+  translationResult: TranslatedAnalysis | null;
+  isTranslating: boolean;
 }
 
 type FilterType = 'all' | 'high' | 'today' | 'week';
 
-const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, locale, onCopy }) => {
+const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, locale, onCopy, translationResult, isTranslating }) => {
   const [filter, setFilter] = useState<FilterType>('all');
   
   const handleCopy = () => {
@@ -41,6 +43,11 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
   };
 
   const filteredItems = getFilteredItems();
+
+  const getTranslatedItem = (id: string) => {
+    if (!translationResult) return null;
+    return translationResult.checklistItems.find(t => t.id === id);
+  };
 
   if (items.length === 0) {
     return (
@@ -91,10 +98,6 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
     return null;
   };
 
-  // Grouping for Timeline View (always uses ALL items to show full picture, but visual cues could be nice)
-  // Re-filtering timeline based on the top filter might be confusing if the timeline says "Today" but filter is "All".
-  // The prompt says "Items in the Timeline view should respect the same filter".
-  
   const timelineGroups: Record<DueCategory, ChecklistItem[]> = {
     today: [],
     this_week: [],
@@ -175,50 +178,69 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
            </div>
         ) : (
           <div className="space-y-3">
-            {filteredItems.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => onToggleStatus(item.id)}
-                className={`
-                  relative p-4 rounded-xl border transition-all cursor-pointer group
-                  ${getStatusClass(item.status)}
-                `}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 mt-1 transition-transform group-hover:scale-110">
-                    {getStatusIcon(item.status)}
-                  </div>
-                  <div className="flex-grow">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-white/60 px-1.5 py-0.5 rounded border border-slate-100">
-                        {item.category}
-                      </span>
-                      {getPriorityBadge(item.priority)}
-                      
-                      {/* Who/Actor Pill */}
-                      <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1">
-                        <User className="w-3 h-3" /> {t(locale, 'results.who')} {item.actor || 'Student'}
-                      </span>
-                      {item.dueLabel && (
-                        <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {item.dueLabel}
+            {filteredItems.map((item) => {
+              const translated = getTranslatedItem(item.id);
+              
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => onToggleStatus(item.id)}
+                  className={`
+                    relative p-4 rounded-xl border transition-all cursor-pointer group
+                    ${getStatusClass(item.status)}
+                  `}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 mt-1 transition-transform group-hover:scale-110">
+                      {getStatusIcon(item.status)}
+                    </div>
+                    <div className="flex-grow">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-white/60 px-1.5 py-0.5 rounded border border-slate-100">
+                          {item.category}
                         </span>
+                        {getPriorityBadge(item.priority)}
+                        
+                        {/* Who/Actor Pill */}
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                          <User className="w-3 h-3" /> {t(locale, 'results.who')} {item.actor || 'Student'}
+                        </span>
+                        {item.dueLabel && (
+                          <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> {item.dueLabel}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* English Title & Description */}
+                      <h4 className={`font-semibold text-slate-800 mb-1 ${item.status === 'done' ? 'line-through text-slate-500' : ''}`}>
+                        {item.title}
+                      </h4>
+                      <p className={`text-sm text-slate-600 leading-snug ${item.status === 'done' ? 'line-through text-slate-400' : ''}`}>
+                        {item.description}
+                      </p>
+
+                      {/* Translated Title & Description */}
+                      {translated && (
+                         <div className={`mt-3 pt-3 border-t border-slate-200/60 ${item.status === 'done' ? 'opacity-50' : ''}`}>
+                            <h4 className="text-sm font-semibold text-slate-700 mb-0.5 flex items-center gap-1.5">
+                              <Globe className="w-3 h-3 text-slate-400" />
+                              {translated.title}
+                            </h4>
+                            <p className="text-xs text-slate-500 leading-relaxed">
+                              {translated.description}
+                            </p>
+                         </div>
                       )}
                     </div>
-                    <h4 className={`font-semibold text-slate-800 mb-1 ${item.status === 'done' ? 'line-through text-slate-500' : ''}`}>
-                      {item.title}
-                    </h4>
-                    <p className={`text-sm text-slate-600 leading-snug ${item.status === 'done' ? 'line-through text-slate-400' : ''}`}>
-                      {item.description}
-                    </p>
+                  </div>
+                  
+                  <div className="absolute top-4 right-4 text-xs font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {item.status === 'todo' ? 'Click to start' : item.status === 'in-progress' ? 'Click to complete' : 'Click to undo'}
                   </div>
                 </div>
-                
-                <div className="absolute top-4 right-4 text-xs font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {item.status === 'todo' ? 'Click to start' : item.status === 'in-progress' ? 'Click to complete' : 'Click to undo'}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -250,35 +272,45 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
                   </h4>
 
                   <div className="space-y-2">
-                    {groupItems.map(item => (
+                    {groupItems.map(item => {
+                       const translated = getTranslatedItem(item.id);
+
+                       return (
                        <div 
                         key={`tl-${item.id}`} 
-                        className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors"
+                        className="bg-slate-50 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"
                         onClick={() => onToggleStatus(item.id)}
                        >
-                          <div className="flex items-center gap-3">
-                            {getStatusIcon(item.status)}
-                            <div className="flex flex-col">
-                              <span className={`text-sm font-medium ${item.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700'}`}>
-                                {item.title}
-                              </span>
-                              <div className="flex gap-2">
-                                {item.actor && (
-                                  <span className="text-[10px] text-slate-400">
-                                    {t(locale, 'results.who')} {item.actor}
-                                  </span>
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                              {getStatusIcon(item.status)}
+                              <div className="flex flex-col">
+                                <span className={`text-sm font-medium ${item.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700'}`}>
+                                  {item.title}
+                                </span>
+                                {translated && (
+                                   <span className={`text-xs text-slate-500 mt-0.5 ${item.status === 'done' ? 'line-through text-slate-300' : ''}`}>
+                                     {translated.title}
+                                   </span>
                                 )}
-                                {item.priority === 'high' && <span className="text-[10px] text-red-500 font-bold">High</span>}
+                                <div className="flex gap-2 mt-1">
+                                  {item.actor && (
+                                    <span className="text-[10px] text-slate-400">
+                                      {t(locale, 'results.who')} {item.actor}
+                                    </span>
+                                  )}
+                                  {item.priority === 'high' && <span className="text-[10px] text-red-500 font-bold">High</span>}
+                                </div>
                               </div>
                             </div>
+                            {item.dueLabel && (
+                              <span className="text-xs text-slate-400 hidden sm:inline-block">
+                                {item.dueLabel}
+                              </span>
+                            )}
                           </div>
-                          {item.dueLabel && (
-                            <span className="text-xs text-slate-400 hidden sm:inline-block">
-                              {item.dueLabel}
-                            </span>
-                          )}
                        </div>
-                    ))}
+                    )})}
                   </div>
                 </div>
               );
