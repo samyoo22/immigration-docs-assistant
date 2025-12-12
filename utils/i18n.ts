@@ -18,17 +18,34 @@ export const translations = {
       retry: "Please try again in a few seconds. If the problem persists, shorten the document or refresh the page.",
     },
     landing: {
-      heroTitle: "Immigration Docs",
-      heroTitleSuffix: "Assistant",
-      heroSubtitle: "Paste your visa or school email, get a plain explanation and a to-do checklist.",
-      heroSubtitleSupport: "Easy-to-understand explanations and checklists for F-1 students and immigrants.",
-      badge: "English first · Future multilingual support · Not legal advice",
+      heroTitle: "Understand your US visa emails",
+      heroTitleSuffix: "in plain English.",
+      heroSubtitle: "Immigration Docs Assistant · For F-1 students & immigrants",
+      heroSubtitleSupport: "Paste an F-1 or visa-related email and get a plain-English explanation, action checklist, and optional Korean summary.",
+      badge: "English first · EN+KR prototype · Not legal advice",
       step1: "Step 1 of 2 · Tell us about your situation",
-      situationLabel: "My Status / Situation",
+      situationLabel: "1. Choose your situation",
       situationHelper: "We’ll use this to tailor your explanation and checklist.",
       btnSample: "Start with sample text",
-      btnCustom: "Or paste my own text",
+      btnCustom: "Or paste my own email",
       agreement: "By using this tool, you acknowledge that it does not provide legal advice. Always consult official sources.",
+      previewLabel: "Preview of your results",
+      howItWorks: "How it works: 1) Choose your situation · 2) Paste your email · 3) Get a clear explanation and checklist.",
+      features: {
+        plainEnglish: {
+          title: "Plain-English explanation",
+          desc: "See what your visa email means in everyday language."
+        },
+        checklist: {
+          title: "Checklist & timeline",
+          desc: "Get concrete next steps organized by urgency."
+        },
+        korean: {
+          title: "Korean summary (optional)",
+          desc: "View a Korean summary alongside English if you need it."
+        }
+      },
+      previewCaption: "You’ll get a clear explanation and checklist like this."
     },
     workspace: {
       backButton: "Back to Start",
@@ -96,7 +113,7 @@ export const translations = {
       dsoQuestionsNote: "These questions are suggestions only. Your DSO may ask you for more information.",
       officialResourcesTitle: "Official Resources",
       officialResourcesNote: "* Always rely on .gov websites or your school's (.edu) official portal for the most accurate information.",
-      termPlaceholder: "Terms will appear here after analysis.",
+      termPlaceholder: "분석 후 용어가 여기에 표시됩니다.",
       timeline: {
         today: "Today / As soon as possible",
         this_week: "Within the next 7 days",
@@ -134,17 +151,34 @@ export const translations = {
       retry: "잠시 후 다시 시도해주세요. 문제가 지속되면 문서를 짧게 줄이거나 페이지를 새로고침하세요.",
     },
     landing: {
-      heroTitle: "Immigration Docs",
-      heroTitleSuffix: "Assistant",
-      heroSubtitle: "비자나 학교 이메일을 붙여넣으면, 쉬운 설명과 할 일 체크리스트를 드립니다.",
-      heroSubtitleSupport: "F-1 유학생과 이민자를 위한 쉬운 설명 및 체크리스트.",
-      badge: "English first · 향후 다국어 지원 예정 · 법적 조언 아님",
-      step1: "1단계(총 2단계) · 현재 상황을 알려주세요",
-      situationLabel: "나의 상황 / 신분",
+      heroTitle: "Understand your US visa emails",
+      heroTitleSuffix: "in plain English.",
+      heroSubtitle: "Immigration Docs Assistant · For F-1 유학생 & Immigrants",
+      heroSubtitleSupport: "이메일을 붙여넣으면 쉬운 영어 설명, 체크리스트, 그리고 한국어 요약을 드립니다.",
+      badge: "영어 우선 · 영어+한국어 프로토타입 · 법적 조언 아님",
+      step1: "1단계 · 현재 상황을 알려주세요",
+      situationLabel: "1. 나의 상황 / 신분 선택",
       situationHelper: "상황에 맞춰 설명과 체크리스트를 제공해 드립니다.",
       btnSample: "샘플 텍스트로 시작하기",
-      btnCustom: "내 텍스트 붙여넣기",
+      btnCustom: "내 이메일 붙여넣기",
       agreement: "이 도구를 사용함으로써 법적 조언이 아님을 인지합니다. 항상 공식 출처를 확인하세요.",
+      previewLabel: "결과 미리보기",
+      howItWorks: "사용 방법: 1) 상황 선택 · 2) 이메일 붙여넣기 · 3) 명확한 설명과 체크리스트 받기",
+      features: {
+        plainEnglish: {
+          title: "쉬운 영어 설명",
+          desc: "복잡한 비자 이메일을 쉬운 일상 언어로 이해하세요."
+        },
+        checklist: {
+          title: "체크리스트 & 타임라인",
+          desc: "긴급도에 따라 정리된 구체적인 다음 단계를 확인하세요."
+        },
+        korean: {
+          title: "한국어 요약 (선택 사항)",
+          desc: "필요한 경우 영어와 함께 한국어 요약을 볼 수 있습니다."
+        }
+      },
+      previewCaption: "이런 식의 명확한 설명과 체크리스트를 받게 됩니다."
     },
     workspace: {
       backButton: "처음으로",
