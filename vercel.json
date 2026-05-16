@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/upload",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/analyze",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/checklists",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/checklists/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}
