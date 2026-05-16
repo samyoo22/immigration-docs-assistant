@@ -1,5 +1,6 @@
 {
-  "name": "Immigration Docs Assistant",
-  "description": "A secure, plain-language assistant for international students to understand US immigration documents and generate action checklists.",
+  "name": "VisaTodo",
+  "description": "VisaTodo turns confusing immigration and visa paperwork into plain-language summaries, clear tasks, and deadline checklists. Not legal advice.",
+  "homepage_url": "https://www.visatodo.com/",
   "requestFramePermissions": []
 }

@@ -21,7 +21,7 @@ export const translations = {
       heroKicker: "For F-1 students & immigrants",
       heroTitle: "Make your US immigration documents",
       heroTitleSuffix: "easy to understand.",
-      heroSubtitle: "Immigration Docs Assistant · For F-1 students & immigrants",
+      heroSubtitle: "VisaTodo · For students, immigrants, and visa applicants",
       heroSubtitleSupport: "Paste any visa email, PDF, or letter and get a plain-English explanation, a step-by-step checklist, and optional translations when you need them.",
       badge: "English first · Translations: KO, ZH, HI, JA (beta) · Not legal advice",
       journey: {

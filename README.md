@@ -1,79 +1,83 @@
-# Immigration Docs Assistant
+# VisaTodo
 
-Your friendly, plain-language guide to understanding U.S. visa documents and getting things done.
+[www.visatodo.com](https://www.visatodo.com)
 
-## Overview
+VisaTodo is a friendly, plain-language workspace that turns confusing immigration and visa paperwork into clear summaries, tasks, and deadlines.
 
-International students and immigrants often struggle with complex, legalistic English instructions from USCIS, schools, or government bodies. Misunderstanding a deadline or requirement can lead to serious visa status issues.
+## What It Does
 
-**Immigration Docs Assistant** solves this by using advanced AI to:
-1.  **Translate & Simplify:** Turn dense legalese into plain Korean (and simple English).
-2.  **Actionable Checklists:** Extract concrete "To-Do" items so you know exactly what to step is next.
-3.  **Safety First:** Highlight key terms and remind users to check official sources, without pretending to be a lawyer.
+International students, immigrants, and visa applicants often receive long emails, notices, and instructions full of legal or bureaucratic language. VisaTodo helps users understand what matters, what to do next, and what deadlines to watch.
 
-This tool is designed primarily for **F-1 International Students** (Pre-arrival, Current, OPT) but is built to scale for other visa types.
+Core flow:
+
+1.  Upload or paste a visa-related document.
+2.  Get a plain-language explanation.
+3.  Review key dates and required actions.
+4.  Save action items into a visa to-do list.
+5.  Track progress and important deadlines.
+
+VisaTodo is not a law firm and does not provide legal advice. It helps users understand documents, organize tasks, and prepare better questions for qualified professionals.
 
 ## Features
 
-*   **Plain-Language Explanations:** Instantly summarizes emails and PDF text into easy-to-read Korean bullets and simple English notes.
-*   **Smart Checklist Generation:** Automatically creates a structured list of tasks (e.g., "File I-765", "Contact DSO") that you can check off.
-*   **Interactive Workspace:** Toggle items as "To Do", "In Progress", or "Done".
-*   **Safety & Resources Panel:** defines difficult terms (e.g., "Grace Period", "RFE") and links to official .gov resources.
-*   **Privacy-Conscious:** No database storage of your text; data is processed in-session only.
+*   **Document Explainer:** Upload or paste visa-related instructions and get a plain-language summary.
+*   **Smart To-Do List:** Turn confusing requirements into clear tasks, statuses, priorities, and reminders.
+*   **Visa Path Dashboard:** Track the current visa situation, upcoming tasks, recent documents, and important deadlines.
+*   **Questions & Resources:** Prepare questions for a DSO, attorney, employer, or school official, with links to official resources.
+*   **Privacy-Conscious Input:** Reminds users not to paste passport numbers, SSNs, SEVIS IDs, or other highly sensitive details.
 
-## How it Works
+## Domain Setup
 
-1.  **Select Context:** The user selects their situation (e.g., "F-1 OPT Application").
-2.  **Input:** The user pastes the text of an email or document (ensuring no sensitive PII is included).
-3.  **AI Analysis:** The app sends the text to **Gemini 3 Pro** (via Google GenAI SDK) with a strict system prompt to explain, categorize, and extract tasks securely.
-4.  **Structured Output:** Gemini returns a JSON object containing the summary, checklist items, and safety terms, which the React frontend renders into an interactive UI.
+The production domain is:
+
+```txt
+https://www.visatodo.com
+```
+
+This repo includes:
+
+*   `public/CNAME` for GitHub Pages custom domain support.
+*   `public/robots.txt` with the production sitemap URL.
+*   `public/sitemap.xml` pointing to `https://www.visatodo.com/`.
+*   `index.html` canonical, Open Graph, Twitter, description, and theme metadata for `www.visatodo.com`.
+
+For DNS, point `www.visatodo.com` to the hosting provider used for the deployed app. If using GitHub Pages, configure the custom domain in repository Pages settings and set the DNS CNAME record for `www` to the GitHub Pages target.
 
 ## Tech Stack
 
-*   **Frontend:** React 19 (via CDN imports), Tailwind CSS, Lucide React icons.
-*   **AI Model:** Google Gemini 3 Pro (via `@google/genai` SDK).
-*   **Build/Run Environment:** Google AI Studio Vibe Coding (Standard HTML/JS/CSS module structure).
-*   **Language:** TypeScript.
+*   **Frontend:** React 19, TypeScript, Vite, Tailwind CSS, Lucide React icons.
+*   **AI:** Google Gemini via `@google/genai`.
+*   **PDF Text Extraction:** `pdfjs-dist`.
 
-## Getting Started
+## Running Locally
 
-### Prerequisites
-*   A Google Cloud Project with the **Gemini API** enabled.
-*   An API Key from Google AI Studio.
+1.  Install dependencies:
 
-### Running Locally / in Vibe Coding
-1.  Ensure your environment has the `API_KEY` environment variable set.
-2.  The application uses standard ES modules and React via CDN, so no complex build step (like Webpack/Vite) is strictly required for the Vibe environment, though it mimics a React project structure.
-3.  Open `index.html` via a local server or the Vibe Coding preview to see the app.
+```bash
+npm install
+```
 
-## Project Structure
+2.  Add a Gemini API key to the local environment:
 
-*   `App.tsx`: Main application controller (Routing between Landing and Workspace).
-*   `components/`: UI building blocks.
-    *   `LandingScreen.tsx`: The welcoming entry page.
-    *   `WorkspaceScreen.tsx`: The main split-view for analysis.
-    *   `InputSection.tsx`: Text area for pasting documents.
-    *   `ExplanationPanel.tsx`: Renders the AI summary.
-    *   `ChecklistPanel.tsx`: Renders the interactive to-do list.
-    *   `SafetyPanel.tsx`: Shows glossary and official links.
-*   `services/geminiService.ts`: Handles communication with the Google GenAI SDK.
-*   `types.ts`: TypeScript interfaces for the application state and data models.
-*   `data/`: Static data (e.g., sample text).
+```bash
+GEMINI_API_KEY=your_key_here
+```
 
-## Safety and Limitations
+3.  Start the dev server:
 
-*   **NOT LEGAL ADVICE:** This tool is for educational purposes only. It is not a substitute for a qualified immigration attorney.
-*   **Official Sources:** Always verify critical dates and forms with [USCIS.gov](https://www.uscis.gov) or your school's International Student Office (DSO).
-*   **AI Limitations:** While Gemini 3 Pro is powerful, it can occasionally misinterpret ambiguous text. The app encourages "conservative" interpretation and warns users about uncertainties.
-*   **Data Privacy:** Do not paste full Social Security Numbers, Passport Numbers, or A-Numbers into the tool.
+```bash
+npm run dev
+```
 
-## Roadmap / Future Work
+4.  Build for production:
 
-*   **Multi-language Support:** Add support for Chinese, Hindi, and Spanish.
-*   **PDF Upload:** Allow direct PDF parsing instead of copy-pasting text.
-*   **Timeline View:** Visualize deadlines on a calendar.
-*   **More Visa Types:** Support H-1B, J-1, and O-1 visa contexts.
+```bash
+npm run build
+```
 
-## License
+## Safety
 
-MIT License. See repository for details.
+*   **Not legal advice:** VisaTodo is educational and organizational software, not a substitute for a qualified immigration attorney.
+*   **Verify official sources:** Confirm critical deadlines and forms with [USCIS.gov](https://www.uscis.gov), a school DSO, an employer contact, or another qualified professional.
+*   **AI limitations:** AI-generated summaries may miss context or misunderstand ambiguous documents.
+*   **Sensitive data:** Do not paste full SSNs, passport numbers, SEVIS IDs, A-Numbers, or other highly sensitive identifiers.
