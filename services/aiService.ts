@@ -6,6 +6,16 @@ import {
   VisaSituation,
 } from "../types";
 
+class ApiRequestError extends Error {
+  statusCode?: number;
+
+  constructor(message: string, statusCode?: number) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.statusCode = statusCode;
+  }
+}
+
 export const createMockAnalysisResult = (warning?: string): AnalysisResult => ({
   topic: "post_completion_opt",
   topicLabel: "OPT or STEM OPT Instructions",
@@ -106,16 +116,30 @@ export const createMockAnalysisResult = (warning?: string): AnalysisResult => ({
 });
 
 const postJson = async <T>(url: string, body: unknown): Promise<T> => {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  let response: Response;
 
-  const payload = await response.json().catch(() => ({}));
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiRequestError("The AI server could not be reached. Please check the deployment or try again later.");
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  const payload = contentType.includes("application/json")
+    ? await response.json().catch(() => ({}))
+    : {};
 
   if (!response.ok) {
-    throw new Error(payload.error || "The AI request failed. Please try again.");
+    const fallbackMessage =
+      response.status === 404
+        ? "The AI server endpoint is not available in this deployment."
+        : "The AI request failed. Please try again.";
+
+    throw new ApiRequestError(payload.error || fallbackMessage, response.status);
   }
 
   return payload as T;
@@ -129,8 +153,12 @@ export const analyzeDocument = async (
     return await postJson<AnalysisResult>("/api/analyze", { situation, text });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    const statusCode = error instanceof ApiRequestError ? error.statusCode : undefined;
     const canUsePreview =
+      statusCode === 404 ||
       message.toLowerCase().includes("api key") ||
+      message.toLowerCase().includes("server could not be reached") ||
+      message.toLowerCase().includes("server endpoint is not available") ||
       message.toLowerCase().includes("quota") ||
       message.toLowerCase().includes("rate limit") ||
       message.toLowerCase().includes("access was denied");

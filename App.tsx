@@ -6,7 +6,6 @@ import { SAMPLE_OPT_EMAIL } from './data/sampleTexts';
 import LandingScreen from './components/LandingScreen';
 import AnalyzerScreen from './components/AnalyzerScreen';
 import DisclaimerBanner from './components/DisclaimerBanner';
-import { ListChecks } from 'lucide-react';
 import { t } from './utils/i18n';
 
 // Helper to hash string for local storage key
@@ -128,6 +127,26 @@ function App() {
     }
   };
 
+  const handleSetSituation = (situation: VisaSituation) => {
+    setState(prev => ({
+      ...prev,
+      situation,
+      error: null,
+    }));
+  };
+
+  const handleSetInputText = (inputText: string) => {
+    setState(prev => ({
+      ...prev,
+      inputText,
+      error: null,
+      result: null,
+      checklistState: [],
+      translationResult: null,
+      translationLanguage: 'none',
+    }));
+  };
+
   const handleUpdateChecklist = (items: ChecklistItem[]) => {
     setState(prev => ({ ...prev, checklistState: items }));
     
@@ -181,24 +200,25 @@ function App() {
   return (
     <div className="min-h-screen pb-12 font-sans bg-slate-50 text-slate-950 transition-colors duration-500">
       {/* Global Header */}
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/85 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div 
-            className="flex items-center gap-3 cursor-pointer group" 
-            onClick={handleBackToStart}
+          <a
+            href="/"
+            aria-label="VisaTodo home"
+            className="flex items-center"
+            onClick={(event) => {
+              event.preventDefault();
+              handleBackToStart();
+            }}
           >
-            <div className="p-1.5 rounded-lg bg-sky-100 text-sky-700 group-hover:bg-sky-200 transition-colors">
-              <ListChecks className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold leading-none text-slate-950">
-                {t(state.locale, 'common.appName')}
-              </h1>
-              <p className="text-xs mt-0.5 text-slate-500">
-                Plain-English visa document help
-              </p>
-            </div>
-          </div>
+            <img
+              src="/visatodo-logo.png"
+              alt="VisaTodo"
+              width={180}
+              height={135}
+              className="block h-12 w-[150px] object-cover object-center md:w-[180px]"
+            />
+          </a>
           
           <div className="flex items-center gap-4">
             <button
@@ -230,8 +250,8 @@ function App() {
         ) : (
           <AnalyzerScreen
             appState={state}
-            setSituation={(s) => setState(prev => ({ ...prev, situation: s }))}
-            setInputText={(t) => setState(prev => ({ ...prev, inputText: t }))}
+            setSituation={handleSetSituation}
+            setInputText={handleSetInputText}
             setAcceptedDisclaimer={(accepted) => setState(prev => ({ ...prev, hasAcceptedDisclaimer: accepted }))}
             onAnalyze={handleAnalyze}
             onBack={handleBackToStart}
