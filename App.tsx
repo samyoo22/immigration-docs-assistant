@@ -225,7 +225,7 @@ function App() {
               onClick={handleStartCustom}
               className="hidden rounded-full bg-sky-700 px-4 py-2 text-xs font-bold text-white transition hover:bg-sky-800 sm:inline-flex"
             >
-              Analyze a document
+              Upload Document
             </button>
           </div>
         </div>
@@ -244,8 +244,8 @@ function App() {
         {/* View Switcher */}
         {state.view === 'landing' ? (
           <LandingScreen 
-            onAnalyzeDocument={handleStartCustom}
-            onPasteText={handleStartCustom}
+            onUploadDocument={handleStartCustom}
+            onCreateChecklist={handleStartCustom}
           />
         ) : (
           <AnalyzerScreen
