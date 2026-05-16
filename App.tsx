@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
 import { VisaSituation, ChecklistItem, AppState, UserIntent, TranslationLanguageCode } from './types';
-import { analyzeDocument, translateAnalysis } from './services/geminiService';
+import { analyzeDocument, translateAnalysis } from './services/aiService';
 import { SAMPLE_OPT_EMAIL } from './data/sampleTexts';
 import LandingScreen from './components/LandingScreen';
-import WorkspaceScreen from './components/WorkspaceScreen';
+import AnalyzerScreen from './components/AnalyzerScreen';
 import DisclaimerBanner from './components/DisclaimerBanner';
 import { ListChecks } from 'lucide-react';
 import { t } from './utils/i18n';
@@ -21,11 +21,13 @@ const simpleHash = (str: string) => {
 };
 
 function App() {
+  const initialView: AppState['view'] = window.location.pathname === '/analyze' ? 'analyze' : 'landing';
   const [state, setState] = useState<AppState>({
-    view: 'landing',
+    view: initialView,
     intent: UserIntent.EMAIL, // Kept for type safety but unused in UI
     situation: VisaSituation.F1_OPT_APPLY, 
     inputText: '',
+    hasAcceptedDisclaimer: false,
     isAnalyzing: false,
     result: null,
     checklistState: [],
@@ -38,24 +40,27 @@ function App() {
 
   const handleStartSample = () => {
     window.scrollTo({ top: 0, behavior: 'auto' });
+    window.history.pushState({}, '', '/analyze');
     setState(prev => ({
       ...prev,
-      view: 'workspace',
+      view: 'analyze',
       inputText: SAMPLE_OPT_EMAIL.trim(),
     }));
   };
 
   const handleStartCustom = () => {
     window.scrollTo({ top: 0, behavior: 'auto' });
+    window.history.pushState({}, '', '/analyze');
     setState(prev => ({
       ...prev,
-      view: 'workspace',
+      view: 'analyze',
       inputText: '',
     }));
   };
 
   const handleBackToStart = () => {
     window.scrollTo({ top: 0, behavior: 'auto' });
+    window.history.pushState({}, '', '/');
     setState(prev => ({
       ...prev,
       view: 'landing',
@@ -68,6 +73,14 @@ function App() {
   };
 
   const handleAnalyze = async () => {
+    if (!state.hasAcceptedDisclaimer) {
+      setState(prev => ({
+        ...prev,
+        error: "Please accept the general-information disclaimer before analyzing your document.",
+      }));
+      return;
+    }
+
     setState((prev) => ({ ...prev, isAnalyzing: true, error: null, translationResult: null, translationLanguage: 'none' }));
     
     try {
@@ -103,6 +116,15 @@ function App() {
         isAnalyzing: false,
         error: error.message || "An unexpected error occurred.",
       }));
+    }
+  };
+
+  const handleCopy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (error) {
+      console.error('Failed to copy result:', error);
+      setState(prev => ({ ...prev, error: 'Could not copy to clipboard. Please try selecting the text manually.' }));
     }
   };
 
@@ -157,31 +179,34 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen pb-12 font-sans bg-[#020617] text-slate-50 transition-colors duration-500">
+    <div className="min-h-screen pb-12 font-sans bg-slate-50 text-slate-950 transition-colors duration-500">
       {/* Global Header */}
-      <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-[#020617]/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/85 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div 
             className="flex items-center gap-3 cursor-pointer group" 
             onClick={handleBackToStart}
           >
-            <div className="p-1.5 rounded-lg bg-sky-500/10 text-sky-300 group-hover:bg-sky-500/20 transition-colors">
+            <div className="p-1.5 rounded-lg bg-sky-100 text-sky-700 group-hover:bg-sky-200 transition-colors">
               <ListChecks className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-lg font-bold leading-none text-slate-100">
+              <h1 className="text-lg font-bold leading-none text-slate-950">
                 {t(state.locale, 'common.appName')}
               </h1>
-              <p className="text-xs mt-0.5 text-slate-400">
-                {t(state.locale, 'common.tagline')}
+              <p className="text-xs mt-0.5 text-slate-500">
+                Plain-English visa document help
               </p>
             </div>
           </div>
           
           <div className="flex items-center gap-4">
-             <div className="hidden sm:block text-xs font-medium px-3 py-1 rounded-full border bg-slate-800/50 text-slate-400 border-slate-700">
-               {t(state.locale, 'common.poweredBy')}
-            </div>
+            <button
+              onClick={handleStartCustom}
+              className="hidden rounded-full bg-sky-700 px-4 py-2 text-xs font-bold text-white transition hover:bg-sky-800 sm:inline-flex"
+            >
+              Analyze a document
+            </button>
           </div>
         </div>
       </header>
@@ -190,30 +215,27 @@ function App() {
         
         {/* Error Banner */}
         {state.error && (
-          <div className="mb-6 bg-red-950/30 border border-red-900/50 text-red-300 p-4 rounded-lg text-sm flex items-center justify-between">
+          <div className="mb-6 bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-lg text-sm flex items-center justify-between">
             <span><strong>Error:</strong> {state.error}</span>
-            <button onClick={() => setState(prev => ({ ...prev, error: null }))} className="text-red-400 underline text-xs hover:text-red-300">Dismiss</button>
+            <button onClick={() => setState(prev => ({ ...prev, error: null }))} className="text-rose-700 underline text-xs hover:text-rose-900">Dismiss</button>
           </div>
         )}
 
         {/* View Switcher */}
         {state.view === 'landing' ? (
           <LandingScreen 
-            situation={state.situation}
-            setSituation={(s) => setState(prev => ({ ...prev, situation: s }))}
-            onStartSample={handleStartSample}
-            onStartCustom={handleStartCustom}
-            locale={state.locale}
+            onAnalyzeDocument={handleStartCustom}
+            onPasteText={handleStartCustom}
           />
         ) : (
-          <WorkspaceScreen 
+          <AnalyzerScreen
             appState={state}
             setSituation={(s) => setState(prev => ({ ...prev, situation: s }))}
             setInputText={(t) => setState(prev => ({ ...prev, inputText: t }))}
+            setAcceptedDisclaimer={(accepted) => setState(prev => ({ ...prev, hasAcceptedDisclaimer: accepted }))}
             onAnalyze={handleAnalyze}
             onBack={handleBackToStart}
-            setChecklistState={handleUpdateChecklist}
-            onTranslate={handleTranslate}
+            onCopy={handleCopy}
           />
         )}
 
@@ -222,7 +244,7 @@ function App() {
       {/* Global Footer & Disclaimer */}
       <footer className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <DisclaimerBanner locale={state.locale} />
-        <div className="text-center py-4 text-xs text-slate-600">
+        <div className="text-center py-4 text-xs text-slate-500">
           <p>{t(state.locale, 'common.copyright')}</p>
         </div>
       </footer>

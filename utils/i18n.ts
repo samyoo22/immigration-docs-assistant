@@ -8,7 +8,7 @@ export const translations = {
       appSuffix: "", 
       tagline: "Visa paperwork, organized",
       poweredBy: "AI helper · Not legal advice",
-      legalDisclaimer: "VisaTodo is not a law firm and does not provide legal advice. We help you understand documents, organize tasks, and prepare better questions for qualified professionals.",
+      legalDisclaimer: "VisaTodo provides general information and plain-language explanations based on the document you provide. It is not legal advice and does not replace guidance from an immigration attorney, DSO, employer, or official government source. Always verify important deadlines and requirements with the appropriate official source.",
       legalTitle: "Not Legal Advice",
       privacyNote: "Privacy Note: Do not paste full SSNs, Passport Numbers, or SEVIS IDs.",
       copyright: "© 2026 VisaTodo · www.visatodo.com · Clearer documents, better checklists, less confusion.",

@@ -46,7 +46,7 @@ For DNS, point `www.visatodo.com` to the hosting provider used for the deployed 
 ## Tech Stack
 
 *   **Frontend:** React 19, TypeScript, Vite, Tailwind CSS, Lucide React icons.
-*   **AI:** Google Gemini via `@google/genai`.
+*   **AI:** OpenAI Responses API via serverless functions.
 *   **PDF Text Extraction:** `pdfjs-dist`.
 
 ## Running Locally
@@ -57,7 +57,7 @@ For DNS, point `www.visatodo.com` to the hosting provider used for the deployed 
 npm install
 ```
 
-2.  Add a Gemini API key to the local environment. Copy the example file:
+2.  Add an OpenAI API key to the local environment. Copy the example file:
 
 ```bash
 cp .env.example .env
@@ -66,7 +66,8 @@ cp .env.example .env
 Then edit `.env`:
 
 ```bash
-GEMINI_API_KEY=your_key_here
+OPENAI_API_KEY=your_key_here
+OPENAI_MODEL=gpt-4.1-mini
 ```
 
 3.  Start the dev server:
@@ -83,21 +84,29 @@ npm run build
 
 ## API Key Configuration
 
-The app currently reads `GEMINI_API_KEY` in `vite.config.ts` and injects it into the browser build as `process.env.API_KEY`.
+The browser app does not call OpenAI directly. It calls local/serverless endpoints under `/api/*`, and those server-side handlers read `OPENAI_API_KEY`.
 
 For local development, use `.env`:
 
 ```bash
-GEMINI_API_KEY=your_key_here
+OPENAI_API_KEY=your_key_here
+OPENAI_MODEL=gpt-4.1-mini
 ```
 
-For deployment, add the same environment variable in your hosting provider:
+For deployment, add these environment variables in your hosting provider:
 
 ```txt
-GEMINI_API_KEY
+OPENAI_API_KEY
+OPENAI_MODEL
 ```
 
-For production, the safer long-term setup is to move Gemini calls behind a serverless function or backend API so the browser never receives the raw API key.
+`OPENAI_MODEL` is optional and defaults to `gpt-4.1-mini`.
+
+The API key should only exist in server or hosting environment variables. Do not expose it with a `VITE_` prefix or place it in client-side code.
+
+## Deployment Note
+
+The `/api/*` endpoints use Vercel-style serverless functions in the `api/` directory. Static-only hosting such as GitHub Pages will serve the frontend, but it will not run the AI API routes. For the OpenAI-backed version, deploy to a host that supports serverless functions, such as Vercel, or adapt the handlers to your backend provider.
 
 ## Safety
 

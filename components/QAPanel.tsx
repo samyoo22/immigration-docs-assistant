@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { AnalysisResult, FollowUpQAEntry } from '../types';
-import { askFollowUpQuestion } from '../services/geminiService';
+import { askFollowUpQuestion } from '../services/aiService';
 import { MessageCircle, Send, Loader2, User, Sparkles, FileText, Globe } from 'lucide-react';
 
 interface QAPanelProps {
