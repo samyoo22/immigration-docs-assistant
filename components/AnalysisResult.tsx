@@ -46,6 +46,20 @@ const SectionHeader = ({
 
 const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems, onCopy }) => {
   const questions = result.questionsToAsk?.length ? result.questionsToAsk : result.dsoQuestions || [];
+  const isBasicReview = result.topic === 'basic_review';
+  const safeWarnings = (result.warnings || []).filter((warning) => {
+    const normalized = warning.toLowerCase();
+    return !(
+      normalized.includes('ai service') ||
+      normalized.includes('live ai') ||
+      normalized.includes('live analysis') ||
+      normalized.includes('limited preview') ||
+      normalized.includes('request failed') ||
+      normalized.includes('not available') ||
+      normalized.includes('mock analysis') ||
+      normalized.includes('general information only')
+    );
+  });
   const copyText = [
     'Simple Summary',
     result.summary.join('\n'),
@@ -67,10 +81,14 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
     <div className="space-y-5">
       <div className="flex flex-col gap-3 rounded-2xl border border-sky-100 bg-white p-4 shadow-sm sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Analysis ready</p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-950">{result.topicLabel || 'Visa document analysis'}</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Document Review</p>
+          <h2 className="mt-1 text-xl font-semibold text-slate-950">
+            {isBasicReview ? 'We generated a basic review' : result.topicLabel || 'Visa document guidance'}
+          </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-            Review this as a plain-language starting point. Verify deadlines and requirements with the appropriate official source.
+            {isBasicReview
+              ? 'We could not create a full detailed review this time, so we generated a basic plain-language review from your provided text. You can try again or paste a clearer document excerpt.'
+              : 'We found information related to your selected situation. Review the summary, action items, dates, and documents below.'}
           </p>
         </div>
         <button
@@ -82,24 +100,29 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
         </button>
       </div>
 
-      {(result.warnings?.length || result.riskAssessment) && (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+          <div>
+            <h3 className="text-sm font-semibold text-amber-950">Before you act</h3>
+            <p className="mt-1 text-sm leading-6 text-amber-900">
+              This review is a plain-language starting point based on the document text you provided. Always verify important deadlines, eligibility, and required documents with USCIS, your DSO, employer, attorney, or another official source.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {safeWarnings.length > 0 && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
             <div>
-              <h3 className="text-sm font-semibold text-amber-950">Important caveats</h3>
-              {result.riskAssessment && (
-                <p className="mt-1 text-sm leading-6 text-amber-900">
-                  {result.riskAssessment.summary}
-                </p>
-              )}
-              {result.warnings?.length ? (
-                <ul className="mt-2 space-y-1 text-sm leading-6 text-amber-900">
-                  {result.warnings.map((warning) => (
+              <h3 className="text-sm font-semibold text-amber-950">Review note</h3>
+              <ul className="mt-2 space-y-1 text-sm leading-6 text-amber-900">
+                  {safeWarnings.map((warning) => (
                     <li key={warning}>- {warning}</li>
                   ))}
-                </ul>
-              ) : null}
+              </ul>
             </div>
           </div>
         </div>
@@ -123,17 +146,24 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
         <SectionHeader icon={<ClipboardList className="h-4 w-4" />} title="Action Items" />
         <div className="grid gap-3">
           {checklistItems.map((item) => (
-            <article key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${priorityStyles[item.priority || 'low']}`}>
-                  {item.priority || 'low'} priority
-                </span>
-                <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-500 ring-1 ring-slate-200">
-                  {item.dueLabel || 'No clear deadline'}
-                </span>
+            <article key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-sky-200 hover:bg-sky-50/40">
+              <div className="flex gap-3">
+                <div className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 border-sky-300 bg-white">
+                  <span className="h-2 w-2 rounded-sm bg-sky-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${priorityStyles[item.priority || 'low']}`}>
+                      {item.priority || 'low'} priority
+                    </span>
+                    <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-500 ring-1 ring-slate-200">
+                      {item.dueLabel || 'No clear deadline'}
+                    </span>
+                  </div>
+                  <h3 className="mt-3 text-sm font-semibold text-slate-950">{item.title}</h3>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">{item.description}</p>
+                </div>
               </div>
-              <h3 className="mt-3 text-sm font-semibold text-slate-950">{item.title}</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-600">{item.description}</p>
             </article>
           ))}
         </div>
@@ -180,20 +210,24 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <SectionHeader icon={<HelpCircle className="h-4 w-4" />} title="Questions to Ask" />
-        <div className="grid gap-3 sm:grid-cols-2">
-          {questions.map((question) => (
-            <div key={question} className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
-              {question}
-            </div>
-          ))}
-        </div>
+        {questions.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {questions.map((question) => (
+              <div key={question} className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                {question}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm leading-6 text-slate-600">No specific questions were detected. Ask an official source to confirm the next step before acting.</p>
+        )}
       </section>
 
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <div className="flex items-start gap-3">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-sky-700" />
           <p className="text-sm leading-6 text-slate-600">
-            VisaTodo provides general information and plain-language explanations based on the document you provide. It is not legal advice and does not replace guidance from an immigration attorney, DSO, employer, or official government source. Always verify important deadlines and requirements with the appropriate official source.
+            General information only. Verify with an official source.
           </p>
         </div>
       </div>

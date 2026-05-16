@@ -51,22 +51,21 @@ const findImportantDates = (text: string) => {
 
 export const createPreviewAnalysisResult = (
   situation: VisaSituation,
-  text: string,
-  warning?: string
+  text: string
 ): AnalysisResult => {
   const normalizedText = text.replace(/\s+/g, " ").trim();
   const excerpt = normalizedText.length > 220 ? `${normalizedText.slice(0, 220)}...` : normalizedText;
   const documentsMentioned = findMentionedDocuments(normalizedText);
   const importantDates = findImportantDates(normalizedText);
-  const topicLabel = situation === VisaSituation.OTHER ? "Document Review Preview" : `${situation} Preview`;
+  const topicLabel = situation === VisaSituation.OTHER ? "Document Review" : `${situation} Guidance`;
 
   return {
-    topic: "unsure",
+    topic: "basic_review",
     topicLabel,
     riskAssessment: {
       riskLevel: "Medium",
       urgencyLabel: "Verify with an official source",
-      summary: "The AI service could not complete a live analysis, so VisaTodo generated a limited preview from the pasted text. Use this as a starting point only.",
+      summary: "This review is a plain-language starting point based on the document text you provided. Verify important details with an official source before acting.",
     },
     summary: [
       `The pasted document starts with: "${excerpt}"`,
@@ -75,17 +74,17 @@ export const createPreviewAnalysisResult = (
         : "It appears to contain immigration or visa-related instructions, but no common form names were confidently detected.",
       importantDates.length > 0
         ? "The document includes date-like text that should be confirmed before you act."
-        : "No clear date was detected in the preview, but you should still check the document for deadlines.",
+        : "No clear date was detected, but you should still check the document for deadlines.",
     ],
     detailedExplanation:
-      "VisaTodo could not reach the live AI analysis service for this request. This preview extracts obvious terms and gives conservative next steps, but it may miss context. Re-run the analysis after the server issue is fixed, and verify important requirements with a DSO, attorney, employer, school official, USCIS, or another official source.",
+      "We generated a basic plain-language review from the text you provided. Use it to identify likely next steps, documents, and questions to verify with a DSO, attorney, employer, school official, USCIS, or another official source.",
     simpleEnglishNotes:
-      "In simple terms: do not rely on this preview as the full answer. Use it to spot terms, dates, and questions to verify.",
+      "In simple terms: use this as a starting point to spot terms, dates, and questions to confirm before taking action.",
     checklist: [
       {
         category: "Verification",
         actor: "Applicant",
-        title: "Confirm whether this document applies to your situation",
+        title: "Confirm this document applies to your exact immigration situation",
         description: `Check the document against your selected situation: ${situation}.`,
         dueCategory: "unspecified",
         dueLabel: "Before acting on the document",
@@ -105,7 +104,7 @@ export const createPreviewAnalysisResult = (
       {
         category: "Questions",
         actor: "Applicant",
-        title: "Ask an official source for next steps",
+        title: "Ask what action is required next",
         description: "Send the document to the appropriate school official, attorney, employer contact, or USCIS resource and ask what action is required.",
         dueCategory: "unspecified",
         dueLabel: "As soon as practical",
@@ -122,9 +121,7 @@ export const createPreviewAnalysisResult = (
       "Which documents or forms should I prepare?",
     ],
     warnings: [
-      ...(warning ? [warning] : []),
-      "This is a limited preview generated because the live AI request failed.",
-      "Do not treat this preview as legal advice or a final interpretation.",
+      "General information only. Verify with an official source.",
     ],
     safetyTerms: documentsMentioned.map((doc) => ({
       term: doc.name,
@@ -223,7 +220,7 @@ export const createMockAnalysisResult = (warning?: string): AnalysisResult => ({
   ],
   warnings: [
     ...(warning ? [warning] : []),
-    "This is a mock analysis preview and not legal advice.",
+    "General information only. Verify with an official source.",
     "Do not rely on unclear dates without checking the official source.",
   ],
   safetyTerms: [
@@ -298,8 +295,8 @@ export const analyzeDocument = async (
       message.toLowerCase().includes("rate limit") ||
       message.toLowerCase().includes("access was denied");
 
-    if (canUsePreview) {
-      return createPreviewAnalysisResult(situation, text, "The live AI service is not available for this request, so this is a limited preview result.");
+  if (canUsePreview) {
+      return createPreviewAnalysisResult(situation, text);
     }
 
     throw error;

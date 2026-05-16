@@ -57,12 +57,29 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
     return fullText.trim();
   };
 
-  const handlePdfFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const extractTextFromFile = async (file: File): Promise<string> => {
+    if (file.type === 'application/pdf') {
+      return extractTextFromPdf(file);
+    }
+
+    if (file.type.startsWith('text/') || file.name.toLowerCase().endsWith('.txt')) {
+      return file.text();
+    }
+
+    return '';
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'application/pdf') {
-      setPdfError('Please upload a PDF file.');
+    const isSupportedFile =
+      file.type === 'application/pdf' ||
+      file.type.startsWith('text/') ||
+      file.name.toLowerCase().endsWith('.txt');
+
+    if (!isSupportedFile) {
+      setPdfError('For image files, paste the visible text below so your review is accurate.');
       setPdfFileName(null);
       event.target.value = '';
       return;
@@ -72,9 +89,9 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
     setPdfError(null);
 
     try {
-      const text = await extractTextFromPdf(file);
+      const text = await extractTextFromFile(file);
       if (!text) {
-        setPdfError("We couldn't find selectable text in this PDF. Please paste the text instead.");
+        setPdfError("We couldn't find readable text in this file. Please paste the document text below.");
         setPdfFileName(null);
       } else {
         setInputText(text);
@@ -82,7 +99,7 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
       }
     } catch (error) {
       console.error(error);
-      setPdfError('Something went wrong while reading the PDF. Please paste the text instead.');
+      setPdfError('We could not read this file. Please paste the document text below.');
       setPdfFileName(null);
     } finally {
       setIsParsingPdf(false);
@@ -103,10 +120,10 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
       <div className="mb-8 max-w-3xl">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Document analyzer</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-          Analyze your visa document
+          Upload your visa document
         </h1>
         <p className="mt-3 text-base leading-7 text-slate-600">
-          Paste text from a USCIS notice, school email, OPT instruction, or other immigration-related document.
+          Add an immigration document and get a plain-English review with dates, documents, questions, and a visa todo checklist.
         </p>
       </div>
 
@@ -115,7 +132,7 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
           <div className="space-y-5">
             <div>
               <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Document type
+                What is this related to?
               </label>
               <div className="relative mt-2">
                 <select
@@ -134,29 +151,29 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
             </div>
 
             <div>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Paste document text
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="application/pdf"
-                    className="hidden"
-                    onChange={handlePdfFileChange}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isParsingPdf || appState.isAnalyzing}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-sky-200 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {isParsingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UploadCloud className="h-3.5 w-3.5" />}
-                    Upload a document
-                  </button>
-                </div>
-              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf,text/plain,.txt,image/jpeg,image/png"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isParsingPdf || appState.isAnalyzing}
+                className="flex w-full items-center gap-4 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-left transition hover:border-sky-300 hover:bg-sky-100/70 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-sky-700 shadow-sm">
+                  {isParsingPdf ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-5 w-5" />}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-bold text-slate-950">Upload a document</span>
+                  <span className="mt-1 block text-xs leading-5 text-slate-600">
+                    PDF, JPG, PNG, or text files. Common examples: USCIS notices, I-20s, I-765 instructions, DSO emails, RFE letters, receipt notices, approval notices, and EAD-related notices.
+                  </span>
+                </span>
+              </button>
 
               {pdfFileName && (
                 <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-700 ring-1 ring-sky-100">
@@ -172,12 +189,20 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
                 </div>
               )}
 
+              <div className="mt-5 flex items-center gap-3">
+                <div className="h-px flex-1 bg-slate-200" />
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Or paste document text below
+                </p>
+                <div className="h-px flex-1 bg-slate-200" />
+              </div>
+
               <div className="relative mt-3">
                 <textarea
                   value={appState.inputText}
                   onChange={(event) => setInputText(event.target.value)}
                   placeholder="Paste the document text here. For example: instructions from your DSO, a USCIS notice, OPT checklist, or EAD-related email."
-                  className="min-h-[360px] w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100"
+                  className="min-h-[250px] w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100"
                 />
                 {isParsingPdf && (
                   <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/70 backdrop-blur-sm">
@@ -215,7 +240,7 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
                 className="mt-1 h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-500"
               />
               <span className="text-sm leading-6 text-slate-600">
-                I understand that VisaTodo provides general information only and is not legal advice.
+                I understand this is general information and not legal advice.
               </span>
             </label>
 
@@ -237,7 +262,7 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
             <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4">
               <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-sky-700" />
               <p className="text-xs leading-5 text-slate-500">
-                Avoid pasting passport numbers, SSNs, SEVIS IDs, or other highly sensitive details unless you are comfortable doing so.
+                Avoid entering passport numbers, SSNs, SEVIS IDs, or other highly sensitive details unless necessary.
               </p>
             </div>
           </div>
@@ -255,7 +280,7 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
           ) : appState.error ? (
             <div className="flex min-h-[520px] flex-col items-center justify-center rounded-3xl border border-rose-200 bg-rose-50 p-8 text-center">
               <AlertCircle className="h-10 w-10 text-rose-600" />
-              <h2 className="mt-5 text-lg font-semibold text-rose-950">Something went wrong</h2>
+              <h2 className="mt-5 text-lg font-semibold text-rose-950">We could not create a review</h2>
               <p className="mt-2 max-w-sm text-sm leading-6 text-rose-700">{appState.error}</p>
             </div>
           ) : appState.result ? (
@@ -268,7 +293,7 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
                 </div>
                 <h2 className="mt-5 text-lg font-semibold text-slate-950">Your analysis will appear here</h2>
                 <p className="mt-2 max-w-sm text-sm leading-6 text-slate-600">
-                  You will see a simple summary, action items, important dates, documents mentioned, and questions to ask.
+                  You will see a plain-English summary, todo checklist, important dates, documents mentioned, and questions to ask.
                 </p>
               </div>
             </div>

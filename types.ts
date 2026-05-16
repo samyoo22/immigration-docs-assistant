@@ -1,9 +1,15 @@
 
 export enum VisaSituation {
-  F1_PRE_ARRIVAL = 'F-1 – Before starting school',
-  F1_STUDY = 'F-1 – During study',
-  F1_OPT_APPLY = 'F-1 – OPT application phase',
-  F1_OPT_ACTIVE = 'F-1 – During OPT',
+  F1_OPT_APPLY = 'F-1 OPT',
+  F1_OPT_ACTIVE = 'STEM OPT',
+  H1B = 'H-1B',
+  SCHOOL_TRANSFER = 'School transfer',
+  EAD_ISSUE = 'EAD issue',
+  USCIS_NOTICE = 'USCIS notice',
+  RFE = 'RFE / Request for Evidence',
+  I765 = 'I-765',
+  I539 = 'I-539',
+  CHANGE_OF_STATUS = 'Change of Status',
   OTHER = 'Other / not sure'
 }
 

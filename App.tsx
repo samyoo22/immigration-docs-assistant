@@ -21,10 +21,10 @@ const simpleHash = (str: string) => {
 
 const getSituationForPath = (pathname: string): VisaSituation => {
   if (pathname.includes('stem-opt')) return VisaSituation.F1_OPT_ACTIVE;
-  if (pathname.includes('h1b')) return VisaSituation.OTHER;
-  if (pathname.includes('i-765')) return VisaSituation.F1_OPT_APPLY;
-  if (pathname.includes('i-539')) return VisaSituation.OTHER;
-  if (pathname.includes('change-of-status')) return VisaSituation.OTHER;
+  if (pathname.includes('h1b')) return VisaSituation.H1B;
+  if (pathname.includes('i-765')) return VisaSituation.I765;
+  if (pathname.includes('i-539')) return VisaSituation.I539;
+  if (pathname.includes('change-of-status')) return VisaSituation.CHANGE_OF_STATUS;
   return VisaSituation.F1_OPT_APPLY;
 };
 
@@ -159,7 +159,7 @@ function App() {
       setState((prev) => ({
         ...prev,
         isAnalyzing: false,
-        error: error.message || "An unexpected error occurred.",
+        error: "We couldn't create a document review this time. Please try again or paste a clearer document excerpt.",
       }));
     }
   };
