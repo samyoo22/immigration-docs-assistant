@@ -43,7 +43,20 @@ const normalizeOpenAIError = (error: unknown): PublicApiError => {
     return new PublicApiError("OpenAI API quota or rate limit was reached. Please check billing, limits, or try again later.", 429);
   }
 
-  if (status === 404 || lower.includes("model")) {
+  if (status === 400 && (lower.includes("temperature") || lower.includes("unsupported parameter"))) {
+    return new PublicApiError("The selected OpenAI model rejected one of the request options. The server retried with compatible options but the request still failed.", 400);
+  }
+
+  if (status === 400 && (lower.includes("schema") || lower.includes("json_schema"))) {
+    return new PublicApiError("The AI response schema was rejected by the selected model. Please check OPENAI_MODEL compatibility.", 400);
+  }
+
+  if (
+    status === 404 ||
+    lower.includes("does not exist") ||
+    lower.includes("do not have access") ||
+    lower.includes("not available for this api key")
+  ) {
     return new PublicApiError("The selected OpenAI model is not available for this API key. Check OPENAI_MODEL or your account access.", 400);
   }
 
@@ -71,24 +84,45 @@ const requestJson = async <T>({
   user: string;
   temperature?: number;
 }): Promise<T> => {
-  try {
-    const client = getClient();
-    const response = await client.responses.create({
+  const createResponse = async (includeTemperature: boolean) => {
+    const request = {
       model: OPENAI_MODEL,
       input: [
-        { role: "system", content: system },
-        { role: "user", content: user },
+        { role: "system" as const, content: system },
+        { role: "user" as const, content: user },
       ],
-      temperature,
       text: {
         format: {
-          type: "json_schema",
+          type: "json_schema" as const,
           name: schemaName,
           strict: true,
           schema,
         },
       },
-    });
+      ...(includeTemperature ? { temperature } : {}),
+    };
+
+    return getClient().responses.create(request);
+  };
+
+  try {
+    let response: Awaited<ReturnType<typeof createResponse>>;
+
+    try {
+      response = await createResponse(true);
+    } catch (error) {
+      const maybeError = error as { status?: number; message?: string };
+      const lower = (maybeError?.message || "").toLowerCase();
+      const shouldRetryWithoutTemperature =
+        maybeError?.status === 400 &&
+        (lower.includes("temperature") || lower.includes("unsupported parameter"));
+
+      if (!shouldRetryWithoutTemperature) {
+        throw error;
+      }
+
+      response = await createResponse(false);
+    }
 
     if (!response.output_text) {
       throw new PublicApiError("The AI response was empty. Please try again.", 502);

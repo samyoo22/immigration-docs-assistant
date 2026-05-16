@@ -14,8 +14,8 @@ import {
 } from 'lucide-react';
 
 interface LandingScreenProps {
-  onUploadDocument: () => void;
-  onCreateChecklist: () => void;
+  onUploadDocument: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
+  onCreateChecklist: (event?: React.MouseEvent<HTMLAnchorElement>, checklistPath?: string) => void;
 }
 
 const coreFeatures = [
@@ -23,13 +23,13 @@ const coreFeatures = [
     icon: FileText,
     title: 'AI Document Assistant',
     description:
-      'Turn confusing immigration documents into simple summaries, key dates, required documents, and next steps.',
+      'Turn confusing USCIS notices, I-20s, DSO emails, and other immigration documents into simple summaries and next steps.',
   },
   {
     icon: ListChecks,
     title: 'Visa Todo Checklist',
     description:
-      'Follow step-by-step tasks for OPT, STEM OPT, H-1B, I-765, and other visa workflows.',
+      'Follow step-by-step tasks for OPT, STEM OPT, H-1B, I-765, I-539, and other common visa workflows.',
   },
 ];
 
@@ -41,12 +41,12 @@ const howItWorks = [
   },
   {
     icon: Sparkles,
-    title: 'Get a simple summary',
+    title: 'Get a plain-English summary',
     description: 'See the main point, dates to watch, documents mentioned, and warnings in plain English.',
   },
   {
     icon: ClipboardCheck,
-    title: 'Follow your checklist',
+    title: 'Follow your visa checklist',
     description: 'Move through clear next steps and keep track of what is done, due, or needs review.',
   },
 ];
@@ -54,26 +54,32 @@ const howItWorks = [
 const popularChecklists = [
   {
     title: 'F-1 OPT',
+    path: '/checklists/opt',
     description: 'Prepare your OPT timing, I-20 request, Form I-765, and supporting documents.',
   },
   {
     title: 'STEM OPT',
+    path: '/checklists/stem-opt',
     description: 'Track employer details, Form I-983, school steps, and extension filing tasks.',
   },
   {
     title: 'H-1B',
+    path: '/checklists/h1b',
     description: 'Organize employer-provided steps, notices, status checks, and key dates.',
   },
   {
     title: 'I-765',
+    path: '/checklists/i-765',
     description: 'Collect identity documents, eligibility evidence, photos, fees, and submission tasks.',
   },
   {
     title: 'I-539',
+    path: '/checklists/i-539',
     description: 'Review change or extension of status steps, evidence, signatures, and deadlines.',
   },
   {
     title: 'Change of Status',
+    path: '/checklists/change-of-status',
     description: 'Understand common tasks, supporting documents, receipt tracking, and follow-up items.',
   },
 ];
@@ -99,8 +105,8 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onUploadDocument, onCreat
 };
 
 interface HomeActionProps {
-  onUploadDocument: () => void;
-  onCreateChecklist: () => void;
+  onUploadDocument: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
+  onCreateChecklist: (event?: React.MouseEvent<HTMLAnchorElement>, checklistPath?: string) => void;
 }
 
 const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument, onCreateChecklist }) => (
@@ -116,24 +122,26 @@ const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument, onCreateChec
       </h1>
 
       <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-        Upload your immigration document and get a plain-English summary with a clear visa checklist.
+        Upload your immigration document and get a plain-English summary, key dates, next steps, and a clear visa todo checklist.
       </p>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <button
+        <a
+          href="/upload"
           onClick={onUploadDocument}
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-700 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-700/15 transition hover:bg-sky-800 active:scale-[0.99]"
         >
           <UploadCloud className="h-4 w-4" />
           Upload Document
-        </button>
-        <button
-          onClick={onCreateChecklist}
+        </a>
+        <a
+          href="/checklists"
+          onClick={(event) => onCreateChecklist(event, '/checklists')}
           className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-sky-200 hover:bg-sky-50 active:scale-[0.99]"
         >
           <ListChecks className="h-4 w-4" />
           Create Checklist
-        </button>
+        </a>
       </div>
     </div>
 
@@ -154,7 +162,7 @@ const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument, onCreateChec
               <h3 className="text-sm font-semibold text-slate-950">Plain-English summary</h3>
             </div>
             <p className="text-sm leading-6 text-slate-600">
-              USCIS has received your application. Save this notice and use the receipt number to track your case.
+              USCIS has received your application. Save this notice and use the receipt number to track your case status.
             </p>
           </div>
 
@@ -174,7 +182,7 @@ const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument, onCreateChec
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <MiniPreviewCard icon={CalendarDays} title="Dates" description="Receipt date and notice date are pulled out for review." />
+            <MiniPreviewCard icon={CalendarDays} title="Key dates" description="Receipt date and next expected step are pulled out for review." />
             <MiniPreviewCard icon={ClipboardList} title="Documents" description="The notice is added to your saved document list." />
           </div>
         </div>
@@ -220,22 +228,25 @@ const HowItWorksSection: React.FC = () => (
   </section>
 );
 
-const PopularChecklistsSection: React.FC<{ onCreateChecklist: () => void }> = ({ onCreateChecklist }) => (
+const PopularChecklistsSection: React.FC<{
+  onCreateChecklist: (event?: React.MouseEvent<HTMLAnchorElement>, checklistPath?: string) => void;
+}> = ({ onCreateChecklist }) => (
   <section className="py-14">
-    <SectionIntro label="Popular checklists" title="Start with a common visa workflow" />
+    <SectionIntro label="Popular checklists" title="Popular visa checklists" />
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {popularChecklists.map(({ title, description }) => (
+      {popularChecklists.map(({ title, path, description }) => (
         <div key={title} className="flex min-h-48 flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <GraduationCap className="h-5 w-5 text-sky-700" />
           <h3 className="mt-4 text-base font-semibold text-slate-950">{title}</h3>
           <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{description}</p>
-          <button
-            onClick={onCreateChecklist}
+          <a
+            href={path}
+            onClick={(event) => onCreateChecklist(event, path)}
             className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-sky-700 transition hover:text-sky-900"
           >
             View checklist
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </a>
         </div>
       ))}
     </div>
@@ -268,18 +279,31 @@ const SampleResultPreview: React.FC = () => (
             <div className="rounded-2xl border border-slate-200 bg-white p-4">
               <h4 className="text-sm font-semibold text-slate-950">Plain-English summary</h4>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                USCIS has received your application. You should save this notice and use the receipt number to track your case.
+                USCIS has received your application. Save this notice and use the receipt number to track your case status.
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-4">
-              <h4 className="text-sm font-semibold text-slate-950">Next steps</h4>
-              <div className="mt-3 space-y-2">
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                <h4 className="text-sm font-semibold text-slate-950">Key dates</h4>
+                <div className="mt-3 space-y-2">
+                  {['Receipt date: Example date', 'Next expected step: Wait for USCIS update'].map((date) => (
+                    <div key={date} className="flex items-center gap-2 text-sm text-slate-700">
+                      <CalendarDays className="h-4 w-4 shrink-0 text-amber-600" />
+                      {date}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                <h4 className="text-sm font-semibold text-slate-950">Next steps</h4>
+                <div className="mt-3 space-y-2">
                 {sampleNextSteps.map((step) => (
                   <div key={step} className="flex items-center gap-2 text-sm text-slate-700">
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
                     {step}
                   </div>
                 ))}
+                </div>
               </div>
             </div>
           </div>

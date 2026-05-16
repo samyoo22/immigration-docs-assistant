@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { VisaSituation, ChecklistItem, AppState, UserIntent, TranslationLanguageCode } from './types';
 import { analyzeDocument, translateAnalysis } from './services/aiService';
 import { SAMPLE_OPT_EMAIL } from './data/sampleTexts';
@@ -19,12 +19,28 @@ const simpleHash = (str: string) => {
   return Math.abs(hash).toString(36);
 };
 
+const getSituationForPath = (pathname: string): VisaSituation => {
+  if (pathname.includes('stem-opt')) return VisaSituation.F1_OPT_ACTIVE;
+  if (pathname.includes('h1b')) return VisaSituation.OTHER;
+  if (pathname.includes('i-765')) return VisaSituation.F1_OPT_APPLY;
+  if (pathname.includes('i-539')) return VisaSituation.OTHER;
+  if (pathname.includes('change-of-status')) return VisaSituation.OTHER;
+  return VisaSituation.F1_OPT_APPLY;
+};
+
+const getViewForPath = (pathname: string): AppState['view'] => {
+  if (pathname === '/upload' || pathname === '/analyze' || pathname.startsWith('/checklists')) {
+    return 'analyze';
+  }
+  return 'landing';
+};
+
 function App() {
-  const initialView: AppState['view'] = window.location.pathname === '/analyze' ? 'analyze' : 'landing';
+  const initialView = getViewForPath(window.location.pathname);
   const [state, setState] = useState<AppState>({
     view: initialView,
     intent: UserIntent.EMAIL, // Kept for type safety but unused in UI
-    situation: VisaSituation.F1_OPT_APPLY, 
+    situation: getSituationForPath(window.location.pathname), 
     inputText: '',
     hasAcceptedDisclaimer: false,
     isAnalyzing: false,
@@ -37,6 +53,25 @@ function App() {
     isTranslating: false,
   });
 
+  useEffect(() => {
+    const handlePopState = () => {
+      const nextView = getViewForPath(window.location.pathname);
+      setState(prev => ({
+        ...prev,
+        view: nextView,
+        situation: getSituationForPath(window.location.pathname),
+        error: null,
+        result: nextView === 'landing' ? null : prev.result,
+        checklistState: nextView === 'landing' ? [] : prev.checklistState,
+        translationResult: nextView === 'landing' ? null : prev.translationResult,
+        translationLanguage: nextView === 'landing' ? 'none' : prev.translationLanguage,
+      }));
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const handleStartSample = () => {
     window.scrollTo({ top: 0, behavior: 'auto' });
     window.history.pushState({}, '', '/analyze');
@@ -47,14 +82,25 @@ function App() {
     }));
   };
 
-  const handleStartCustom = () => {
+  const handleStartCustom = (event?: React.MouseEvent<HTMLElement>, route = '/upload') => {
+    event?.preventDefault();
     window.scrollTo({ top: 0, behavior: 'auto' });
-    window.history.pushState({}, '', '/analyze');
+    window.history.pushState({}, '', route);
     setState(prev => ({
       ...prev,
       view: 'analyze',
+      situation: getSituationForPath(route),
       inputText: '',
+      error: null,
+      result: null,
+      checklistState: [],
+      translationResult: null,
+      translationLanguage: 'none',
     }));
+  };
+
+  const handleStartChecklist = (event?: React.MouseEvent<HTMLElement>, route = '/checklists') => {
+    handleStartCustom(event, route);
   };
 
   const handleBackToStart = () => {
@@ -221,12 +267,13 @@ function App() {
           </a>
           
           <div className="flex items-center gap-4">
-            <button
-              onClick={handleStartCustom}
+            <a
+              href="/upload"
+              onClick={(event) => handleStartCustom(event, '/upload')}
               className="hidden rounded-full bg-sky-700 px-4 py-2 text-xs font-bold text-white transition hover:bg-sky-800 sm:inline-flex"
             >
               Upload Document
-            </button>
+            </a>
           </div>
         </div>
       </header>
@@ -244,8 +291,8 @@ function App() {
         {/* View Switcher */}
         {state.view === 'landing' ? (
           <LandingScreen 
-            onUploadDocument={handleStartCustom}
-            onCreateChecklist={handleStartCustom}
+            onUploadDocument={(event) => handleStartCustom(event, '/upload')}
+            onCreateChecklist={handleStartChecklist}
           />
         ) : (
           <AnalyzerScreen

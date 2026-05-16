@@ -16,6 +16,132 @@ class ApiRequestError extends Error {
   }
 }
 
+const unique = (items: string[]) => Array.from(new Set(items));
+
+const findMentionedDocuments = (text: string) => {
+  const documentPatterns = [
+    { pattern: /\bI-?20\b/i, name: "I-20", purpose: "School immigration record document for F-1 students." },
+    { pattern: /\bI-?765\b/i, name: "Form I-765", purpose: "Application form commonly used for employment authorization." },
+    { pattern: /\bI-?94\b/i, name: "I-94", purpose: "Arrival/departure record used to confirm admission information." },
+    { pattern: /\bEAD\b|employment authorization document/i, name: "EAD", purpose: "Employment authorization document or work permit card." },
+    { pattern: /\bSEVIS\b/i, name: "SEVIS record", purpose: "Government record system for certain student and exchange visitor statuses." },
+    { pattern: /\bpassport\b/i, name: "Passport", purpose: "Identity and travel document." },
+    { pattern: /\bUSCIS\b/i, name: "USCIS notice or instruction", purpose: "Official immigration agency communication or requirement." },
+    { pattern: /\bO-?1A\b/i, name: "O-1A visa", purpose: "Visa category referenced in the pasted document." },
+    { pattern: /\bO-?1B\b/i, name: "O-1B visa", purpose: "Visa category referenced in the pasted document." },
+    { pattern: /\bO-?2\b/i, name: "O-2 visa", purpose: "Visa category referenced in the pasted document." },
+  ];
+
+  return documentPatterns
+    .filter(({ pattern }) => pattern.test(text))
+    .map(({ name, purpose }) => ({ name, purpose }));
+};
+
+const findImportantDates = (text: string) => {
+  const matches = text.match(
+    /\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\s+\d{1,2},?\s+\d{4}\b|\b\d{1,2}\/\d{1,2}\/\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b/gi
+  );
+
+  return unique(matches || []).slice(0, 5).map((date) => ({
+    date,
+    meaning: "Date mentioned in the pasted document. Confirm what this date controls before acting.",
+    confidence: "medium" as const,
+  }));
+};
+
+export const createPreviewAnalysisResult = (
+  situation: VisaSituation,
+  text: string,
+  warning?: string
+): AnalysisResult => {
+  const normalizedText = text.replace(/\s+/g, " ").trim();
+  const excerpt = normalizedText.length > 220 ? `${normalizedText.slice(0, 220)}...` : normalizedText;
+  const documentsMentioned = findMentionedDocuments(normalizedText);
+  const importantDates = findImportantDates(normalizedText);
+  const topicLabel = situation === VisaSituation.OTHER ? "Document Review Preview" : `${situation} Preview`;
+
+  return {
+    topic: "unsure",
+    topicLabel,
+    riskAssessment: {
+      riskLevel: "Medium",
+      urgencyLabel: "Verify with an official source",
+      summary: "The AI service could not complete a live analysis, so VisaTodo generated a limited preview from the pasted text. Use this as a starting point only.",
+    },
+    summary: [
+      `The pasted document starts with: "${excerpt}"`,
+      documentsMentioned.length > 0
+        ? `It appears to mention: ${documentsMentioned.map((doc) => doc.name).join(", ")}.`
+        : "It appears to contain immigration or visa-related instructions, but no common form names were confidently detected.",
+      importantDates.length > 0
+        ? "The document includes date-like text that should be confirmed before you act."
+        : "No clear date was detected in the preview, but you should still check the document for deadlines.",
+    ],
+    detailedExplanation:
+      "VisaTodo could not reach the live AI analysis service for this request. This preview extracts obvious terms and gives conservative next steps, but it may miss context. Re-run the analysis after the server issue is fixed, and verify important requirements with a DSO, attorney, employer, school official, USCIS, or another official source.",
+    simpleEnglishNotes:
+      "In simple terms: do not rely on this preview as the full answer. Use it to spot terms, dates, and questions to verify.",
+    checklist: [
+      {
+        category: "Verification",
+        actor: "Applicant",
+        title: "Confirm whether this document applies to your situation",
+        description: `Check the document against your selected situation: ${situation}.`,
+        dueCategory: "unspecified",
+        dueLabel: "Before acting on the document",
+        priority: "high",
+        timeBucket: "unspecified",
+      },
+      {
+        category: "Deadlines",
+        actor: "Applicant",
+        title: "Verify any deadline or filing window",
+        description: "Confirm dates directly with the official source before submitting forms or making travel/employment decisions.",
+        dueCategory: "unspecified",
+        dueLabel: "Before submitting anything",
+        priority: "high",
+        timeBucket: "unspecified",
+      },
+      {
+        category: "Questions",
+        actor: "Applicant",
+        title: "Ask an official source for next steps",
+        description: "Send the document to the appropriate school official, attorney, employer contact, or USCIS resource and ask what action is required.",
+        dueCategory: "unspecified",
+        dueLabel: "As soon as practical",
+        priority: "medium",
+        timeBucket: "later",
+      },
+    ],
+    importantDates,
+    documentsMentioned,
+    questionsToAsk: [
+      "Does this document apply to my exact immigration or visa situation?",
+      "What action, if any, do I need to take next?",
+      "Which deadline controls my situation?",
+      "Which documents or forms should I prepare?",
+    ],
+    warnings: [
+      ...(warning ? [warning] : []),
+      "This is a limited preview generated because the live AI request failed.",
+      "Do not treat this preview as legal advice or a final interpretation.",
+    ],
+    safetyTerms: documentsMentioned.map((doc) => ({
+      term: doc.name,
+      definition: doc.purpose,
+    })),
+    dsoEmailDraft: {
+      subject: "Question about immigration document instructions",
+      body: "Hello,\n\nI reviewed the attached/pasted instructions and would like to confirm what applies to my situation, what deadline I should follow, and what documents or next steps are required.\n\nThank you.",
+    },
+    dsoQuestions: [
+      "Does this document apply to my situation?",
+      "What deadline should I follow?",
+      "What should I do next?",
+    ],
+  };
+};
+
 export const createMockAnalysisResult = (warning?: string): AnalysisResult => ({
   topic: "post_completion_opt",
   topicLabel: "OPT or STEM OPT Instructions",
@@ -129,9 +255,12 @@ const postJson = async <T>(url: string, body: unknown): Promise<T> => {
   }
 
   const contentType = response.headers.get("content-type") || "";
-  const payload = contentType.includes("application/json")
-    ? await response.json().catch(() => ({}))
-    : {};
+  const isJson = contentType.includes("application/json");
+  const payload = isJson ? await response.json().catch(() => ({})) : {};
+
+  if (!isJson) {
+    throw new ApiRequestError("The AI server returned a non-JSON response. Please check the deployment configuration.", response.status);
+  }
 
   if (!response.ok) {
     const fallbackMessage =
@@ -156,7 +285,13 @@ export const analyzeDocument = async (
     const statusCode = error instanceof ApiRequestError ? error.statusCode : undefined;
     const canUsePreview =
       statusCode === 404 ||
+      (typeof statusCode === "number" && statusCode >= 500) ||
       message.toLowerCase().includes("api key") ||
+      message.toLowerCase().includes("ai request failed") ||
+      message.toLowerCase().includes("deployment configuration") ||
+      message.toLowerCase().includes("model is not available") ||
+      message.toLowerCase().includes("request options") ||
+      message.toLowerCase().includes("schema was rejected") ||
       message.toLowerCase().includes("server could not be reached") ||
       message.toLowerCase().includes("server endpoint is not available") ||
       message.toLowerCase().includes("quota") ||
@@ -164,7 +299,7 @@ export const analyzeDocument = async (
       message.toLowerCase().includes("access was denied");
 
     if (canUsePreview) {
-      return createMockAnalysisResult("The AI service is not available in this environment, so this is a mock preview result.");
+      return createPreviewAnalysisResult(situation, text, "The live AI service is not available for this request, so this is a limited preview result.");
     }
 
     throw error;
