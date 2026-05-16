@@ -57,7 +57,13 @@ For DNS, point `www.visatodo.com` to the hosting provider used for the deployed 
 npm install
 ```
 
-2.  Add a Gemini API key to the local environment:
+2.  Add a Gemini API key to the local environment. Copy the example file:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env`:
 
 ```bash
 GEMINI_API_KEY=your_key_here
@@ -74,6 +80,24 @@ npm run dev
 ```bash
 npm run build
 ```
+
+## API Key Configuration
+
+The app currently reads `GEMINI_API_KEY` in `vite.config.ts` and injects it into the browser build as `process.env.API_KEY`.
+
+For local development, use `.env`:
+
+```bash
+GEMINI_API_KEY=your_key_here
+```
+
+For deployment, add the same environment variable in your hosting provider:
+
+```txt
+GEMINI_API_KEY
+```
+
+For production, the safer long-term setup is to move Gemini calls behind a serverless function or backend API so the browser never receives the raw API key.
 
 ## Safety
 
