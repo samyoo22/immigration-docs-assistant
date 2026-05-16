@@ -45,12 +45,27 @@ export interface DsoEmailDraft {
   body: string;
 }
 
+export interface ImportantDate {
+  date: string;
+  meaning: string;
+  confidence: 'high' | 'medium' | 'low';
+}
+
+export interface DocumentMentioned {
+  name: string;
+  purpose: string;
+}
+
 export interface AnalysisResult {
   riskAssessment?: RiskAssessment;
   summary: string[]; // Generic summary (English)
   detailedExplanation: string;
   simpleEnglishNotes: string;
   checklist: Omit<ChecklistItem, 'id' | 'status'>[]; 
+  importantDates?: ImportantDate[];
+  documentsMentioned?: DocumentMentioned[];
+  questionsToAsk?: string[];
+  warnings?: string[];
   safetyTerms: SafetyTerm[];
   dsoEmailDraft?: DsoEmailDraft;
   dsoQuestions?: string[]; // List of suggested questions
@@ -94,10 +109,11 @@ export interface TranslatedAnalysis {
 }
 
 export interface AppState {
-  view: 'landing' | 'workspace';
+  view: 'landing' | 'analyze';
   intent: UserIntent;
   situation: VisaSituation;
   inputText: string;
+  hasAcceptedDisclaimer: boolean;
   isAnalyzing: boolean;
   result: AnalysisResult | null;
   checklistState: ChecklistItem[]; 

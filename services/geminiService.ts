@@ -2,6 +2,24 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { VisaSituation, AnalysisResult, TranslationLanguageCode, ChecklistItem, TranslatedAnalysis, SUPPORTED_TRANSLATION_LANGUAGES } from "../types";
 
+const getGeminiErrorMessage = (error: unknown): string => {
+  const rawMessage = error instanceof Error ? error.message : String(error);
+
+  if (rawMessage.includes('"code":429') || rawMessage.toLowerCase().includes('quota') || rawMessage.includes('rate-limits')) {
+    return "Gemini API quota was exceeded. Please check your Gemini API billing, quota, or try again later.";
+  }
+
+  if (rawMessage.includes('"code":403') || rawMessage.toLowerCase().includes('permission') || rawMessage.toLowerCase().includes('api key')) {
+    return "Gemini API access was denied. Please check that your API key is valid and allowed to use this model.";
+  }
+
+  if (rawMessage.includes('"code":404') || rawMessage.toLowerCase().includes('model')) {
+    return "The selected Gemini model is not available for this API key. Please check the model name or API access.";
+  }
+
+  return "Failed to analyze the document. Please try again or check your text.";
+};
+
 // Define the schema for the structured response we want from Gemini
 const analysisSchema: Schema = {
   type: Type.OBJECT,
@@ -68,6 +86,41 @@ const analysisSchema: Schema = {
       },
       description: "A list of concrete action items extracted from the text.",
     },
+    importantDates: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          date: { type: Type.STRING, description: "YYYY-MM-DD when possible, otherwise the original date text." },
+          meaning: { type: Type.STRING, description: "What this date appears to refer to based only on the document." },
+          confidence: { type: Type.STRING, enum: ["high", "medium", "low"], description: "Confidence that the date and meaning are clear from the document." },
+        },
+        required: ["date", "meaning", "confidence"],
+      },
+      description: "Important dates or deadlines explicitly mentioned in the document. Do not invent dates.",
+    },
+    documentsMentioned: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          name: { type: Type.STRING, description: "Document name mentioned in the input." },
+          purpose: { type: Type.STRING, description: "Why the document may be needed, based only on the input." },
+        },
+        required: ["name", "purpose"],
+      },
+      description: "Documents, forms, IDs, or evidence mentioned in the document.",
+    },
+    questionsToAsk: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: "Questions to ask a DSO, employer, attorney, or official source.",
+    },
+    warnings: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: "Unclear points, important caveats, or reminders to verify with official sources.",
+    },
     safetyTerms: {
       type: Type.ARRAY,
       items: {
@@ -95,15 +148,109 @@ const analysisSchema: Schema = {
       description: "3-7 specific questions the student should ask their DSO based on the risks and instructions in the text.",
     },
   },
-  required: ["topic", "topicLabel", "riskAssessment", "summary", "detailedExplanation", "simpleEnglishNotes", "checklist", "safetyTerms", "dsoEmailDraft", "dsoQuestions"],
+  required: ["topic", "topicLabel", "riskAssessment", "summary", "detailedExplanation", "simpleEnglishNotes", "checklist", "importantDates", "documentsMentioned", "questionsToAsk", "warnings", "safetyTerms", "dsoEmailDraft", "dsoQuestions"],
 };
+
+export const createMockAnalysisResult = (): AnalysisResult => ({
+  topic: "post_completion_opt",
+  topicLabel: "OPT or STEM OPT Instructions",
+  riskAssessment: {
+    riskLevel: "Medium",
+    urgencyLabel: "Verify dates before filing",
+    summary: "This document appears to explain steps for preparing an OPT or STEM OPT application. Some dates and requirements should be confirmed with your DSO or official source before you act.",
+  },
+  summary: [
+    "This document appears to explain steps for preparing an OPT or STEM OPT application.",
+    "It mentions reviewing school records, preparing forms, and submitting materials before a deadline.",
+    "The exact requirements may depend on your school, employer, and immigration situation.",
+  ],
+  detailedExplanation:
+    "This document appears to be giving instructions for an OPT or STEM OPT process. It may be asking you to review your I-20 information, prepare immigration forms and supporting documents, and confirm filing timing with your school official. VisaTodo cannot determine eligibility or replace official guidance, so use this as a checklist starter and verify important details with your DSO, employer, attorney, or official government source.",
+  simpleEnglishNotes:
+    "In simple terms: gather the documents listed, check the dates carefully, and ask your DSO to confirm what applies to you before submitting anything.",
+  checklist: [
+    {
+      category: "School",
+      actor: "Student",
+      title: "Review your I-20 information",
+      description: "Check that your name, program dates, and OPT or STEM OPT details look correct before using the document for an application.",
+      dueCategory: "unspecified",
+      dueLabel: "Before submitting materials",
+      priority: "high",
+      timeBucket: "unspecified",
+    },
+    {
+      category: "Documents",
+      actor: "Student",
+      title: "Prepare required forms and supporting documents",
+      description: "Collect the documents mentioned in the instructions, such as Form I-765, passport, I-94, and any applicable EAD card.",
+      dueCategory: "unspecified",
+      dueLabel: "Verify deadline with DSO",
+      priority: "medium",
+      timeBucket: "later",
+    },
+    {
+      category: "Verification",
+      actor: "Student",
+      title: "Confirm deadlines with your DSO",
+      description: "Ask your DSO which deadline controls your situation and whether any school-specific steps are required first.",
+      dueCategory: "unspecified",
+      dueLabel: "Before filing",
+      priority: "high",
+      timeBucket: "unspecified",
+    },
+    {
+      category: "USCIS",
+      actor: "Student",
+      title: "Submit materials before the listed deadline",
+      description: "Only submit after you have verified the instructions, dates, and required documents with the appropriate official source.",
+      dueCategory: "unspecified",
+      dueLabel: "Verify with official source",
+      priority: "medium",
+      timeBucket: "later",
+    },
+  ],
+  importantDates: [
+    {
+      date: "Verify with official source",
+      meaning: "The pasted text may contain a deadline, but the exact date should be confirmed before filing.",
+      confidence: "low",
+    },
+  ],
+  documentsMentioned: [
+    { name: "I-20", purpose: "Used to confirm school and OPT or STEM OPT recommendation information." },
+    { name: "Form I-765", purpose: "Commonly used for employment authorization applications when instructed." },
+    { name: "Passport", purpose: "May be needed as identity or immigration-status support." },
+    { name: "I-94", purpose: "May be needed to show admission record information." },
+    { name: "EAD card if applicable", purpose: "May be needed for STEM OPT or prior employment authorization context." },
+  ],
+  questionsToAsk: [
+    "Which deadline applies to my situation?",
+    "Does my I-20 need to be updated before I submit anything?",
+    "Which documents are required by my school before filing?",
+    "Is there anything in this document that does not apply to my case?",
+  ],
+  warnings: [
+    "This is a mock analysis preview and not legal advice.",
+    "Do not rely on unclear dates without checking the official source.",
+  ],
+  safetyTerms: [
+    { term: "DSO", definition: "A school official who helps international students with F-1 records and school immigration processes." },
+    { term: "EAD", definition: "An employment authorization document, sometimes called a work permit card." },
+  ],
+  dsoQuestions: [
+    "Which deadline applies to my situation?",
+    "Does my I-20 need to be updated before I submit anything?",
+    "Which documents are required by my school before filing?",
+  ],
+});
 
 export const analyzeDocument = async (
   situation: VisaSituation,
   text: string
 ): Promise<AnalysisResult> => {
   if (!process.env.API_KEY) {
-    throw new Error("API Key is missing. Please check your environment configuration.");
+    return createMockAnalysisResult();
   }
 
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -131,6 +278,8 @@ Use this situation to interpret the document. If the document is about a differe
 3. **Safety**: NEVER give legal advice. If a text is ambiguous, tell the user to check with their DSO (Designated School Official) or an attorney.
 4. **Privacy**: Do not repeat personal data like specific names or ID numbers in the output unless necessary for context.
 5. **Tailoring**: Always adjust the risk level, deadlines (timeline), and action items based on the user's situation. If the situation and the document conflict, clearly explain that.
+6. **Scope**: Summarize only based on the provided text. Do not invent missing deadlines, requirements, or eligibility conclusions.
+7. **Careful Language**: Use phrases like "This document appears to..." and "You may need to verify..." when the document is unclear.
 
 Requirements:
 - **Topic Classification**: Classify the main topic of this document.
@@ -141,6 +290,9 @@ Requirements:
   - Identify who is responsible (Actor).
 - **DSO Email Draft**: Draft a polite, professional email ('dsoEmailDraft') the student can send to their DSO.
 - **DSO Questions**: Generate a separate list of 3-7 specific questions ('dsoQuestions') that the student should ask their DSO.
+- **Important Dates**: Extract only dates that appear in the text. If the meaning is unclear, mark confidence low and say to verify.
+- **Documents Mentioned**: List documents/forms explicitly mentioned or clearly implied by the text, with plain-language purposes.
+- **Warnings**: Include caveats about unclear instructions, dates, or requirements.
 - **Disclaimer**: Always remind the user to verify with official USCIS sources, their DSO, or a qualified immigration attorney.
 
 Input Text to analyze follows.
@@ -175,7 +327,7 @@ Input Text to analyze follows.
 
   } catch (error) {
     console.error("Gemini Analysis Error:", error);
-    throw new Error("Failed to analyze the document. Please try again or check your text.");
+    throw new Error(getGeminiErrorMessage(error));
   }
 };
 
@@ -313,7 +465,7 @@ export const translateAnalysis = async (
     };
   } catch (error) {
     console.error("Translation Error:", error);
-    throw new Error("Failed to translate content.");
+    throw new Error(getGeminiErrorMessage(error));
   }
 };
 
@@ -386,6 +538,6 @@ export const askFollowUpQuestion = async (
     return response.text || "I'm sorry, I couldn't generate an answer.";
   } catch (error) {
     console.error("Follow-up Q&A Error:", error);
-    throw new Error("Failed to get an answer. Please try again.");
+    throw new Error(getGeminiErrorMessage(error));
   }
 };
