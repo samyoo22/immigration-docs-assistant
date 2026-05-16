@@ -7,7 +7,7 @@ import { t } from '../utils/i18n';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://esm.sh/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://esm.sh/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs';
 
 interface InputSectionProps {
   situation: VisaSituation;
@@ -141,7 +141,7 @@ const InputSection: React.FC<InputSectionProps> = ({
       {/* 3.2 Document Source */}
       <div>
         <label className="text-[11px] font-medium text-slate-400 uppercase tracking-[0.2em] block">
-          Document source
+          Document input
         </label>
         <div className="mt-2 flex flex-wrap items-center gap-2 justify-between">
            <div className="flex items-center gap-2">
@@ -163,7 +163,7 @@ const InputSection: React.FC<InputSectionProps> = ({
               </button>
            </div>
            <span className="text-[11px] text-slate-500">
-              Or paste the text below.
+              Or paste instructions below.
            </span>
         </div>
         
@@ -221,8 +221,8 @@ const InputSection: React.FC<InputSectionProps> = ({
              <div className="flex items-start gap-1.5 text-[10px] text-slate-500 leading-relaxed">
                  <Shield className="w-3 h-3 shrink-0 mt-0.5" />
                  <p>
-                   Avoid entering passport numbers, SSNs, or other highly sensitive IDs.
-                   PDF uploads are processed locally.
+                   Avoid entering passport numbers, SSNs, SEVIS IDs, or other highly sensitive details.
+                   PDF text extraction happens in your browser.
                  </p>
              </div>
              

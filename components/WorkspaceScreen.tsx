@@ -6,7 +6,7 @@ import ExplanationPanel from './ExplanationPanel';
 import ChecklistPanel from './ChecklistPanel';
 import SafetyPanel from './SafetyPanel';
 import QAPanel from './QAPanel';
-import { ArrowLeft, Loader2, AlertCircle, FileText, ListChecks, ShieldCheck, Globe, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, FileText, ListChecks, ShieldCheck, Globe, ChevronDown, CalendarDays, CheckCircle2 } from 'lucide-react';
 import { t } from '../utils/i18n';
 
 interface WorkspaceScreenProps {
@@ -37,6 +37,10 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
   const [activeTab, setActiveTab] = useState<'explain' | 'checklist' | 'safety'>('explain');
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'success', visible: false });
   const { locale, result, isAnalyzing, error, translationLanguage, translationResult, isTranslating } = appState;
+  const openTasks = appState.checklistState.filter(item => item.status !== 'done').length;
+  const completedTasks = appState.checklistState.filter(item => item.status === 'done').length;
+  const deadlineCount = appState.checklistState.filter(item => item.dueLabel || item.dueCategory).length;
+  const highPriorityCount = appState.checklistState.filter(item => item.priority === 'high').length;
 
   // Clear toast after timeout
   useEffect(() => {
@@ -197,6 +201,42 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
         </div>
       </div>
 
+      {/* MVP Dashboard Snapshot */}
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">My Visa Path</p>
+            <ShieldCheck className="h-4 w-4 text-sky-300" />
+          </div>
+          <p className="mt-3 text-sm font-semibold text-slate-100">{appState.situation}</p>
+          <p className="mt-1 text-xs text-slate-500">{result ? result.topicLabel || 'Document reviewed' : 'Planning workspace'}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Upcoming Tasks</p>
+            <ListChecks className="h-4 w-4 text-emerald-300" />
+          </div>
+          <p className="mt-3 text-2xl font-semibold text-white">{openTasks}</p>
+          <p className="mt-1 text-xs text-slate-500">{completedTasks} completed</p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Recent Documents</p>
+            <FileText className="h-4 w-4 text-indigo-300" />
+          </div>
+          <p className="mt-3 text-2xl font-semibold text-white">{result ? 1 : 0}</p>
+          <p className="mt-1 text-xs text-slate-500">{result ? 'Latest analysis ready' : 'Paste or upload to begin'}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Important Deadlines</p>
+            <CalendarDays className="h-4 w-4 text-amber-300" />
+          </div>
+          <p className="mt-3 text-2xl font-semibold text-white">{deadlineCount}</p>
+          <p className="mt-1 text-xs text-slate-500">{highPriorityCount} high priority</p>
+        </div>
+      </div>
+
       {/* Main Two-Column Layout */}
       <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr),minmax(0,1.2fr)] items-start">
         
@@ -279,6 +319,12 @@ const WorkspaceScreen: React.FC<WorkspaceScreenProps> = ({
 
               {/* 3. Content Area */}
               <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/80 px-4 py-4 sm:px-5 sm:py-5 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                 {result && (
+                   <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-400/20 bg-amber-400/10 p-3 text-xs leading-5 text-amber-50/90">
+                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
+                     <p>AI-generated explanations can help you prepare, but they are not legal advice. Verify important steps with official sources, your DSO, employer, school official, or a qualified attorney.</p>
+                   </div>
+                 )}
                  <div className="relative">
                    {isTranslating && (
                      <div className="absolute inset-0 z-20 flex items-start justify-center pt-20">

@@ -123,7 +123,7 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
          <div className="flex items-center gap-2">
             <ClipboardList className="w-4 h-4 text-sky-500" />
             <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wide">
-               Action Checklist
+               Visa To-Do List
             </h3>
          </div>
          
@@ -132,7 +132,7 @@ const ChecklistPanel: React.FC<ChecklistPanelProps> = ({ items, onToggleStatus, 
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-700 bg-slate-900 text-slate-400 hover:text-slate-100 hover:border-slate-500 transition-all text-[11px] font-medium"
           >
             <Copy className="w-3 h-3" />
-            Copy list
+            Copy tasks
           </button>
       </div>
 

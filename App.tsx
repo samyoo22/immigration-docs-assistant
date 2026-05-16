@@ -6,7 +6,7 @@ import { SAMPLE_OPT_EMAIL } from './data/sampleTexts';
 import LandingScreen from './components/LandingScreen';
 import WorkspaceScreen from './components/WorkspaceScreen';
 import DisclaimerBanner from './components/DisclaimerBanner';
-import { Layout } from 'lucide-react';
+import { ListChecks } from 'lucide-react';
 import { t } from './utils/i18n';
 
 // Helper to hash string for local storage key
@@ -37,6 +37,7 @@ function App() {
   });
 
   const handleStartSample = () => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
     setState(prev => ({
       ...prev,
       view: 'workspace',
@@ -45,6 +46,7 @@ function App() {
   };
 
   const handleStartCustom = () => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
     setState(prev => ({
       ...prev,
       view: 'workspace',
@@ -53,6 +55,7 @@ function App() {
   };
 
   const handleBackToStart = () => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
     setState(prev => ({
       ...prev,
       view: 'landing',
@@ -162,8 +165,8 @@ function App() {
             className="flex items-center gap-3 cursor-pointer group" 
             onClick={handleBackToStart}
           >
-            <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
-              <Layout className="w-6 h-6" />
+            <div className="p-1.5 rounded-lg bg-sky-500/10 text-sky-300 group-hover:bg-sky-500/20 transition-colors">
+              <ListChecks className="w-6 h-6" />
             </div>
             <div>
               <h1 className="text-lg font-bold leading-none text-slate-100">
