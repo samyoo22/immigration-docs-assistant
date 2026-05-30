@@ -11,15 +11,11 @@ import {
   SearchCheck,
   ShieldCheck,
   Sparkles,
-  MessageSquareText,
   UploadCloud,
 } from 'lucide-react';
 
 interface LandingScreenProps {
   onUploadDocument: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
-  onTrySample?: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
-  onBrowseChecklists?: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
-  onOpenTemplates?: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 const outputs = [
@@ -42,11 +38,6 @@ const outputs = [
     icon: ListChecks,
     title: 'Checklist',
     description: 'Turn your document into simple steps you can follow.',
-  },
-  {
-    icon: MessageSquareText,
-    title: 'Message templates',
-    description: 'Copy simple notes to ask your DSO, employer, or attorney.',
   },
   {
     icon: FolderCheck,
@@ -87,7 +78,7 @@ const trustCards = [
   {
     icon: GraduationCap,
     title: 'Built for immigrants and students',
-    description: 'Designed for people navigating USCIS, school, and visa paperwork.',
+    description: 'Designed around USCIS, school, and visa paperwork.',
   },
 ];
 
@@ -105,46 +96,33 @@ const sampleChecklist = [
   'Watch for USCIS mail',
 ];
 
-const LandingScreen: React.FC<LandingScreenProps> = ({ onUploadDocument, onTrySample, onBrowseChecklists, onOpenTemplates }) => {
+const LandingScreen: React.FC<LandingScreenProps> = ({ onUploadDocument }) => {
   return (
     <div className="animate-fade-in">
-      <HeroSection
-        onUploadDocument={onUploadDocument}
-        onTrySample={onTrySample}
-        onBrowseChecklists={onBrowseChecklists}
-        onOpenTemplates={onOpenTemplates}
-      />
+      <HeroSection onUploadDocument={onUploadDocument} />
       <SupportedDocumentPills />
       <WhatYouGetSection />
       <HowItWorksSection />
       <TrustSection />
-      <BetaFeedbackSection />
-      <FinalCtaSection
-        onUploadDocument={onUploadDocument}
-        onTrySample={onTrySample}
-        onBrowseChecklists={onBrowseChecklists}
-      />
+      <FinalCtaSection onUploadDocument={onUploadDocument} />
     </div>
   );
 };
 
 interface HomeActionProps {
   onUploadDocument: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
-  onTrySample?: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
-  onBrowseChecklists?: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
-  onOpenTemplates?: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
-const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument, onTrySample, onBrowseChecklists, onOpenTemplates }) => (
+const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument }) => (
   <section className="grid gap-8 py-8 lg:grid-cols-[minmax(0,0.96fr),minmax(360px,0.86fr)] lg:items-center lg:py-10">
     <div>
       <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-800 shadow-sm">
         <ShieldCheck className="h-3.5 w-3.5" />
-        Beta preview · F-1 OPT and STEM OPT first
+        Plain-English immigration document help
       </div>
 
       <h1 className="max-w-2xl text-4xl font-semibold leading-[1.03] tracking-tight text-slate-950 sm:text-5xl lg:text-[4.05rem]">
-        Upload your notice. Get your next steps.
+        Upload your immigration document. Get clear next steps.
       </h1>
 
       <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
@@ -154,33 +132,17 @@ const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument, onTrySample,
       <div className="mt-7 flex max-w-xl flex-col gap-3 sm:flex-row sm:items-center">
         <a
           href="/upload"
-          onClick={onTrySample}
+          onClick={onUploadDocument}
           className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-700 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-700/15 transition hover:bg-sky-800 active:scale-[0.99] sm:w-auto"
         >
-          <Sparkles className="h-4 w-4" />
-          Try sample
-        </a>
-        <a
-          href="/upload"
-          onClick={onUploadDocument}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50 active:scale-[0.99] sm:w-auto"
-        >
           <UploadCloud className="h-4 w-4" />
-          Upload
+          Upload Document
         </a>
         <a
-          href="/checklists"
-          onClick={onBrowseChecklists}
+          href="#example-result"
           className="inline-flex justify-center text-sm font-semibold text-sky-700 transition hover:text-sky-900"
         >
-          Browse checklists
-        </a>
-        <a
-          href="/templates"
-          onClick={onOpenTemplates}
-          className="hidden justify-center text-sm font-semibold text-sky-700 transition hover:text-sky-900 lg:inline-flex"
-        >
-          Browse templates
+          See sample result
         </a>
       </div>
 
@@ -199,6 +161,7 @@ const SampleResultCard: React.FC = () => (
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Sample VisaTodo result</p>
         <h2 className="mt-1 text-xl font-semibold text-slate-950">USCIS Receipt Notice</h2>
+        <p className="mt-1 text-sm font-medium text-slate-500">I-797C Notice of Action</p>
       </div>
       <span className="w-fit rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Ready in seconds</span>
     </div>
@@ -212,6 +175,7 @@ const SampleResultCard: React.FC = () => (
 
       <ResultSection icon={CalendarDays} title="Key details">
         <div className="space-y-2 text-sm leading-6 text-slate-600">
+          <p>Receipt number: IOE0912345678</p>
           <p>Receipt date: May 12, 2026</p>
           <p>Action needed: No immediate action</p>
           <p>Next check: 2–4 weeks</p>
@@ -252,7 +216,7 @@ const ResultSection: React.FC<{
 
 const SupportedDocumentPills: React.FC = () => (
   <section id="supported-documents" className="py-4 scroll-mt-24">
-    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Works with documents like:</p>
+    <p className="mb-3 text-sm font-semibold text-slate-600">Upload documents like these</p>
     <div className="flex flex-wrap gap-2">
       {documentTypes.map((documentType) => (
         <div key={documentType} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
@@ -268,7 +232,7 @@ const WhatYouGetSection: React.FC = () => (
   <section id="outputs" className="border-t border-slate-200 py-14 scroll-mt-24">
     <SectionIntro
       label="Outputs"
-      title="What VisaTodo pulls out for you"
+      title="What VisaTodo gives you"
       subtitle="Turn confusing immigration paperwork into clear, useful information."
     />
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -322,58 +286,21 @@ const TrustSection: React.FC = () => (
   </section>
 );
 
-const BetaFeedbackSection: React.FC = () => (
-  <section className="py-8">
-    <div className="flex flex-col gap-4 rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Beta feedback</p>
-        <h2 className="mt-2 text-xl font-semibold text-slate-950">Help shape the first-user experience</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-          Tell us where the wording is confusing, what felt risky, or which checklist step was missing.
-        </p>
-      </div>
-      <a
-        href="mailto:hello@visatodo.com?subject=VisaTodo%20beta%20feedback"
-        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-3 text-sm font-bold text-sky-700 transition hover:bg-sky-100"
-      >
-        <MessageSquareText className="h-4 w-4" />
-        Send feedback
-      </a>
-    </div>
-  </section>
-);
-
-const FinalCtaSection: React.FC<HomeActionProps> = ({ onUploadDocument, onTrySample, onBrowseChecklists }) => (
+const FinalCtaSection: React.FC<HomeActionProps> = ({ onUploadDocument }) => (
   <section className="py-14">
     <div className="rounded-[1.5rem] border border-sky-100 bg-sky-50 p-6 text-center sm:p-8">
-      <h2 className="text-2xl font-semibold text-slate-950">Ready to test the beta flow?</h2>
+      <h2 className="text-2xl font-semibold text-slate-950">Ready to understand your document?</h2>
       <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-700">
-        Start with a fictional sample, upload your own document when ready, or browse a checklist first.
+        Upload your immigration document and get a simple summary, key dates, and next steps.
       </p>
-      <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-        <a
-          href="/upload"
-          onClick={onTrySample}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-700 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-700/15 transition hover:bg-sky-800 active:scale-[0.99] sm:w-auto"
-        >
-          <Sparkles className="h-4 w-4" />
-          Try sample
-        </a>
+      <div className="mt-6">
         <a
           href="/upload"
           onClick={onUploadDocument}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-bold text-sky-700 transition hover:bg-sky-50 active:scale-[0.99] sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-700 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-700/15 transition hover:bg-sky-800 active:scale-[0.99] sm:w-auto"
         >
           <UploadCloud className="h-4 w-4" />
-          Upload
-        </a>
-        <a
-          href="/checklists"
-          onClick={onBrowseChecklists}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-bold text-sky-700 transition hover:bg-sky-50 active:scale-[0.99] sm:w-auto"
-        >
-          <ListChecks className="h-4 w-4" />
-          Browse checklists
+          Upload Document
         </a>
       </div>
       <p className="mt-3 text-xs font-semibold text-slate-500">Preview before account · Not legal advice</p>

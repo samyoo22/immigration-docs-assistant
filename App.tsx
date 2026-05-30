@@ -388,13 +388,6 @@ function App() {
                   Supported documents
                 </a>
                 <a
-                  href="/checklists"
-                  onClick={(event) => handleStartChecklist(event, '/checklists')}
-                  className="hidden text-xs font-bold text-slate-600 transition hover:text-sky-700 md:inline-flex"
-                >
-                  Checklists
-                </a>
-                <a
                   href="/upload"
                   onClick={(event) => handleStartCustom(event, '/upload')}
                   className="hidden rounded-full bg-sky-700 px-4 py-2 text-xs font-bold text-white transition hover:bg-sky-800 sm:inline-flex"
@@ -459,9 +452,6 @@ function App() {
         {state.view === 'landing' ? (
           <LandingScreen 
             onUploadDocument={(event) => handleStartCustom(event, '/upload')}
-            onTrySample={handleStartSample}
-            onBrowseChecklists={(event) => handleStartChecklist(event, '/checklists')}
-            onOpenTemplates={handleStartTemplates}
           />
         ) : state.view === 'analyze' ? (
           <AnalyzerScreen
