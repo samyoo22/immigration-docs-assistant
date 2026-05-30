@@ -5,12 +5,17 @@ import {
   AlertTriangle,
   BookOpenCheck,
   CalendarDays,
+  ExternalLink,
+  FileText,
   HelpCircle,
+  Landmark,
   ShieldCheck,
+  UserRound,
 } from 'lucide-react';
 import RoadmapCard from './roadmaps/RoadmapCard';
 import RoadmapTimeline from './roadmaps/RoadmapTimeline';
 import OptDateCalculator from './roadmaps/OptDateCalculator';
+import { f1OptDocumentGroups, f1OptOfficialSources } from '../lib/roadmaps/f1OptDocuments';
 import { f1OptRoadmap, ROADMAP_DISCLAIMER, visaRoadmaps } from '../lib/roadmaps/f1OptRoadmap';
 
 interface RoadmapsRoutesProps {
@@ -208,50 +213,130 @@ const F1OptRoadmapPage: React.FC<{
   onNavigateRoadmaps: (event?: React.MouseEvent<HTMLElement>, route?: string) => void;
 }> = ({ onNavigateHome, onNavigateRoadmaps }) => (
   <div className="animate-fade-in">
-    <div className="mb-6 flex flex-wrap items-center gap-3">
+    <div className="mb-5 flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-500">
+      <button type="button" onClick={(event) => onNavigateRoadmaps(event, '/roadmaps')} className="text-sky-700 hover:text-sky-900">
+        Roadmaps
+      </button>
+      <span>/</span>
+      <span className="text-slate-700">F-1 OPT</span>
       <button
         type="button"
         onClick={(event) => onNavigateRoadmaps(event, '/roadmaps')}
-        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50"
+        className="ml-auto inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50"
       >
         <ArrowLeft className="h-4 w-4" />
-        Roadmaps
-      </button>
-      <button
-        type="button"
-        onClick={onNavigateHome}
-        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50"
-      >
-        Home
+        Back to all Roadmaps
       </button>
     </div>
 
-    <section className="grid gap-8 py-6 lg:grid-cols-[minmax(0,0.98fr),minmax(360px,0.78fr)] lg:items-start">
+    <section className="grid gap-6 py-4 lg:grid-cols-[minmax(0,0.9fr),minmax(360px,0.7fr)] lg:items-start">
       <div>
         <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-800 shadow-sm">
           <BookOpenCheck className="h-3.5 w-3.5" />
           F-1 OPT roadmap
         </div>
-        <h1 className="max-w-3xl text-4xl font-semibold leading-[1.03] text-slate-950 sm:text-5xl lg:text-[3.65rem]">
-          F-1 OPT, broken into clear steps.
-        </h1>
-        <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">{f1OptRoadmap.description}</p>
+        <h1 className="text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl">F-1 OPT Roadmap</h1>
+        <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
+          Understand your OPT process from school recommendation to EAD and status maintenance.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {['6 steps', '10+ documents', '3 key deadlines'].map((item) => (
+            <span key={item} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200">
+              {item}
+            </span>
+          ))}
+        </div>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <a
+            href="#opt-date-calculator"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-700 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-700/15 transition hover:bg-sky-800 active:scale-[0.99] sm:w-auto"
+          >
+            Start Date Calculator
+            <ArrowRight className="h-4 w-4" />
+          </a>
+          <a
+            href="#opt-documents"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-bold text-sky-700 transition hover:bg-sky-50 active:scale-[0.99] sm:w-auto"
+          >
+            View Required Documents
+          </a>
+        </div>
+        <p className="mt-4 text-sm leading-6 text-slate-500">
+          Planning helper, not legal advice. Always confirm exact dates and requirements with your DSO or official sources.
+        </p>
       </div>
 
-      <DisclaimerCard />
+      <HeroSequenceCard />
     </section>
 
-    <section className="grid gap-4 py-6 sm:grid-cols-3">
-      <QuickFact icon={CalendarDays} label="Best first move" value="Start preparing 3-4 months before program end." />
-      <QuickFact icon={ShieldCheck} label="Deadline to watch" value="File after DSO recommendation and generally within 30 days." />
-      <QuickFact icon={HelpCircle} label="Plain English" value="Terms are explained as you go." />
+    <RoadmapOverview />
+
+    <section className="grid gap-4 py-8 sm:grid-cols-2 lg:grid-cols-4">
+      <QuickFact icon={CalendarDays} label="Start here" value="Prepare documents 3-4 months before your program end date." />
+      <QuickFact icon={UserRound} label="School step" value="Request your OPT I-20 from your DSO before filing with USCIS." />
+      <QuickFact icon={Landmark} label="USCIS deadline" value="File Form I-765 generally within 30 days after DSO recommendation." />
+      <QuickFact icon={ShieldCheck} label="Work start" value="Do not start working before your EAD start date." />
     </section>
 
-    <GlossarySection />
     <OptDateCalculator />
     <RoadmapTimeline steps={f1OptRoadmap.steps} />
+    <RequiredDocumentsChecklist />
+    <GlossarySection />
+    <OfficialSources />
     <DisclaimerCard compact />
   </div>
+);
+
+const HeroSequenceCard: React.FC = () => (
+  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl shadow-sky-900/5">
+    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Process sequence</p>
+    <div className="mt-4 space-y-3">
+      {[
+        ['1', 'School request', 'Ask your DSO for the OPT recommendation I-20.'],
+        ['2', 'USCIS filing', 'File Form I-765 after the OPT I-20 is issued.'],
+        ['3', 'EAD and status', 'Wait for approval, then follow OPT reporting rules.'],
+      ].map(([number, title, text]) => (
+        <div key={number} className="flex gap-3 rounded-2xl bg-slate-50 p-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-700 text-sm font-bold text-white">
+            {number}
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-slate-950">{title}</p>
+            <p className="mt-1 text-sm leading-6 text-slate-600">{text}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+    <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+      After your DSO recommends OPT, you generally need to file Form I-765 within 30 days.
+    </div>
+  </div>
+);
+
+const RoadmapOverview: React.FC = () => (
+  <section className="border-t border-slate-200 py-8">
+    <div className="mb-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Roadmap overview</p>
+      <h2 className="mt-3 text-2xl font-semibold text-slate-950">Your F-1 OPT process at a glance</h2>
+    </div>
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="grid gap-3 md:grid-cols-6">
+        {f1OptRoadmap.steps.map((step, index) => (
+          <div key={step.id} className="relative rounded-2xl bg-slate-50 p-4 md:min-h-[128px]">
+            {index < f1OptRoadmap.steps.length - 1 && (
+              <div className="absolute left-8 top-12 h-[calc(100%+0.75rem)] w-px bg-sky-100 md:left-auto md:right-[-0.4rem] md:top-8 md:h-px md:w-3" />
+            )}
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-sky-700 text-sm font-bold text-white">
+              {index + 1}
+            </div>
+            <p className="mt-4 text-sm font-semibold leading-5 text-slate-950">
+              {step.id === 'file-i765' ? 'File I-765' : step.id === 'wait-for-uscis' ? 'Track USCIS' : step.title}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
 );
 
 const DisclaimerCard: React.FC<{ compact?: boolean }> = ({ compact = false }) => (
@@ -280,6 +365,50 @@ const QuickFact: React.FC<{
   </div>
 );
 
+const RequiredDocumentsChecklist: React.FC = () => (
+  <section id="opt-documents" className="border-t border-slate-200 py-10 scroll-mt-24">
+    <div className="mb-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Documents checklist</p>
+      <h2 className="mt-3 text-2xl font-semibold text-slate-950">Documents you may need</h2>
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+        Use this as a planning checklist before your school request and USCIS filing.
+      </p>
+    </div>
+
+    <div className="grid gap-4 lg:grid-cols-3">
+      {f1OptDocumentGroups.map((group) => (
+        <article key={group.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+              <FileText className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-slate-950">{group.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{group.description}</p>
+            </div>
+          </div>
+          <div className="mt-4 space-y-2">
+            {group.documents.map((document) => (
+              <div key={document} className="flex items-start gap-2 text-sm leading-6 text-slate-700">
+                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-sky-500" />
+                <span>{document}</span>
+              </div>
+            ))}
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <button
+      type="button"
+      disabled
+      className="mt-5 inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-bold text-slate-500 sm:w-auto"
+    >
+      Save to My Checklist - Coming soon
+    </button>
+  </section>
+);
+
 const GlossarySection: React.FC = () => (
   <section className="border-t border-slate-200 py-10">
     <div className="mb-6">
@@ -292,6 +421,36 @@ const GlossarySection: React.FC = () => (
           <p className="text-base font-semibold text-slate-950">{item.term}</p>
           <p className="mt-2 text-sm leading-6 text-slate-600">{item.meaning}</p>
         </div>
+      ))}
+    </div>
+  </section>
+);
+
+const OfficialSources: React.FC = () => (
+  <section className="border-t border-slate-200 py-10">
+    <div className="mb-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Official sources</p>
+      <h2 className="mt-3 text-2xl font-semibold text-slate-950">Review before filing</h2>
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+        Review USCIS guidance and your school DSO instructions before filing.
+      </p>
+    </div>
+
+    <div className="grid gap-4 md:grid-cols-3">
+      {f1OptOfficialSources.map((source) => (
+        <a
+          key={source.title}
+          href={source.url}
+          target={source.url.startsWith('mailto:') ? undefined : '_blank'}
+          rel={source.url.startsWith('mailto:') ? undefined : 'noreferrer'}
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-sky-200 hover:bg-sky-50"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-base font-semibold text-slate-950">{source.title}</h3>
+            <ExternalLink className="h-4 w-4 shrink-0 text-sky-700" />
+          </div>
+          <p className="mt-3 text-sm leading-6 text-slate-600">{source.description}</p>
+        </a>
       ))}
     </div>
   </section>

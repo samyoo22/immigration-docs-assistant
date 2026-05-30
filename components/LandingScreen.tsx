@@ -122,7 +122,7 @@ const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument }) => (
       </div>
 
       <h1 className="max-w-2xl text-4xl font-semibold leading-[1.03] tracking-tight text-slate-950 sm:text-5xl lg:text-[4.05rem]">
-        Upload your immigration document. Get clear next steps.
+        Upload your document. Know what to do next.
       </h1>
 
       <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">

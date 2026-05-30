@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, CheckCircle2, ExternalLink, FileText, Landmark, UserRound } from 'lucide-react';
+import { AlertTriangle, FileText, Landmark, UserRound } from 'lucide-react';
 import { RoadmapStep } from '../../types';
 
 interface RoadmapStepCardProps {
@@ -46,7 +46,7 @@ const RoadmapStepCard: React.FC<RoadmapStepCardProps> = ({ step, stepNumber }) =
           <div className="space-y-2">
             {step.requiredDocuments.map((document) => (
               <div key={document} className="flex items-start gap-2 text-sm leading-6 text-slate-700">
-                <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-600" />
+                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-sky-500" />
                 <span>{document}</span>
               </div>
             ))}
@@ -57,22 +57,12 @@ const RoadmapStepCard: React.FC<RoadmapStepCardProps> = ({ step, stepNumber }) =
           {step.submittedTo && (
             <StepDetail icon={Landmark} label="Submitted to" value={step.submittedTo} />
           )}
-          <StepDetail icon={UserRound} label="Responsible party" value={step.responsibleParty} />
+          <StepDetail icon={UserRound} label="Who handles this" value={step.responsibleParty} />
           <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">Risk if missed</p>
             <p className="mt-2 text-sm leading-6 text-rose-900">{step.riskIfMissed}</p>
           </div>
         </div>
-      </div>
-
-      <div className="mt-5 border-t border-slate-100 pt-4">
-        <a
-          href={step.officialSourceUrl || '#'}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-sky-700 transition hover:text-sky-900"
-        >
-          Official source placeholder
-          <ExternalLink className="h-4 w-4" />
-        </a>
       </div>
     </article>
   );
