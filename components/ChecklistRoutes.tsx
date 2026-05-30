@@ -9,6 +9,8 @@ import {
   GraduationCap,
   ShieldCheck,
 } from 'lucide-react';
+import { SavedChecklist } from '../types';
+import { saveChecklist } from '../utils/savedChecklists';
 
 type ChecklistCardData = {
   title: string;
@@ -283,6 +285,7 @@ const ChecklistCard = ({ checklist }: { checklist: ChecklistCardData }) => (
 const OptChecklistPage = () => {
   const allItemIds = useMemo(() => optChecklistSections.flatMap((section) => section.items.map((item) => item.id)), []);
   const totalTasks = allItemIds.length;
+  const [addState, setAddState] = useState<'idle' | 'added' | 'already'>('idle');
   const [completedItems, setCompletedItems] = useState<Record<string, boolean>>(() => {
     try {
       const saved = localStorage.getItem(CHECKLIST_PROGRESS_STORAGE_KEY);
@@ -304,6 +307,27 @@ const OptChecklistPage = () => {
       ...current,
       [id]: !current[id],
     }));
+  };
+
+  const handleAddToMyChecklist = () => {
+    const savedChecklist: SavedChecklist = {
+      id: 'template-f1-opt',
+      title: 'F-1 OPT Checklist',
+      source: 'template',
+      sourceKey: 'template:f1-opt',
+      createdAt: new Date().toISOString(),
+      items: optChecklistSections.flatMap((section) =>
+        section.items.map((item) => ({
+          id: `template-f1-opt:${item.id}`,
+          title: item.title,
+          description: item.description,
+          completed: Boolean(completedItems[item.id]),
+        })),
+      ),
+    };
+
+    const result = saveChecklist(savedChecklist);
+    setAddState(result.status === 'created' ? 'added' : 'already');
   };
 
   return (
@@ -334,6 +358,40 @@ const OptChecklistPage = () => {
         </div>
 
         <ProgressSummary completedCount={completedCount} totalTasks={totalTasks} progressPercent={progressPercent} />
+      </div>
+
+      <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-950">Save this template</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            Add the full F-1 OPT template to My Checklist and track it alongside document-review tasks.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={handleAddToMyChecklist}
+            className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
+              addState === 'idle'
+                ? 'bg-sky-700 text-white hover:bg-sky-800'
+                : 'bg-emerald-100 text-emerald-700'
+            }`}
+          >
+            {addState === 'idle' ? <ClipboardList className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+            {addState === 'idle' && 'Add to My Checklist'}
+            {addState === 'added' && 'Added to My Checklist'}
+            {addState === 'already' && 'This checklist is already saved'}
+          </button>
+          {addState !== 'idle' && (
+            <a
+              href="/my-checklist"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-sky-200 bg-white px-4 py-2.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-50"
+            >
+              View My Checklist
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          )}
+        </div>
       </div>
 
       <div className="mt-6 space-y-5">

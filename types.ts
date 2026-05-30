@@ -114,8 +114,26 @@ export interface TranslatedAnalysis {
   dsoEmailNote?: string; // Explanation of the email draft
 }
 
+export interface SavedChecklistItem {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  priority?: 'high' | 'medium' | 'low';
+  dueDate?: string;
+}
+
+export interface SavedChecklist {
+  id: string;
+  title: string;
+  source: 'document-review' | 'template';
+  createdAt: string;
+  items: SavedChecklistItem[];
+  sourceKey?: string;
+}
+
 export interface AppState {
-  view: 'landing' | 'analyze' | 'checklists';
+  view: 'landing' | 'analyze' | 'checklists' | 'my-checklist';
   intent: UserIntent;
   situation: VisaSituation;
   inputText: string;

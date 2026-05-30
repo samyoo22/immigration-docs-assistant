@@ -6,6 +6,7 @@ import { SAMPLE_OPT_EMAIL } from './data/sampleTexts';
 import LandingScreen from './components/LandingScreen';
 import AnalyzerScreen from './components/AnalyzerScreen';
 import ChecklistRoutes from './components/ChecklistRoutes';
+import MyChecklistPage from './components/MyChecklistPage';
 import DisclaimerBanner from './components/DisclaimerBanner';
 import { t } from './utils/i18n';
 
@@ -30,6 +31,9 @@ const getSituationForPath = (pathname: string): VisaSituation => {
 };
 
 const getViewForPath = (pathname: string): AppState['view'] => {
+  if (pathname === '/my-checklist' || pathname === '/my-checklist/') {
+    return 'my-checklist';
+  }
   if (pathname.startsWith('/checklists')) {
     return 'checklists';
   }
@@ -111,6 +115,22 @@ function App() {
       ...prev,
       view: 'checklists',
       situation: getSituationForPath(route),
+      inputText: '',
+      error: null,
+      result: null,
+      checklistState: [],
+      translationResult: null,
+      translationLanguage: 'none',
+    }));
+  };
+
+  const handleStartMyChecklist = (event?: React.MouseEvent<HTMLElement>) => {
+    event?.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    window.history.pushState({}, '', '/my-checklist');
+    setState(prev => ({
+      ...prev,
+      view: 'my-checklist',
       inputText: '',
       error: null,
       result: null,
@@ -285,6 +305,13 @@ function App() {
           
           <div className="flex items-center gap-4">
             <a
+              href="/my-checklist"
+              onClick={handleStartMyChecklist}
+              className="hidden rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50 sm:inline-flex"
+            >
+              My Checklist
+            </a>
+            <a
               href="/checklists"
               onClick={(event) => handleStartChecklist(event, '/checklists')}
               className="hidden rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50 sm:inline-flex"
@@ -328,8 +355,14 @@ function App() {
             onBack={handleBackToStart}
             onCopy={handleCopy}
           />
-        ) : (
+        ) : state.view === 'checklists' ? (
           <ChecklistRoutes pathname={window.location.pathname} onNavigateHome={handleBackToStart} />
+        ) : (
+          <MyChecklistPage
+            onNavigateHome={handleBackToStart}
+            onNavigateUpload={(event) => handleStartCustom(event, '/upload')}
+            onNavigateChecklists={(event) => handleStartChecklist(event, '/checklists')}
+          />
         )}
 
       </main>

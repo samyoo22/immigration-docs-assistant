@@ -4,14 +4,14 @@ import { Locale } from '../types';
 export const translations = {
   en: {
     common: {
-      appName: "VIsatodo",
+      appName: "VisaTodo",
       appSuffix: "", 
       tagline: "Visa paperwork, organized",
       poweredBy: "AI helper · Not legal advice",
-      legalDisclaimer: "VIsatodo is not a law firm and does not provide legal advice. We help explain documents and organize tasks, but you should consult a qualified immigration attorney for legal decisions.",
+      legalDisclaimer: "VisaTodo is not a law firm and does not provide legal advice. We help explain documents and organize tasks, but you should consult a qualified immigration attorney for legal decisions.",
       legalTitle: "Helpful guidance, not legal advice",
       privacyNote: "Privacy Note: Do not paste full SSNs, Passport Numbers, or SEVIS IDs.",
-      copyright: "© 2026 VIsatodo · www.visatodo.com · Clearer documents, better checklists, less confusion.",
+      copyright: "© 2026 VisaTodo · www.visatodo.com · Clearer documents, better checklists, less confusion.",
       readMore: "Read full disclaimer",
       readLess: "Show less",
       errorTitle: "Something went wrong",

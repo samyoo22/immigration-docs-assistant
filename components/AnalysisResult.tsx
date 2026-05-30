@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { AnalysisResult as AnalysisResultType, ChecklistItem, VisaSituation } from '../types';
+import { AnalysisResult as AnalysisResultType, ChecklistItem, SavedChecklist, VisaSituation } from '../types';
 import {
   AlertTriangle,
   ArrowRight,
@@ -13,6 +13,7 @@ import {
   ListChecks,
   ShieldCheck,
 } from 'lucide-react';
+import { saveChecklist } from '../utils/savedChecklists';
 
 interface AnalysisResultProps {
   result: AnalysisResultType;
@@ -31,6 +32,22 @@ const confidenceStyles = {
   high: 'bg-emerald-100 text-emerald-700',
   medium: 'bg-amber-100 text-amber-700',
   low: 'bg-slate-100 text-slate-600',
+};
+
+const simpleHash = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
+};
+
+const getDocumentChecklistTitle = (situation: VisaSituation) => {
+  if (situation === VisaSituation.F1_OPT_APPLY) return 'F-1 OPT Document Review Checklist';
+  if (situation === VisaSituation.USCIS_NOTICE) return 'USCIS Notice Review Checklist';
+  if (situation === VisaSituation.EAD_ISSUE) return 'EAD Issue Review Checklist';
+  return `${situation} Document Review Checklist`;
 };
 
 const relatedChecklistBySituation: Partial<Record<VisaSituation, { title: string; description: string; href: string; cta: string }>> = {
@@ -142,7 +159,7 @@ const RelatedChecklistCard = ({ situation }: { situation: VisaSituation }) => {
 };
 
 const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems, situation, onCopy }) => {
-  const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
+  const [saveState, setSaveState] = useState<'idle' | 'saved' | 'updated'>('idle');
   const questions = result.questionsToAsk?.length ? result.questionsToAsk : result.dsoQuestions || [];
   const isBasicReview = result.topic === 'basic_review';
   const safeWarnings = (result.warnings || []).filter((warning) => {
@@ -181,7 +198,27 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
   );
 
   const handleSaveChecklist = () => {
-    setSaveState('saved');
+    const sourceKey = `document-review:${situation}:${simpleHash(
+      checklistItems.map((item) => `${item.title}:${item.description}`).join('|'),
+    )}`;
+    const savedChecklist: SavedChecklist = {
+      id: sourceKey,
+      title: getDocumentChecklistTitle(situation),
+      source: 'document-review',
+      sourceKey,
+      createdAt: new Date().toISOString(),
+      items: checklistItems.map((item) => ({
+        id: `${sourceKey}:${item.id}`,
+        title: item.title,
+        description: item.description,
+        completed: item.status === 'done',
+        priority: item.priority,
+        dueDate: item.dueLabel,
+      })),
+    };
+
+    const result = saveChecklist(savedChecklist);
+    setSaveState(result.status === 'created' ? 'saved' : 'updated');
   };
 
   return (
@@ -269,14 +306,25 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
               type="button"
               onClick={handleSaveChecklist}
               className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${
-                saveState === 'saved'
+                saveState !== 'idle'
                   ? 'bg-emerald-100 text-emerald-700'
                   : 'bg-sky-700 text-white hover:bg-sky-800'
               }`}
             >
-              {saveState === 'saved' ? <Check className="h-3.5 w-3.5" /> : <ListChecks className="h-3.5 w-3.5" />}
-              {saveState === 'saved' ? 'Saved to your checklist' : 'Save as checklist'}
+              {saveState !== 'idle' ? <Check className="h-3.5 w-3.5" /> : <ListChecks className="h-3.5 w-3.5" />}
+              {saveState === 'idle' && 'Save as checklist'}
+              {saveState === 'saved' && 'Saved to My Checklist'}
+              {saveState === 'updated' && 'Updated in My Checklist'}
             </button>
+            {saveState !== 'idle' && (
+              <a
+                href="/my-checklist"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-sky-200 bg-white px-3 py-2 text-xs font-semibold text-sky-700 transition hover:bg-sky-50"
+              >
+                View My Checklist
+                <ArrowRight className="h-3.5 w-3.5" />
+              </a>
+            )}
           </div>
         </div>
         <div className="grid gap-3">
