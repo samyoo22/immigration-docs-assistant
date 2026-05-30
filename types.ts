@@ -115,7 +115,7 @@ export interface TranslatedAnalysis {
 }
 
 export interface AppState {
-  view: 'landing' | 'analyze';
+  view: 'landing' | 'analyze' | 'checklists';
   intent: UserIntent;
   situation: VisaSituation;
   inputText: string;

@@ -5,6 +5,7 @@ import { analyzeDocument, translateAnalysis } from './services/aiService';
 import { SAMPLE_OPT_EMAIL } from './data/sampleTexts';
 import LandingScreen from './components/LandingScreen';
 import AnalyzerScreen from './components/AnalyzerScreen';
+import ChecklistRoutes from './components/ChecklistRoutes';
 import DisclaimerBanner from './components/DisclaimerBanner';
 import { t } from './utils/i18n';
 
@@ -29,7 +30,10 @@ const getSituationForPath = (pathname: string): VisaSituation => {
 };
 
 const getViewForPath = (pathname: string): AppState['view'] => {
-  if (pathname === '/upload' || pathname === '/analyze' || pathname.startsWith('/checklists')) {
+  if (pathname.startsWith('/checklists')) {
+    return 'checklists';
+  }
+  if (pathname === '/upload' || pathname === '/analyze') {
     return 'analyze';
   }
   return 'landing';
@@ -61,10 +65,10 @@ function App() {
         view: nextView,
         situation: getSituationForPath(window.location.pathname),
         error: null,
-        result: nextView === 'landing' ? null : prev.result,
-        checklistState: nextView === 'landing' ? [] : prev.checklistState,
-        translationResult: nextView === 'landing' ? null : prev.translationResult,
-        translationLanguage: nextView === 'landing' ? 'none' : prev.translationLanguage,
+        result: nextView === 'analyze' ? prev.result : null,
+        checklistState: nextView === 'analyze' ? prev.checklistState : [],
+        translationResult: nextView === 'analyze' ? prev.translationResult : null,
+        translationLanguage: nextView === 'analyze' ? prev.translationLanguage : 'none',
       }));
     };
 
@@ -100,7 +104,20 @@ function App() {
   };
 
   const handleStartChecklist = (event?: React.MouseEvent<HTMLElement>, route = '/checklists') => {
-    handleStartCustom(event, route);
+    event?.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    window.history.pushState({}, '', route);
+    setState(prev => ({
+      ...prev,
+      view: 'checklists',
+      situation: getSituationForPath(route),
+      inputText: '',
+      error: null,
+      result: null,
+      checklistState: [],
+      translationResult: null,
+      translationLanguage: 'none',
+    }));
   };
 
   const handleBackToStart = () => {
@@ -268,6 +285,13 @@ function App() {
           
           <div className="flex items-center gap-4">
             <a
+              href="/checklists"
+              onClick={(event) => handleStartChecklist(event, '/checklists')}
+              className="hidden rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50 sm:inline-flex"
+            >
+              Checklists
+            </a>
+            <a
               href="/upload"
               onClick={(event) => handleStartCustom(event, '/upload')}
               className="hidden rounded-full bg-sky-700 px-4 py-2 text-xs font-bold text-white transition hover:bg-sky-800 sm:inline-flex"
@@ -294,7 +318,7 @@ function App() {
             onUploadDocument={(event) => handleStartCustom(event, '/upload')}
             onCreateChecklist={handleStartChecklist}
           />
-        ) : (
+        ) : state.view === 'analyze' ? (
           <AnalyzerScreen
             appState={state}
             setSituation={handleSetSituation}
@@ -304,6 +328,8 @@ function App() {
             onBack={handleBackToStart}
             onCopy={handleCopy}
           />
+        ) : (
+          <ChecklistRoutes pathname={window.location.pathname} onNavigateHome={handleBackToStart} />
         )}
 
       </main>
