@@ -392,7 +392,7 @@ function App() {
                   onClick={(event) => handleStartCustom(event, '/upload')}
                   className="hidden rounded-full bg-sky-700 px-4 py-2 text-xs font-bold text-white transition hover:bg-sky-800 sm:inline-flex"
                 >
-                  Upload Document
+                  Upload
                 </a>
               </>
             ) : (
@@ -409,7 +409,7 @@ function App() {
                   onClick={handleStartMyChecklist}
                   className="hidden rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50 sm:inline-flex"
                 >
-                  My Checklist
+                  Saved Checklist
                 </a>
                 <a
                   href="/checklists"
@@ -430,7 +430,7 @@ function App() {
                   onClick={(event) => handleStartCustom(event, '/upload')}
                   className="hidden rounded-full bg-sky-700 px-4 py-2 text-xs font-bold text-white transition hover:bg-sky-800 sm:inline-flex"
                 >
-                  Upload Document
+                  Upload
                 </a>
               </>
             )}

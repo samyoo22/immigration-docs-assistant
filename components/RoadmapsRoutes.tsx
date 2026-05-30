@@ -2,9 +2,9 @@ import React from 'react';
 import {
   ArrowLeft,
   ArrowRight,
+  AlertTriangle,
   BookOpenCheck,
   CalendarDays,
-  CheckCircle2,
   HelpCircle,
   ShieldCheck,
 } from 'lucide-react';
@@ -38,6 +38,15 @@ const glossaryTerms = [
   },
 ];
 
+const roadmapPreviewSteps = [
+  'Prepare Documents',
+  'Request OPT I-20',
+  'File Form I-765',
+  'Track USCIS',
+  'Receive EAD',
+  'Maintain OPT Status',
+];
+
 const RoadmapsRoutes: React.FC<RoadmapsRoutesProps> = ({ pathname, onNavigateHome, onNavigateRoadmaps }) => {
   if (pathname === '/roadmaps/f1-opt' || pathname === '/roadmaps/f1-opt/') {
     return <F1OptRoadmapPage onNavigateHome={onNavigateHome} onNavigateRoadmaps={onNavigateRoadmaps} />;
@@ -50,55 +59,49 @@ const RoadmapsLandingPage: React.FC<{
   onNavigateRoadmaps: (event?: React.MouseEvent<HTMLElement>, route?: string) => void;
 }> = ({ onNavigateRoadmaps }) => (
   <div className="animate-fade-in">
-    <section className="grid gap-8 py-8 lg:grid-cols-[minmax(0,0.95fr),minmax(360px,0.8fr)] lg:items-center lg:py-10">
+    <section className="grid gap-6 py-4 lg:grid-cols-[minmax(0,0.86fr),minmax(360px,0.72fr)] lg:items-start lg:py-6">
       <div>
         <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-800 shadow-sm">
           <CalendarDays className="h-3.5 w-3.5" />
           Visa roadmaps
         </div>
-        <h1 className="max-w-3xl text-4xl font-semibold leading-[1.03] text-slate-950 sm:text-5xl lg:text-[3.8rem]">
-          Know what you need, when you need it, and what comes next.
-        </h1>
-        <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-          VisaTodo turns immigration processes into simple roadmaps with document lists, timing notes, deadline reminders, and plain-English explanations.
+        <h1 className="text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl">Visa Roadmaps</h1>
+        <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
+          Plan your visa process with clear steps, required documents, and deadline reminders.
         </p>
-        <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+          Start with F-1 OPT and see what to prepare, when to file, and what comes next.
+        </p>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <a
             href="/roadmaps/f1-opt"
             onClick={(event) => onNavigateRoadmaps(event, '/roadmaps/f1-opt')}
             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-700 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-700/15 transition hover:bg-sky-800 active:scale-[0.99] sm:w-auto"
           >
-            Open F-1 OPT Roadmap
+            Start My F-1 OPT Timeline
             <ArrowRight className="h-4 w-4" />
+          </a>
+          <a
+            href="/roadmaps/f1-opt"
+            onClick={(event) => onNavigateRoadmaps(event, '/roadmaps/f1-opt')}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-bold text-sky-700 transition hover:bg-sky-50 active:scale-[0.99] sm:w-auto"
+          >
+            Calculate OPT Dates
           </a>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl shadow-sky-900/5">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Featured roadmap</p>
-        <h2 className="mt-2 text-2xl font-semibold text-slate-950">F-1 OPT</h2>
-        <div className="mt-5 space-y-3">
-          {['Prepare documents', 'Request OPT I-20', 'File Form I-765', 'Track USCIS', 'Maintain OPT status'].map(
-            (item) => (
-              <div key={item} className="flex items-center gap-3 text-sm font-semibold text-slate-700">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                {item}
-              </div>
-            )
-          )}
-        </div>
-        <div className="mt-5 rounded-2xl bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-          Deadlines are highlighted so timing risks are easier to spot.
-        </div>
-      </div>
+      <FeaturedTimelineStarter onNavigateRoadmaps={onNavigateRoadmaps} />
     </section>
 
-    <section className="border-t border-slate-200 py-10">
+    <RoadmapPreview />
+
+    <section className="border-t border-slate-200 py-8">
       <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Browse</p>
-        <h2 className="mt-3 text-2xl font-semibold text-slate-950">Visa roadmap library</h2>
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Roadmap library</p>
+        <h2 className="mt-3 text-2xl font-semibold text-slate-950">Choose a roadmap</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-          Start with the F-1 OPT roadmap now. More visa types are structured as placeholders so the library can grow cleanly.
+          Start with F-1 OPT today. More visa paths are being structured as step-by-step guides.
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -111,7 +114,93 @@ const RoadmapsLandingPage: React.FC<{
         ))}
       </div>
     </section>
+
+    <DisclaimerCard compact />
   </div>
+);
+
+const FeaturedTimelineStarter: React.FC<{
+  onNavigateRoadmaps: (event?: React.MouseEvent<HTMLElement>, route?: string) => void;
+}> = ({ onNavigateRoadmaps }) => (
+  <article className="rounded-2xl border border-sky-200 bg-white p-5 shadow-xl shadow-sky-900/5">
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Available now</span>
+        <h2 className="mt-4 text-2xl font-semibold text-slate-950">F-1 OPT Roadmap</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">For F-1 students preparing post-completion work authorization.</p>
+      </div>
+      <p className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
+        6 steps · 10+ documents · 3 key timing risks
+      </p>
+    </div>
+
+    <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <label className="block">
+        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Enter your program end date</span>
+        <div className="mt-2 flex min-h-12 items-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-400">
+          MM / DD / YYYY
+        </div>
+      </label>
+      <p className="mt-3 text-sm leading-6 text-slate-600">
+        We’ll help you understand your general OPT filing window, start date window, and required documents.
+      </p>
+    </div>
+
+    <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+      <div className="flex gap-3">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+        <div>
+          <p className="text-sm font-semibold text-amber-900">Timing risk</p>
+          <p className="mt-1 text-sm leading-6 text-amber-900">
+            After your DSO recommends OPT, you generally need to file Form I-765 within 30 days.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <a
+      href="/roadmaps/f1-opt"
+      onClick={(event) => onNavigateRoadmaps(event, '/roadmaps/f1-opt')}
+      className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-700 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-700/15 transition hover:bg-sky-800 active:scale-[0.99]"
+    >
+      Start My F-1 OPT Timeline
+      <ArrowRight className="h-4 w-4" />
+    </a>
+  </article>
+);
+
+const RoadmapPreview: React.FC = () => (
+  <section className="py-8">
+    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">F-1 OPT preview</p>
+        <h2 className="mt-3 text-2xl font-semibold text-slate-950">What the roadmap includes</h2>
+      </div>
+      <div className="w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+        Don’t miss filing-window rules
+      </div>
+    </div>
+
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="grid gap-3 md:grid-cols-6">
+        {roadmapPreviewSteps.map((step, index) => (
+          <div key={step} className="relative rounded-2xl bg-slate-50 p-4 md:min-h-[132px]">
+            {index < roadmapPreviewSteps.length - 1 && (
+              <div className="absolute left-8 top-12 h-[calc(100%+0.75rem)] w-px bg-sky-100 md:left-auto md:right-[-0.4rem] md:top-8 md:h-px md:w-3" />
+            )}
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-sky-700 text-sm font-bold text-white">
+              {index + 1}
+            </div>
+            <p className="mt-4 text-sm font-semibold leading-5 text-slate-950">{step}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+      Your OPT application may be rejected or denied if you file outside the allowed filing window.
+    </div>
+  </section>
 );
 
 const F1OptRoadmapPage: React.FC<{

@@ -9,6 +9,22 @@ interface RoadmapCardProps {
 
 const RoadmapCard: React.FC<RoadmapCardProps> = ({ roadmap, onOpenRoadmap }) => {
   const isAvailable = roadmap.status === 'available';
+  const metadataByRoadmap: Record<string, string> = {
+    'f1-opt': '6 steps · Documents · Filing windows',
+    'stem-opt': 'I-983 · E-Verify · 24-month extension',
+    h1b: 'Registration · Lottery · Petition',
+    'green-card': 'Employer-based and family-based paths',
+    o1: 'Evidence · Petition · USCIS review',
+    j1: 'Sponsor documents · SEVIS · Travel',
+    'change-of-status': 'Eligibility · Forms · USCIS timing',
+    'adjustment-of-status': 'I-485 · Biometrics · Interview',
+  };
+  const descriptionByRoadmap: Record<string, string> = {
+    'f1-opt': 'For students applying for post-completion work authorization.',
+    'stem-opt': 'For eligible STEM students extending OPT.',
+    h1b: 'Employer-sponsored work visa roadmap.',
+    'green-card': 'Long-term permanent residency process.',
+  };
 
   return (
     <article
@@ -39,7 +55,10 @@ const RoadmapCard: React.FC<RoadmapCardProps> = ({ roadmap, onOpenRoadmap }) => 
             </span>
           )}
         </div>
-        <p className="mt-3 text-sm leading-6 text-slate-600">{roadmap.description}</p>
+        <p className="mt-3 text-sm leading-6 text-slate-600">{descriptionByRoadmap[roadmap.id] || roadmap.description}</p>
+        <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
+          {metadataByRoadmap[roadmap.id] || `${roadmap.visaType} · Step-by-step guide`}
+        </p>
       </div>
 
       <div className="mt-5 flex items-center justify-between gap-4 border-t border-slate-100 pt-4">
@@ -50,7 +69,7 @@ const RoadmapCard: React.FC<RoadmapCardProps> = ({ roadmap, onOpenRoadmap }) => 
             onClick={(event) => onOpenRoadmap?.(event, roadmap.id)}
             className="inline-flex items-center gap-2 text-sm font-bold text-sky-700 transition hover:text-sky-900"
           >
-            View roadmap
+            Start roadmap
             <ArrowRight className="h-4 w-4" />
           </a>
         ) : (
