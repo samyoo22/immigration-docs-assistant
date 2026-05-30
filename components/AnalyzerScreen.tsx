@@ -79,7 +79,7 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
       file.name.toLowerCase().endsWith('.txt');
 
     if (!isSupportedFile) {
-      setPdfError('For image files, paste the visible text below so your review is accurate.');
+      setPdfError("We couldn't read this file. Please try another file or paste the text manually.");
       setPdfFileName(null);
       event.target.value = '';
       return;
@@ -91,7 +91,7 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
     try {
       const text = await extractTextFromFile(file);
       if (!text) {
-        setPdfError("We couldn't find readable text in this file. Please paste the document text below.");
+        setPdfError("We couldn't read this file. Please try another file or paste the text manually.");
         setPdfFileName(null);
       } else {
         setInputText(text);
@@ -99,7 +99,7 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
       }
     } catch (error) {
       console.error(error);
-      setPdfError('We could not read this file. Please paste the document text below.');
+      setPdfError("We couldn't read this file. Please try another file or paste the text manually.");
       setPdfFileName(null);
     } finally {
       setIsParsingPdf(false);
@@ -176,9 +176,12 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
               </button>
 
               {pdfFileName && (
-                <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-700 ring-1 ring-sky-100">
-                  <FileText className="h-3.5 w-3.5" />
-                  {pdfFileName}
+                <div className="mt-3 flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 p-3">
+                  <FileText className="mt-0.5 h-4 w-4 shrink-0 text-sky-700" />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-slate-950">File selected: {pdfFileName}</p>
+                    <p className="mt-0.5 text-xs font-medium text-sky-700">Ready to analyze</p>
+                  </div>
                 </div>
               )}
 
@@ -284,7 +287,12 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
               <p className="mt-2 max-w-sm text-sm leading-6 text-rose-700">{appState.error}</p>
             </div>
           ) : appState.result ? (
-            <AnalysisResult result={appState.result} checklistItems={appState.checklistState} onCopy={onCopy} />
+            <AnalysisResult
+              result={appState.result}
+              checklistItems={appState.checklistState}
+              situation={appState.situation}
+              onCopy={onCopy}
+            />
           ) : (
             <div className="min-h-[520px] rounded-3xl border border-dashed border-slate-300 bg-white/70 p-6 shadow-sm">
               <div className="flex h-full min-h-[470px] flex-col items-center justify-center text-center">
