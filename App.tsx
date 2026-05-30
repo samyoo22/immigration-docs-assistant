@@ -2,12 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { VisaSituation, ChecklistItem, AppState, UserIntent, TranslationLanguageCode } from './types';
 import { analyzeDocument, translateAnalysis } from './services/aiService';
-import { SAMPLE_OPT_EMAIL } from './data/sampleTexts';
+import { sampleDocuments } from './data/sampleDocuments';
 import LandingScreen from './components/LandingScreen';
 import AnalyzerScreen from './components/AnalyzerScreen';
 import ChecklistRoutes from './components/ChecklistRoutes';
 import MyChecklistPage from './components/MyChecklistPage';
 import TemplatesPage from './components/TemplatesPage';
+import RoadmapsRoutes from './components/RoadmapsRoutes';
 import DisclaimerBanner from './components/DisclaimerBanner';
 import { t } from './utils/i18n';
 
@@ -23,6 +24,9 @@ const simpleHash = (str: string) => {
 };
 
 const getSituationForPath = (pathname: string): VisaSituation => {
+  if (pathname === '/upload' || pathname === '/upload/' || pathname === '/analyze' || pathname === '/analyze/') {
+    return VisaSituation.OTHER;
+  }
   if (pathname.includes('stem-opt')) return VisaSituation.F1_OPT_ACTIVE;
   if (pathname.includes('h1b')) return VisaSituation.H1B;
   if (pathname.includes('i-765')) return VisaSituation.I765;
@@ -37,6 +41,9 @@ const getViewForPath = (pathname: string): AppState['view'] => {
   }
   if (pathname === '/templates' || pathname === '/templates/') {
     return 'templates';
+  }
+  if (pathname.startsWith('/roadmaps')) {
+    return 'roadmaps';
   }
   if (pathname.startsWith('/checklists')) {
     return 'checklists';
@@ -84,14 +91,22 @@ function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const handleStartSample = () => {
+  const handleStartSample = (event?: React.MouseEvent<HTMLElement>) => {
+    event?.preventDefault();
+    const sample = sampleDocuments[0];
     window.scrollTo({ top: 0, behavior: 'auto' });
-    window.history.pushState({}, '', '/analyze');
+    window.history.pushState({}, '', '/upload');
     setState(prev => ({
       ...prev,
       view: 'analyze',
-      intent: UserIntent.EMAIL,
-      inputText: SAMPLE_OPT_EMAIL.trim(),
+      situation: sample.situation,
+      intent: sample.helpGoal,
+      inputText: sample.text,
+      error: null,
+      result: null,
+      checklistState: [],
+      translationResult: null,
+      translationLanguage: 'none',
     }));
   };
 
@@ -153,6 +168,22 @@ function App() {
     setState(prev => ({
       ...prev,
       view: 'templates',
+      inputText: '',
+      error: null,
+      result: null,
+      checklistState: [],
+      translationResult: null,
+      translationLanguage: 'none',
+    }));
+  };
+
+  const handleStartRoadmaps = (event?: React.MouseEvent<HTMLElement>, route = '/roadmaps') => {
+    event?.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    window.history.pushState({}, '', route);
+    setState(prev => ({
+      ...prev,
+      view: 'roadmaps',
       inputText: '',
       error: null,
       result: null,
@@ -357,11 +388,11 @@ function App() {
                   Supported documents
                 </a>
                 <a
-                  href="/templates"
-                  onClick={handleStartTemplates}
+                  href="/checklists"
+                  onClick={(event) => handleStartChecklist(event, '/checklists')}
                   className="hidden text-xs font-bold text-slate-600 transition hover:text-sky-700 md:inline-flex"
                 >
-                  Templates
+                  Checklists
                 </a>
                 <a
                   href="/upload"
@@ -395,6 +426,13 @@ function App() {
                   Checklists
                 </a>
                 <a
+                  href="/roadmaps"
+                  onClick={(event) => handleStartRoadmaps(event, '/roadmaps')}
+                  className="hidden rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50 sm:inline-flex"
+                >
+                  Roadmaps
+                </a>
+                <a
                   href="/upload"
                   onClick={(event) => handleStartCustom(event, '/upload')}
                   className="hidden rounded-full bg-sky-700 px-4 py-2 text-xs font-bold text-white transition hover:bg-sky-800 sm:inline-flex"
@@ -421,6 +459,8 @@ function App() {
         {state.view === 'landing' ? (
           <LandingScreen 
             onUploadDocument={(event) => handleStartCustom(event, '/upload')}
+            onTrySample={handleStartSample}
+            onBrowseChecklists={(event) => handleStartChecklist(event, '/checklists')}
             onOpenTemplates={handleStartTemplates}
           />
         ) : state.view === 'analyze' ? (
@@ -436,6 +476,12 @@ function App() {
           />
         ) : state.view === 'checklists' ? (
           <ChecklistRoutes pathname={window.location.pathname} onNavigateHome={handleBackToStart} />
+        ) : state.view === 'roadmaps' ? (
+          <RoadmapsRoutes
+            pathname={window.location.pathname}
+            onNavigateHome={handleBackToStart}
+            onNavigateRoadmaps={handleStartRoadmaps}
+          />
         ) : state.view === 'templates' ? (
           <TemplatesPage onNavigateHome={handleBackToStart} />
         ) : (

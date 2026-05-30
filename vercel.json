@@ -17,6 +17,14 @@
       "destination": "/index.html"
     },
     {
+      "source": "/roadmaps",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/roadmaps/:path*",
+      "destination": "/index.html"
+    },
+    {
       "source": "/my-checklist",
       "destination": "/index.html"
     },

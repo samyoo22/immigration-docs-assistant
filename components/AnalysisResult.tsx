@@ -10,7 +10,6 @@ import {
   Copy,
   ExternalLink,
   FileText,
-  HelpCircle,
   ListChecks,
   Mail,
   ShieldCheck,
@@ -166,6 +165,30 @@ const RelatedChecklistCard = ({ situation }: { situation: VisaSituation }) => {
   );
 };
 
+const SecondaryDetails = ({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) => (
+  <details className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+      <span>
+        <span className="block text-base font-semibold text-slate-950">{title}</span>
+        {subtitle && <span className="mt-1 block text-sm leading-6 text-slate-600">{subtitle}</span>}
+      </span>
+      <span className="mt-1 rounded-full border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-500 transition group-open:bg-slate-100">
+        <span className="group-open:hidden">Show</span>
+        <span className="hidden group-open:inline">Hide</span>
+      </span>
+    </summary>
+    <div className="mt-5">{children}</div>
+  </details>
+);
+
 const OfficialSourcesSection = ({ result }: { result: AnalysisResultType }) => {
   const sources = (result.officialSources || []).slice(0, 5);
   if (sources.length === 0) return null;
@@ -206,6 +229,51 @@ const OfficialSourcesSection = ({ result }: { result: AnalysisResultType }) => {
     </section>
   );
 };
+
+const SavedChecklistSuccess = ({ state }: { state: 'saved' | 'updated' }) => (
+  <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-start gap-3">
+        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
+        <div>
+          <p className="text-sm font-semibold text-emerald-950">
+            {state === 'saved' ? 'Saved to My Checklist' : 'My Checklist was updated'}
+          </p>
+          <p className="mt-1 text-sm leading-6 text-emerald-800">
+            You can now check these tasks off, continue from the next incomplete item, or remove the checklist later.
+          </p>
+        </div>
+      </div>
+      <a
+        href="/my-checklist"
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-100"
+      >
+        Open My Checklist
+        <ArrowRight className="h-4 w-4" />
+      </a>
+    </div>
+  </div>
+);
+
+const BetaFeedbackCta = () => (
+  <section className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 className="text-base font-semibold text-slate-950">Beta feedback</h2>
+        <p className="mt-1 text-sm leading-6 text-slate-700">
+          Was anything unclear, missing, or too confident? A short note helps improve the next beta build.
+        </p>
+      </div>
+      <a
+        href="mailto:hello@visatodo.com?subject=VisaTodo%20beta%20feedback"
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-sky-700 ring-1 ring-sky-200 transition hover:bg-sky-100"
+      >
+        <Mail className="h-4 w-4" />
+        Send feedback
+      </a>
+    </div>
+  </section>
+);
 
 const WhatToVerifySection = ({ result }: { result: AnalysisResultType }) => {
   const verificationItems = result.verificationItems || [];
@@ -465,15 +533,6 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
               {saveState === 'saved' && 'Saved to My Checklist'}
               {saveState === 'updated' && 'Updated in My Checklist'}
             </button>
-            {saveState !== 'idle' && (
-              <a
-                href="/my-checklist"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-sky-200 bg-white px-3 py-2 text-xs font-semibold text-sky-700 transition hover:bg-sky-50"
-              >
-                View My Checklist
-                <ArrowRight className="h-3.5 w-3.5" />
-              </a>
-            )}
           </div>
         </div>
         <div className="grid gap-3">
@@ -499,49 +558,52 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
             </article>
           ))}
         </div>
-      </section>
-
-      <section className="grid gap-5 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <SectionHeader icon={<CalendarDays className="h-4 w-4" />} title="Important Dates" />
-          {result.importantDates?.length ? (
-            <div className="space-y-3">
-              {result.importantDates.map((item) => (
-                <div key={`${item.date}-${item.meaning}`} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold text-slate-950">{item.date}</p>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${confidenceStyles[item.confidence]}`}>
-                      {item.confidence} confidence
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">{item.meaning}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm leading-6 text-slate-600">No clear dates found. Verify any timing with the official source.</p>
-          )}
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <SectionHeader icon={<CheckCircle2 className="h-4 w-4" />} title="Documents Mentioned" />
-          {result.documentsMentioned?.length ? (
-            <div className="space-y-3">
-              {result.documentsMentioned.map((item) => (
-                <div key={item.name} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <h3 className="text-sm font-semibold text-slate-950">{item.name}</h3>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">{item.purpose}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm leading-6 text-slate-600">No specific documents were clearly detected.</p>
-          )}
-        </div>
+        {saveState !== 'idle' && <SavedChecklistSuccess state={saveState} />}
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <SectionHeader icon={<HelpCircle className="h-4 w-4" />} title="Questions to Ask" />
+        <SectionHeader icon={<CalendarDays className="h-4 w-4" />} title="Important Dates" />
+        {result.importantDates?.length ? (
+          <div className="space-y-3">
+            {result.importantDates.map((item) => (
+              <div key={`${item.date}-${item.meaning}`} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-semibold text-slate-950">{item.date}</p>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${confidenceStyles[item.confidence]}`}>
+                    {item.confidence} confidence
+                  </span>
+                </div>
+                <p className="mt-1 text-sm leading-6 text-slate-600">{item.meaning}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm leading-6 text-slate-600">No clear dates found. Verify any timing with the official source.</p>
+        )}
+      </section>
+
+      <SecondaryDetails
+        title="Documents mentioned"
+        subtitle="Supporting detail from the document review."
+      >
+        {result.documentsMentioned?.length ? (
+          <div className="space-y-3">
+            {result.documentsMentioned.map((item) => (
+              <div key={item.name} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <h3 className="text-sm font-semibold text-slate-950">{item.name}</h3>
+                <p className="mt-1 text-sm leading-6 text-slate-600">{item.purpose}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm leading-6 text-slate-600">No specific documents were clearly detected.</p>
+        )}
+      </SecondaryDetails>
+
+      <SecondaryDetails
+        title="Questions to ask"
+        subtitle="Use these when checking with a DSO, employer, attorney, or official source."
+      >
         {questions.length > 0 ? (
           <div className="grid gap-3 sm:grid-cols-2">
             {questions.map((question) => (
@@ -553,22 +615,44 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
         ) : (
           <p className="text-sm leading-6 text-slate-600">No specific questions were detected. Ask an official source to confirm the next step before acting.</p>
         )}
-      </section>
+      </SecondaryDetails>
 
-      <OfficialSourcesSection result={result} />
+      <SecondaryDetails
+        title="Official sources"
+        subtitle="Open these when you are ready to verify details."
+      >
+        <OfficialSourcesSection result={result} />
+      </SecondaryDetails>
 
-      <DraftMessageSection result={result} onCopy={onCopy} />
+      <SecondaryDetails
+        title="Draft messages"
+        subtitle="Copy a message only after you review and personalize it."
+      >
+        <DraftMessageSection result={result} onCopy={onCopy} />
+      </SecondaryDetails>
 
-      <RelatedChecklistCard situation={situation} />
+      <SecondaryDetails
+        title="Related checklist"
+        subtitle="Open a reusable checklist for this visa workflow."
+      >
+        <RelatedChecklistCard situation={situation} />
+      </SecondaryDetails>
 
-      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        <div className="flex items-start gap-3">
-          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-sky-700" />
-          <p className="text-sm leading-6 text-slate-600">
-            {result.disclaimer || RESULT_DISCLAIMER}
-          </p>
+      <BetaFeedbackCta />
+
+      <SecondaryDetails
+        title="General information note"
+        subtitle="Review the product boundary before relying on any result."
+      >
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-sky-700" />
+            <p className="text-sm leading-6 text-slate-600">
+              {result.disclaimer || RESULT_DISCLAIMER}
+            </p>
+          </div>
         </div>
-      </div>
+      </SecondaryDetails>
     </div>
   );
 };
