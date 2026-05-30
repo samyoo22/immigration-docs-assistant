@@ -4,9 +4,10 @@ import RoadmapStepCard from './RoadmapStepCard';
 
 interface RoadmapTimelineProps {
   steps: RoadmapStep[];
+  currentStepId?: string;
 }
 
-const RoadmapTimeline: React.FC<RoadmapTimelineProps> = ({ steps }) => {
+const RoadmapTimeline: React.FC<RoadmapTimelineProps> = ({ steps, currentStepId = 'prepare-documents' }) => {
   return (
     <section id="opt-steps" className="border-t border-slate-200 py-10 scroll-mt-24">
       <div className="mb-6">
@@ -20,7 +21,12 @@ const RoadmapTimeline: React.FC<RoadmapTimelineProps> = ({ steps }) => {
       </div>
       <div className="space-y-5">
         {steps.map((step, index) => (
-          <RoadmapStepCard key={step.id} step={step} stepNumber={index + 1} />
+          <RoadmapStepCard
+            key={step.id}
+            step={step}
+            stepNumber={index + 1}
+            status={step.id === currentStepId ? 'current' : 'upcoming'}
+          />
         ))}
       </div>
     </section>

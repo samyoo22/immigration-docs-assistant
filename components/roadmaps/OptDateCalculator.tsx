@@ -1,13 +1,28 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { CalendarClock, Info, ListChecks } from 'lucide-react';
-import { calculateF1OptTimeline, formatDateLong } from '../../lib/roadmaps/dateUtils';
+import { calculateF1OptTimeline, formatDateLong, parseLocalDate } from '../../lib/roadmaps/dateUtils';
 
-const OptDateCalculator: React.FC = () => {
-  const [programEndDate, setProgramEndDate] = useState('');
-  const [desiredOptStartDate, setDesiredOptStartDate] = useState('');
-  const [dsoRecommendationDate, setDsoRecommendationDate] = useState('');
-  const [hasGenerated, setHasGenerated] = useState(false);
+interface OptDateCalculatorProps {
+  programEndDate: string;
+  desiredOptStartDate: string;
+  dsoRecommendationDate: string;
+  hasGeneratedTimeline: boolean;
+  onProgramEndDateChange: (value: string) => void;
+  onDesiredOptStartDateChange: (value: string) => void;
+  onDsoRecommendationDateChange: (value: string) => void;
+  onGenerateTimeline: () => void;
+}
 
+const OptDateCalculator: React.FC<OptDateCalculatorProps> = ({
+  programEndDate,
+  desiredOptStartDate,
+  dsoRecommendationDate,
+  hasGeneratedTimeline,
+  onProgramEndDateChange,
+  onDesiredOptStartDateChange,
+  onDsoRecommendationDateChange,
+  onGenerateTimeline,
+}) => {
   const result = useMemo(
     () =>
       calculateF1OptTimeline({
@@ -18,7 +33,9 @@ const OptDateCalculator: React.FC = () => {
     [programEndDate, desiredOptStartDate, dsoRecommendationDate]
   );
 
-  const showResults = hasGenerated && Boolean(programEndDate);
+  const programEnd = parseLocalDate(programEndDate);
+  const dsoRecommendation = parseLocalDate(dsoRecommendationDate);
+  const showResults = hasGeneratedTimeline && Boolean(programEndDate);
 
   return (
     <section id="opt-date-calculator" className="border-t border-slate-200 py-10 scroll-mt-24">
@@ -56,20 +73,21 @@ const OptDateCalculator: React.FC = () => {
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm font-semibold text-slate-950">Step 1: Enter your dates</p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <DateField label="Program end date" value={programEndDate} onChange={setProgramEndDate} />
-              <DateField label="Desired OPT start date" value={desiredOptStartDate} onChange={setDesiredOptStartDate} />
+              <DateField label="Program end date" value={programEndDate} onChange={onProgramEndDateChange} />
+              <DateField label="Desired OPT start date" value={desiredOptStartDate} onChange={onDesiredOptStartDateChange} />
               <div className="sm:col-span-2">
                 <DateField
                   label="DSO recommendation date"
                   value={dsoRecommendationDate}
-                  onChange={setDsoRecommendationDate}
+                  onChange={onDsoRecommendationDateChange}
                   optional
                 />
               </div>
             </div>
             <button
               type="button"
-              onClick={() => setHasGenerated(true)}
+              onClick={onGenerateTimeline}
+              onMouseDown={onGenerateTimeline}
               className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-700 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-sky-700/15 transition hover:bg-sky-800 active:scale-[0.99] sm:w-auto"
             >
               <CalendarClock className="h-4 w-4" />
@@ -83,7 +101,7 @@ const OptDateCalculator: React.FC = () => {
               <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-5">
                 <p className="text-base font-semibold text-slate-950">No timeline yet</p>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Enter your program end date to see your filing window and OPT start date range.
+                  Enter your program end date to see your general filing window and OPT start date range.
                 </p>
               </div>
             ) : (
@@ -109,6 +127,14 @@ const OptDateCalculator: React.FC = () => {
                   />
                 </div>
 
+                <TimelineResult
+                  programEndDate={programEnd}
+                  dsoRecommendationDate={dsoRecommendation}
+                  earliestFilingDate={result.earliestRecommendedFilingDate}
+                  latestFilingDate={result.latestPossibleFilingDate}
+                  optStartDateWindow={result.optStartDateWindow}
+                />
+
                 {result.desiredStartDateMessage && (
                   <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
                     {result.desiredStartDateMessage}
@@ -132,6 +158,57 @@ const OptDateCalculator: React.FC = () => {
   );
 };
 
+const TimelineResult: React.FC<{
+  programEndDate?: Date;
+  dsoRecommendationDate?: Date;
+  earliestFilingDate?: Date;
+  latestFilingDate?: Date;
+  optStartDateWindow?: { start: Date; end: Date };
+}> = ({ programEndDate, dsoRecommendationDate, earliestFilingDate, latestFilingDate, optStartDateWindow }) => {
+  const timelineItems = [
+    { label: 'Earliest filing date', value: formatDateLong(earliestFilingDate), risk: false },
+    { label: 'Program end date', value: formatDateLong(programEndDate), risk: false },
+    {
+      label: 'OPT start date window',
+      value: optStartDateWindow
+        ? `${formatDateLong(optStartDateWindow.start)} to ${formatDateLong(optStartDateWindow.end)}`
+        : 'Calculated after program end date',
+      risk: false,
+    },
+    { label: 'Latest filing date', value: formatDateLong(latestFilingDate), risk: true },
+  ];
+
+  return (
+    <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <p className="text-sm font-semibold text-slate-950">Timeline view</p>
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        {timelineItems.map((item, index) => (
+          <div key={item.label} className="relative rounded-2xl bg-white p-4 shadow-sm">
+            {index < timelineItems.length - 1 && (
+              <div className="absolute left-8 top-12 h-[calc(100%+0.75rem)] w-px bg-sky-100 lg:left-auto lg:right-[-0.4rem] lg:top-8 lg:h-px lg:w-3" />
+            )}
+            <span
+              className={`relative inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                item.risk ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'
+              }`}
+            >
+              {item.risk ? 'Deadline' : 'Planning date'}
+            </span>
+            <p className="mt-3 text-sm font-semibold text-slate-950">{item.value}</p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{item.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {dsoRecommendationDate && (
+        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+          DSO recommendation date: {formatDateLong(dsoRecommendationDate)}. File Form I-765 generally within 30 days after DSO recommendation.
+        </div>
+      )}
+    </div>
+  );
+};
+
 const DateField: React.FC<{
   label: string;
   value: string;
@@ -148,6 +225,9 @@ const DateField: React.FC<{
       value={value}
       onChange={(event) => {
         onChange(event.target.value);
+      }}
+      onInput={(event) => {
+        onChange(event.currentTarget.value);
       }}
       className="mt-2 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
     />

@@ -211,80 +211,168 @@ const RoadmapPreview: React.FC = () => (
 const F1OptRoadmapPage: React.FC<{
   onNavigateHome: () => void;
   onNavigateRoadmaps: (event?: React.MouseEvent<HTMLElement>, route?: string) => void;
-}> = ({ onNavigateHome, onNavigateRoadmaps }) => (
-  <div className="animate-fade-in">
-    <div className="mb-5 flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-500">
-      <button type="button" onClick={(event) => onNavigateRoadmaps(event, '/roadmaps')} className="text-sky-700 hover:text-sky-900">
-        Roadmaps
-      </button>
-      <span>/</span>
-      <span className="text-slate-700">F-1 OPT</span>
-      <button
-        type="button"
-        onClick={(event) => onNavigateRoadmaps(event, '/roadmaps')}
-        className="ml-auto inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to all Roadmaps
-      </button>
-    </div>
+}> = ({ onNavigateRoadmaps }) => {
+  const [programEndDate, setProgramEndDate] = React.useState('');
+  const [desiredOptStartDate, setDesiredOptStartDate] = React.useState('');
+  const [dsoRecommendationDate, setDsoRecommendationDate] = React.useState('');
+  const [hasGeneratedTimeline, setHasGeneratedTimeline] = React.useState(false);
+  const hasProgramEndDate = Boolean(programEndDate);
+  const totalDocuments = 14;
 
-    <section className="grid gap-6 py-4 lg:grid-cols-[minmax(0,0.9fr),minmax(360px,0.7fr)] lg:items-start">
-      <div>
-        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-800 shadow-sm">
-          <BookOpenCheck className="h-3.5 w-3.5" />
-          F-1 OPT roadmap
-        </div>
-        <h1 className="text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl">F-1 OPT Roadmap</h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
-          Understand your OPT process from school recommendation to EAD and status maintenance.
-        </p>
-        <div className="mt-5 flex flex-wrap gap-2">
-          {['6 steps', '10+ documents', '3 key deadlines'].map((item) => (
-            <span key={item} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200">
-              {item}
-            </span>
-          ))}
-        </div>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <a
-            href="#opt-date-calculator"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-700 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-700/15 transition hover:bg-sky-800 active:scale-[0.99] sm:w-auto"
-          >
-            Start Date Calculator
-            <ArrowRight className="h-4 w-4" />
-          </a>
-          <a
-            href="#opt-documents"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-bold text-sky-700 transition hover:bg-sky-50 active:scale-[0.99] sm:w-auto"
-          >
-            View Required Documents
-          </a>
-        </div>
-        <p className="mt-4 text-sm leading-6 text-slate-500">
-          Planning helper, not legal advice. Always confirm exact dates and requirements with your DSO or official sources.
-        </p>
+  return (
+    <div className="animate-fade-in">
+      <div className="mb-5 flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-500">
+        <button type="button" onClick={(event) => onNavigateRoadmaps(event, '/roadmaps')} className="text-sky-700 hover:text-sky-900">
+          Roadmaps
+        </button>
+        <span>/</span>
+        <span className="text-slate-700">F-1 OPT</span>
+        <button
+          type="button"
+          onClick={(event) => onNavigateRoadmaps(event, '/roadmaps')}
+          className="ml-auto inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to all Roadmaps
+        </button>
       </div>
 
-      <HeroSequenceCard />
-    </section>
+      <section className="grid gap-6 py-4 lg:grid-cols-[minmax(0,0.9fr),minmax(360px,0.7fr)] lg:items-start">
+        <div>
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-800 shadow-sm">
+            <BookOpenCheck className="h-3.5 w-3.5" />
+            F-1 OPT planner
+          </div>
+          <h1 className="text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl">F-1 OPT Roadmap</h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
+            Use the F-1 OPT roadmap to understand your dates, documents, deadlines, and next actions.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {['6 steps', '10+ documents', '3 key deadlines'].map((item) => (
+              <span key={item} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200">
+                {item}
+              </span>
+            ))}
+          </div>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <a
+              href="#opt-date-calculator"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-700 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-700/15 transition hover:bg-sky-800 active:scale-[0.99] sm:w-auto"
+            >
+              Start Date Calculator
+              <ArrowRight className="h-4 w-4" />
+            </a>
+            <a
+              href="#opt-documents"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-bold text-sky-700 transition hover:bg-sky-50 active:scale-[0.99] sm:w-auto"
+            >
+              View Required Documents
+            </a>
+          </div>
+          <p className="mt-4 text-sm leading-6 text-slate-500">
+            Planning helper, not legal advice. Always confirm exact dates and requirements with your DSO or official sources.
+          </p>
+        </div>
 
-    <RoadmapOverview />
+        <HeroSequenceCard />
+      </section>
 
-    <section className="grid gap-4 py-8 sm:grid-cols-2 lg:grid-cols-4">
-      <QuickFact icon={CalendarDays} label="Start here" value="Prepare documents 3-4 months before your program end date." />
-      <QuickFact icon={UserRound} label="School step" value="Request your OPT I-20 from your DSO before filing with USCIS." />
-      <QuickFact icon={Landmark} label="USCIS deadline" value="File Form I-765 generally within 30 days after DSO recommendation." />
-      <QuickFact icon={ShieldCheck} label="Work start" value="Do not start working before your EAD start date." />
-    </section>
+      <section className="grid gap-4 py-6 lg:grid-cols-[minmax(0,0.82fr),minmax(320px,0.7fr)]">
+        <F1OptDashboardSummary hasProgramEndDate={hasProgramEndDate} totalDocuments={totalDocuments} />
+        <NextActionCard hasProgramEndDate={hasProgramEndDate} />
+      </section>
 
-    <OptDateCalculator />
-    <RoadmapTimeline steps={f1OptRoadmap.steps} />
-    <RequiredDocumentsChecklist />
-    <GlossarySection />
-    <OfficialSources />
-    <DisclaimerCard compact />
+      <RoadmapOverview />
+
+      <section className="grid gap-4 py-8 sm:grid-cols-2 lg:grid-cols-4">
+        <QuickFact icon={CalendarDays} label="Start here" value="Prepare documents 3-4 months before your program end date." />
+        <QuickFact icon={UserRound} label="School step" value="Request your OPT I-20 from your DSO before filing with USCIS." />
+        <QuickFact icon={Landmark} label="USCIS deadline" value="File Form I-765 generally within 30 days after DSO recommendation." />
+        <QuickFact icon={ShieldCheck} label="Work start" value="Do not start working before your EAD start date." />
+      </section>
+
+      <OptDateCalculator
+        programEndDate={programEndDate}
+        desiredOptStartDate={desiredOptStartDate}
+        dsoRecommendationDate={dsoRecommendationDate}
+        hasGeneratedTimeline={hasGeneratedTimeline}
+        onProgramEndDateChange={setProgramEndDate}
+        onDesiredOptStartDateChange={setDesiredOptStartDate}
+        onDsoRecommendationDateChange={setDsoRecommendationDate}
+        onGenerateTimeline={() => setHasGeneratedTimeline(true)}
+      />
+      <RoadmapTimeline steps={f1OptRoadmap.steps} currentStepId="prepare-documents" />
+      <RequiredDocumentsChecklist />
+      <GlossarySection />
+      <OfficialSources />
+      <StemOptPreview />
+      <DisclaimerCard compact />
+    </div>
+  );
+};
+
+const F1OptDashboardSummary: React.FC<{ hasProgramEndDate: boolean; totalDocuments: number }> = ({ hasProgramEndDate, totalDocuments }) => (
+  <article className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
+    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">My OPT plan</p>
+    <h2 className="mt-3 text-2xl font-semibold text-slate-950">Your F-1 OPT Dashboard</h2>
+    <p className="mt-2 text-sm leading-6 text-slate-700">
+      {hasProgramEndDate ? 'You are currently preparing for your OPT request.' : 'Enter dates to personalize your OPT planning view.'}
+    </p>
+    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <DashboardMetric label="Current step" value={hasProgramEndDate ? 'Prepare documents' : 'Not started'} />
+      <DashboardMetric
+        label="Next action"
+        value={hasProgramEndDate ? 'Request your OPT I-20 from your school DSO' : 'Enter your program end date'}
+      />
+      <DashboardMetric label="Documents" value={`0 / ${totalDocuments} checked`} />
+      <DashboardMetric
+        label="Deadline status"
+        value={hasProgramEndDate ? 'General timeline ready to generate below' : 'No dates entered yet'}
+      />
+    </div>
+  </article>
+);
+
+const DashboardMetric: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+  <div className="rounded-2xl bg-white px-4 py-3 shadow-sm">
+    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</p>
+    <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">{value}</p>
   </div>
+);
+
+const NextActionCard: React.FC<{ hasProgramEndDate: boolean }> = ({ hasProgramEndDate }) => (
+  <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Your next action</p>
+    <h2 className="mt-3 text-xl font-semibold text-slate-950">
+      {hasProgramEndDate ? 'Request your OPT I-20 from your school DSO.' : 'Enter your program end date to generate your general OPT timeline.'}
+    </h2>
+    <p className="mt-3 text-sm leading-6 text-slate-600">
+      {hasProgramEndDate
+        ? 'You generally need an OPT I-20 before filing Form I-765 with USCIS.'
+        : 'Once your dates are added, VisaTodo can help you understand your general filing window, OPT start date range, and documents to prepare.'}
+    </p>
+    {hasProgramEndDate && (
+      <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+        <p className="text-sm font-semibold text-slate-950">What to prepare</p>
+        <div className="mt-3 grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
+          {['Passport', 'Current I-20', 'I-94', 'Desired OPT start date'].map((item) => (
+            <div key={item} className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-sky-500" />
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+    <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+      <a href="#opt-documents" className="inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-white px-4 py-2.5 text-sm font-bold text-sky-700 transition hover:bg-sky-50">
+        View documents
+      </a>
+      <a href="#opt-steps" className="inline-flex items-center justify-center rounded-2xl bg-sky-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-sky-800">
+        Go to Step 2
+      </a>
+    </div>
+  </article>
 );
 
 const HeroSequenceCard: React.FC = () => (
@@ -322,7 +410,12 @@ const RoadmapOverview: React.FC = () => (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="grid gap-3 md:grid-cols-6">
         {f1OptRoadmap.steps.map((step, index) => (
-          <div key={step.id} className="relative rounded-2xl bg-slate-50 p-4 md:min-h-[128px]">
+          <div
+            key={step.id}
+            className={`relative rounded-2xl p-4 md:min-h-[142px] ${
+              index === 0 ? 'border border-sky-200 bg-sky-50 ring-4 ring-sky-100' : 'bg-slate-50'
+            }`}
+          >
             {index < f1OptRoadmap.steps.length - 1 && (
               <div className="absolute left-8 top-12 h-[calc(100%+0.75rem)] w-px bg-sky-100 md:left-auto md:right-[-0.4rem] md:top-8 md:h-px md:w-3" />
             )}
@@ -332,6 +425,9 @@ const RoadmapOverview: React.FC = () => (
             <p className="mt-4 text-sm font-semibold leading-5 text-slate-950">
               {step.id === 'file-i765' ? 'File I-765' : step.id === 'wait-for-uscis' ? 'Track USCIS' : step.title}
             </p>
+            <span className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${index === 0 ? 'bg-sky-700 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200'}`}>
+              {index === 0 ? 'Current · You are here' : 'Upcoming'}
+            </span>
           </div>
         ))}
       </div>
@@ -404,7 +500,7 @@ const RequiredDocumentsChecklist: React.FC = () => (
       disabled
       className="mt-5 inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-bold text-slate-500 sm:w-auto"
     >
-      Save to My Checklist - Coming soon
+      Save F-1 OPT documents to My Checklist - Coming soon
     </button>
   </section>
 );
@@ -430,9 +526,9 @@ const OfficialSources: React.FC = () => (
   <section className="border-t border-slate-200 py-10">
     <div className="mb-6">
       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Official sources</p>
-      <h2 className="mt-3 text-2xl font-semibold text-slate-950">Review before filing</h2>
+      <h2 className="mt-3 text-2xl font-semibold text-slate-950">Official sources to confirm before filing</h2>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-        Review USCIS guidance and your school DSO instructions before filing.
+        VisaTodo helps organize information, but you should confirm exact requirements with official sources.
       </p>
     </div>
 
@@ -452,6 +548,52 @@ const OfficialSources: React.FC = () => (
           <p className="mt-3 text-sm leading-6 text-slate-600">{source.description}</p>
         </a>
       ))}
+    </div>
+  </section>
+);
+
+const stemPreviewSteps = [
+  'Check STEM eligibility',
+  'Confirm employer is E-Verify',
+  'Prepare Form I-983',
+  'Request STEM OPT I-20',
+  'File Form I-765',
+  'Track USCIS',
+  'Maintain STEM OPT reporting',
+];
+
+const StemOptPreview: React.FC = () => (
+  <section className="border-t border-slate-200 py-10">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Planning ahead?</p>
+          <h2 className="mt-3 text-2xl font-semibold text-slate-950">STEM OPT may be next</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+            STEM OPT may be your next step after post-completion OPT if you qualify.
+          </p>
+        </div>
+        <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Coming soon</span>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {stemPreviewSteps.map((step, index) => (
+          <div key={step} className="rounded-2xl bg-slate-50 p-4">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-bold text-sky-700 ring-1 ring-sky-100">
+              {index + 1}
+            </div>
+            <p className="mt-3 text-sm font-semibold leading-5 text-slate-950">{step}</p>
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        disabled
+        className="mt-5 inline-flex w-full cursor-not-allowed items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-bold text-slate-500 sm:w-auto"
+      >
+        Preview STEM OPT Roadmap - Coming soon
+      </button>
     </div>
   </section>
 );
