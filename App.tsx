@@ -7,6 +7,7 @@ import LandingScreen from './components/LandingScreen';
 import AnalyzerScreen from './components/AnalyzerScreen';
 import ChecklistRoutes from './components/ChecklistRoutes';
 import MyChecklistPage from './components/MyChecklistPage';
+import TemplatesPage from './components/TemplatesPage';
 import DisclaimerBanner from './components/DisclaimerBanner';
 import { t } from './utils/i18n';
 
@@ -33,6 +34,9 @@ const getSituationForPath = (pathname: string): VisaSituation => {
 const getViewForPath = (pathname: string): AppState['view'] => {
   if (pathname === '/my-checklist' || pathname === '/my-checklist/') {
     return 'my-checklist';
+  }
+  if (pathname === '/templates' || pathname === '/templates/') {
+    return 'templates';
   }
   if (pathname.startsWith('/checklists')) {
     return 'checklists';
@@ -86,6 +90,7 @@ function App() {
     setState(prev => ({
       ...prev,
       view: 'analyze',
+      intent: UserIntent.EMAIL,
       inputText: SAMPLE_OPT_EMAIL.trim(),
     }));
   };
@@ -98,6 +103,7 @@ function App() {
       ...prev,
       view: 'analyze',
       situation: getSituationForPath(route),
+      intent: UserIntent.EMAIL,
       inputText: '',
       error: null,
       result: null,
@@ -140,6 +146,22 @@ function App() {
     }));
   };
 
+  const handleStartTemplates = (event?: React.MouseEvent<HTMLElement>) => {
+    event?.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    window.history.pushState({}, '', '/templates');
+    setState(prev => ({
+      ...prev,
+      view: 'templates',
+      inputText: '',
+      error: null,
+      result: null,
+      checklistState: [],
+      translationResult: null,
+      translationLanguage: 'none',
+    }));
+  };
+
   const handleBackToStart = () => {
     window.scrollTo({ top: 0, behavior: 'auto' });
     window.history.pushState({}, '', '/');
@@ -166,7 +188,7 @@ function App() {
     setState((prev) => ({ ...prev, isAnalyzing: true, error: null, translationResult: null, translationLanguage: 'none' }));
     
     try {
-      const result = await analyzeDocument(state.situation, state.inputText);
+      const result = await analyzeDocument(state.situation, state.inputText, state.intent);
       
       // Load saved status from local storage
       const contentHash = simpleHash(state.inputText + state.situation);
@@ -215,6 +237,22 @@ function App() {
       ...prev,
       situation,
       error: null,
+      result: null,
+      checklistState: [],
+      translationResult: null,
+      translationLanguage: 'none',
+    }));
+  };
+
+  const handleSetIntent = (intent: UserIntent) => {
+    setState(prev => ({
+      ...prev,
+      intent,
+      error: null,
+      result: null,
+      checklistState: [],
+      translationResult: null,
+      translationLanguage: 'none',
     }));
   };
 
@@ -319,6 +357,13 @@ function App() {
                   Supported documents
                 </a>
                 <a
+                  href="/templates"
+                  onClick={handleStartTemplates}
+                  className="hidden text-xs font-bold text-slate-600 transition hover:text-sky-700 md:inline-flex"
+                >
+                  Templates
+                </a>
+                <a
                   href="/upload"
                   onClick={(event) => handleStartCustom(event, '/upload')}
                   className="hidden rounded-full bg-sky-700 px-4 py-2 text-xs font-bold text-white transition hover:bg-sky-800 sm:inline-flex"
@@ -328,6 +373,13 @@ function App() {
               </>
             ) : (
               <>
+                <a
+                  href="/templates"
+                  onClick={handleStartTemplates}
+                  className="hidden rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50 sm:inline-flex"
+                >
+                  Templates
+                </a>
                 <a
                   href="/my-checklist"
                   onClick={handleStartMyChecklist}
@@ -369,11 +421,13 @@ function App() {
         {state.view === 'landing' ? (
           <LandingScreen 
             onUploadDocument={(event) => handleStartCustom(event, '/upload')}
+            onOpenTemplates={handleStartTemplates}
           />
         ) : state.view === 'analyze' ? (
           <AnalyzerScreen
             appState={state}
             setSituation={handleSetSituation}
+            setIntent={handleSetIntent}
             setInputText={handleSetInputText}
             setAcceptedDisclaimer={(accepted) => setState(prev => ({ ...prev, hasAcceptedDisclaimer: accepted }))}
             onAnalyze={handleAnalyze}
@@ -382,11 +436,14 @@ function App() {
           />
         ) : state.view === 'checklists' ? (
           <ChecklistRoutes pathname={window.location.pathname} onNavigateHome={handleBackToStart} />
+        ) : state.view === 'templates' ? (
+          <TemplatesPage onNavigateHome={handleBackToStart} />
         ) : (
           <MyChecklistPage
             onNavigateHome={handleBackToStart}
             onNavigateUpload={(event) => handleStartCustom(event, '/upload')}
             onNavigateChecklists={(event) => handleStartChecklist(event, '/checklists')}
+            onNavigateTemplates={handleStartTemplates}
           />
         )}
 

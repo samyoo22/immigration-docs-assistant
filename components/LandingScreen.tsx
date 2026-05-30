@@ -11,11 +11,13 @@ import {
   SearchCheck,
   ShieldCheck,
   Sparkles,
+  MessageSquareText,
   UploadCloud,
 } from 'lucide-react';
 
 interface LandingScreenProps {
   onUploadDocument: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
+  onOpenTemplates?: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 const outputs = [
@@ -38,6 +40,11 @@ const outputs = [
     icon: ListChecks,
     title: 'Checklist',
     description: 'Turn your document into simple steps you can follow.',
+  },
+  {
+    icon: MessageSquareText,
+    title: 'Message templates',
+    description: 'Copy simple notes to ask your DSO, employer, or attorney.',
   },
   {
     icon: FolderCheck,
@@ -96,10 +103,10 @@ const sampleChecklist = [
   'Watch for USCIS mail',
 ];
 
-const LandingScreen: React.FC<LandingScreenProps> = ({ onUploadDocument }) => {
+const LandingScreen: React.FC<LandingScreenProps> = ({ onUploadDocument, onOpenTemplates }) => {
   return (
     <div className="animate-fade-in">
-      <HeroSection onUploadDocument={onUploadDocument} />
+      <HeroSection onUploadDocument={onUploadDocument} onOpenTemplates={onOpenTemplates} />
       <SupportedDocumentPills />
       <WhatYouGetSection />
       <HowItWorksSection />
@@ -111,9 +118,10 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onUploadDocument }) => {
 
 interface HomeActionProps {
   onUploadDocument: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
+  onOpenTemplates?: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
-const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument }) => (
+const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument, onOpenTemplates }) => (
   <section className="grid gap-8 py-8 lg:grid-cols-[minmax(0,0.96fr),minmax(360px,0.86fr)] lg:items-center lg:py-10">
     <div>
       <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-800 shadow-sm">
@@ -140,6 +148,13 @@ const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument }) => (
         </a>
         <a href="#example-result" className="inline-flex justify-center text-sm font-semibold text-sky-700 transition hover:text-sky-900">
           See sample result
+        </a>
+        <a
+          href="/templates"
+          onClick={onOpenTemplates}
+          className="inline-flex justify-center text-sm font-semibold text-sky-700 transition hover:text-sky-900"
+        >
+          Browse templates
         </a>
       </div>
 
@@ -230,7 +245,7 @@ const WhatYouGetSection: React.FC = () => (
       title="What VisaTodo pulls out for you"
       subtitle="Turn confusing immigration paperwork into clear, useful information."
     />
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {outputs.map(({ icon: Icon, title, description }) => (
         <div key={title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-700">

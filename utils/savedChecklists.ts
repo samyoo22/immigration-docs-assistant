@@ -6,6 +6,7 @@ const isBrowserStorageAvailable = () => typeof window !== 'undefined' && Boolean
 
 const normalizeChecklist = (checklist: SavedChecklist): SavedChecklist => ({
   ...checklist,
+  updatedAt: checklist.updatedAt || checklist.createdAt,
   items: checklist.items.map((item) => ({
     ...item,
     completed: Boolean(item.completed),
@@ -48,6 +49,7 @@ const mergeChecklistItems = (existing: SavedChecklist, incoming: SavedChecklist)
   return {
     ...incoming,
     createdAt: existing.createdAt,
+    updatedAt: new Date().toISOString(),
     items: incoming.items.map((item) => ({
       ...item,
       completed: completedByTitle.get(item.title) ?? item.completed,
@@ -71,13 +73,19 @@ export const saveChecklist = (checklist: SavedChecklist): { checklist: SavedChec
   }
 
   const normalizedChecklist = normalizeChecklist(checklist);
-  writeSavedChecklists([normalizedChecklist, ...savedChecklists]);
-  return { checklist: normalizedChecklist, status: 'created' };
+  const now = new Date().toISOString();
+  const checklistWithTimestamps = {
+    ...normalizedChecklist,
+    createdAt: normalizedChecklist.createdAt || now,
+    updatedAt: now,
+  };
+  writeSavedChecklists([checklistWithTimestamps, ...savedChecklists]);
+  return { checklist: checklistWithTimestamps, status: 'created' };
 };
 
 export const updateSavedChecklist = (checklistId: string, updatedChecklist: SavedChecklist): SavedChecklist[] => {
   const nextChecklists = getSavedChecklists().map((checklist) =>
-    checklist.id === checklistId ? normalizeChecklist(updatedChecklist) : checklist,
+    checklist.id === checklistId ? normalizeChecklist({ ...updatedChecklist, updatedAt: new Date().toISOString() }) : checklist,
   );
   writeSavedChecklists(nextChecklists);
   return nextChecklists;
@@ -89,6 +97,7 @@ export const toggleSavedChecklistItem = (checklistId: string, itemId: string): S
 
     return {
       ...checklist,
+      updatedAt: new Date().toISOString(),
       items: checklist.items.map((item) =>
         item.id === itemId ? { ...item, completed: !item.completed } : item,
       ),

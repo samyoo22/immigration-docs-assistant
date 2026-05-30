@@ -14,9 +14,11 @@ export enum VisaSituation {
 }
 
 export enum UserIntent {
-  EMAIL = 'Understand an email',
-  OPT = 'Check OPT requirements',
-  GENERAL = 'General instructions',
+  EMAIL = 'Understand a document',
+  OPT = 'Prepare a checklist',
+  GENERAL = 'Track next steps',
+  ASK_DSO = 'Ask my DSO/school',
+  ASK_EMPLOYER = 'Ask my employer/HR',
 }
 
 export type RiskLevel = 'Low' | 'Medium' | 'High';
@@ -27,6 +29,7 @@ export interface ChecklistItem {
   category: string;
   title: string;
   description: string;
+  whyItMatters?: string;
   status: 'todo' | 'in-progress' | 'done';
   dueCategory?: DueCategory;
   dueLabel?: string;
@@ -79,9 +82,17 @@ export interface OfficialSource {
   url: string;
 }
 
+export interface VerificationItem {
+  title: string;
+  description: string;
+  importance: 'high' | 'medium' | 'low';
+}
+
 export interface AnalysisResult {
   documentType?: string;
   situation?: string;
+  confidenceLevel?: 'high' | 'medium' | 'needs_verification';
+  confidenceNote?: string;
   riskAssessment?: RiskAssessment;
   summary: string[]; // Generic summary (English)
   recommendedNextStep?: string;
@@ -91,6 +102,7 @@ export interface AnalysisResult {
   importantDates?: ImportantDate[];
   documentsMentioned?: DocumentMentioned[];
   questionsToAsk?: string[];
+  verificationItems?: VerificationItem[];
   officialSources?: OfficialSource[];
   draftMessages?: DraftMessages;
   disclaimer?: string;
@@ -141,6 +153,7 @@ export interface SavedChecklistItem {
   id: string;
   title: string;
   description?: string;
+  whyItMatters?: string;
   completed: boolean;
   priority?: 'high' | 'medium' | 'low';
   dueDate?: string;
@@ -151,12 +164,36 @@ export interface SavedChecklist {
   title: string;
   source: 'document-review' | 'template';
   createdAt: string;
+  updatedAt?: string;
   items: SavedChecklistItem[];
   sourceKey?: string;
 }
 
+export interface RoadmapStep {
+  id: string;
+  title: string;
+  plainEnglishSummary: string;
+  timing: string;
+  deadlineRule?: string;
+  requiredDocuments: string[];
+  submittedTo?: string;
+  responsibleParty: string;
+  riskIfMissed: string;
+  officialSourceUrl?: string;
+}
+
+export interface VisaRoadmap {
+  id: string;
+  title: string;
+  description: string;
+  visaType: string;
+  status: 'available' | 'coming-soon';
+  featured?: boolean;
+  steps: RoadmapStep[];
+}
+
 export interface AppState {
-  view: 'landing' | 'analyze' | 'checklists' | 'my-checklist';
+  view: 'landing' | 'analyze' | 'checklists' | 'my-checklist' | 'templates' | 'roadmaps';
   intent: UserIntent;
   situation: VisaSituation;
   inputText: string;

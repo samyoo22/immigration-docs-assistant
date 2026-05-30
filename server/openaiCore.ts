@@ -5,12 +5,15 @@ import {
   SUPPORTED_TRANSLATION_LANGUAGES,
   TranslatedAnalysis,
   TranslationLanguageCode,
+  UserIntent,
   VisaSituation,
 } from "../types";
 import {
+  getConfidenceForSituation,
   getDraftMessagesForSituation,
   getOfficialSourcesForSituation,
   getRecommendedNextStepForSituation,
+  getVerificationItemsForSituation,
   RESULT_DISCLAIMER,
 } from "../data/analysisSupport";
 
@@ -152,6 +155,8 @@ const analysisJsonSchema = {
   properties: {
     documentType: stringField("Likely document type, such as DSO email, USCIS receipt notice, OPT I-20 instructions, RFE, or general immigration document."),
     situation: stringField("Selected or inferred user situation."),
+    confidenceLevel: stringField("Plain-language confidence/caution level for the review.", { enum: ["high", "medium", "needs_verification"] }),
+    confidenceNote: stringField("One short note explaining what does or does not need verification."),
     topic: stringField("Classify the main topic of the document.", {
       enum: ["pre_completion_opt", "post_completion_opt", "stem_opt_extension", "travel_and_reentry", "sevis_or_i20", "general_opt_status", "unsure"],
     }),
@@ -223,6 +228,19 @@ const analysisJsonSchema = {
       type: "array",
       items: { type: "string" },
       description: "Questions for a DSO, attorney, employer, school official, or official source.",
+    },
+    verificationItems: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          title: stringField("Specific detail to verify before acting."),
+          description: stringField("How or why to verify it."),
+          importance: stringField("Importance of this verification item.", { enum: ["high", "medium", "low"] }),
+        },
+        required: ["title", "description", "importance"],
+      },
     },
     officialSources: {
       type: "array",
@@ -307,6 +325,8 @@ const analysisJsonSchema = {
   required: [
     "documentType",
     "situation",
+    "confidenceLevel",
+    "confidenceNote",
     "topic",
     "topicLabel",
     "riskAssessment",
@@ -318,6 +338,7 @@ const analysisJsonSchema = {
     "importantDates",
     "documentsMentioned",
     "questionsToAsk",
+    "verificationItems",
     "officialSources",
     "draftMessages",
     "disclaimer",
@@ -384,17 +405,37 @@ const answerJsonSchema = {
   required: ["answer"],
 };
 
-const normalizeAnalysisResult = (result: AnalysisResult, situation: VisaSituation): AnalysisResult => ({
-  ...result,
-  documentType: result.documentType || result.topicLabel || "Immigration document",
-  situation: result.situation || situation,
-  recommendedNextStep: result.recommendedNextStep || getRecommendedNextStepForSituation(situation),
-  officialSources: getOfficialSourcesForSituation(situation),
-  draftMessages: getDraftMessagesForSituation(situation),
-  disclaimer: result.disclaimer || RESULT_DISCLAIMER,
-});
+const normalizeAnalysisResult = (
+  result: AnalysisResult,
+  situation: VisaSituation,
+  helpGoal?: UserIntent,
+): AnalysisResult => {
+  const verificationItems = result.verificationItems?.length
+    ? result.verificationItems
+    : getVerificationItemsForSituation(situation, helpGoal);
+  const confidence = result.confidenceLevel && result.confidenceNote
+    ? { confidenceLevel: result.confidenceLevel, confidenceNote: result.confidenceNote }
+    : getConfidenceForSituation(situation, verificationItems);
 
-export const analyzeWithOpenAI = async (situation: VisaSituation, text: string): Promise<AnalysisResult> => {
+  return {
+    ...result,
+    documentType: result.documentType || result.topicLabel || "Immigration document",
+    situation: result.situation || situation,
+    verificationItems,
+    confidenceLevel: confidence.confidenceLevel,
+    confidenceNote: confidence.confidenceNote,
+    recommendedNextStep: result.recommendedNextStep || getRecommendedNextStepForSituation(situation),
+    officialSources: getOfficialSourcesForSituation(situation),
+    draftMessages: getDraftMessagesForSituation(situation),
+    disclaimer: result.disclaimer || RESULT_DISCLAIMER,
+  };
+};
+
+export const analyzeWithOpenAI = async (
+  situation: VisaSituation,
+  text: string,
+  helpGoal?: UserIntent,
+): Promise<AnalysisResult> => {
   const system = `
 You are VisaTodo, a friendly, careful immigration paperwork assistant.
 
@@ -415,10 +456,12 @@ Rules:
 - For F-1 OPT and I-765 documents, prioritize DSO confirmation, OPT I-20, Form I-765, USCIS receipt notice, EAD timing, SEVP/school reporting, employment start date restrictions, address updates, and case status tracking.
 - Do not present uncertain information as fact. Use "appears to", "may", and "verify with an official source" where appropriate.
 - Official source links must be official government or school-related sources. If unsure, use USCIS, USCIS Case Status, and Study in the States.
+- Include a "what to verify" list that reduces overconfidence and highlights deadlines, eligibility, document applicability, school steps, employer requirements, and official-source confirmation.
 `;
 
   const user = `
 Selected situation: ${situation}
+User help goal: ${helpGoal || "Understand a document"}
 
 Analyze this immigration or visa-related document and return the required JSON.
 
@@ -434,7 +477,7 @@ ${text}
     temperature: 0.2,
   });
 
-  return normalizeAnalysisResult(result, situation);
+  return normalizeAnalysisResult(result, situation, helpGoal);
 };
 
 export const translateWithOpenAI = async (

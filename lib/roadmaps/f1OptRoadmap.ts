@@ -1,0 +1,160 @@
+import { VisaRoadmap } from '../../types';
+
+export const ROADMAP_DISCLAIMER =
+  'VisaTodo provides general information and document organization support. It is not legal advice. Always confirm your specific situation with your school DSO, employer, attorney, or official government sources.';
+
+export const f1OptRoadmap: VisaRoadmap = {
+  id: 'f1-opt',
+  title: 'F-1 OPT',
+  description: 'A calm step-by-step view of post-completion OPT timing, documents, and next actions.',
+  visaType: 'F-1',
+  status: 'available',
+  featured: true,
+  steps: [
+    {
+      id: 'prepare-documents',
+      title: 'Prepare Documents',
+      plainEnglishSummary:
+        'Gather the basic documents you will likely need before requesting OPT and filing with USCIS.',
+      timing: 'About 3-4 months before your program end date.',
+      requiredDocuments: [
+        'Passport',
+        'F-1 visa',
+        'Current I-20',
+        'I-94',
+        'Previous CPT or OPT records if applicable',
+        'Passport-style photo',
+      ],
+      responsibleParty: 'Student',
+      riskIfMissed: 'Missing documents can delay your school request or USCIS filing.',
+      officialSourceUrl: '#',
+    },
+    {
+      id: 'request-opt-i20',
+      title: 'Request OPT I-20 from your school',
+      plainEnglishSummary: 'Your school DSO must recommend OPT in SEVIS and issue an OPT I-20.',
+      timing: 'Usually around 90 days before your program end date.',
+      deadlineRule: 'After your DSO recommends OPT, you generally need to file Form I-765 within 30 days.',
+      requiredDocuments: ['School OPT request form', 'Current I-20', 'Desired OPT start date', 'Passport'],
+      submittedTo: 'School DSO / International Office',
+      responsibleParty: 'Student and School DSO',
+      riskIfMissed: 'If you wait too long after the DSO recommendation, your USCIS filing may be too late.',
+      officialSourceUrl: '#',
+    },
+    {
+      id: 'file-i765',
+      title: 'File Form I-765 with USCIS',
+      plainEnglishSummary: 'This is the application that asks USCIS for work authorization.',
+      timing: 'After receiving your OPT I-20 from your DSO.',
+      deadlineRule:
+        'For post-completion OPT, students generally file within the allowed OPT filing window and within 30 days of the DSO recommendation.',
+      requiredDocuments: [
+        'Form I-765',
+        'OPT I-20',
+        'Passport',
+        'F-1 visa',
+        'I-94',
+        'Passport-style photo',
+        'Filing fee',
+      ],
+      submittedTo: 'USCIS',
+      responsibleParty: 'Student',
+      riskIfMissed:
+        'Your OPT application may be rejected or denied if filed too early, too late, or without the correct OPT I-20.',
+      officialSourceUrl: '#',
+    },
+    {
+      id: 'wait-for-uscis',
+      title: 'Wait for USCIS',
+      plainEnglishSummary: 'Track your USCIS case after submission.',
+      timing: 'After filing Form I-765.',
+      requiredDocuments: ['USCIS receipt notice', 'Receipt number'],
+      submittedTo: 'USCIS',
+      responsibleParty: 'Student',
+      riskIfMissed: 'If USCIS sends a notice or request and you miss it, your case may be delayed or denied.',
+      officialSourceUrl: '#',
+    },
+    {
+      id: 'receive-ead',
+      title: 'Receive EAD',
+      plainEnglishSummary: 'Your EAD card shows when you are authorized to work.',
+      timing: 'After USCIS approves your OPT application.',
+      requiredDocuments: ['EAD card', 'Approval notice if available'],
+      responsibleParty: 'Student',
+      riskIfMissed: 'You should not begin employment before the EAD start date.',
+      officialSourceUrl: '#',
+    },
+    {
+      id: 'maintain-opt-status',
+      title: 'Maintain OPT Status',
+      plainEnglishSummary:
+        'After OPT starts, you must keep your employment information updated and monitor unemployment days.',
+      timing: 'Throughout the OPT period.',
+      requiredDocuments: ['Employer name', 'Employer address', 'Job title', 'Start date', 'SEVP Portal information'],
+      responsibleParty: 'Student',
+      riskIfMissed:
+        'Failure to report employment or exceeding unemployment limits can create immigration status issues.',
+      officialSourceUrl: '#',
+    },
+  ],
+};
+
+export const visaRoadmaps: VisaRoadmap[] = [
+  f1OptRoadmap,
+  {
+    id: 'stem-opt',
+    title: 'STEM OPT',
+    description: 'Extension timing, I-983 preparation, employer details, and Form I-765 planning.',
+    visaType: 'F-1',
+    status: 'coming-soon',
+    steps: [],
+  },
+  {
+    id: 'h1b',
+    title: 'H-1B',
+    description: 'Registration, employer sponsorship, petition filing, and status-change milestones.',
+    visaType: 'H-1B',
+    status: 'coming-soon',
+    steps: [],
+  },
+  {
+    id: 'o1',
+    title: 'O-1',
+    description: 'Evidence gathering, petitioner coordination, filing, and approval tracking.',
+    visaType: 'O-1',
+    status: 'coming-soon',
+    steps: [],
+  },
+  {
+    id: 'j1',
+    title: 'J-1',
+    description: 'Program documents, sponsor steps, travel preparation, and status maintenance.',
+    visaType: 'J-1',
+    status: 'coming-soon',
+    steps: [],
+  },
+  {
+    id: 'green-card',
+    title: 'Green Card',
+    description: 'A future overview for long-range permanent residence planning.',
+    visaType: 'Immigrant',
+    status: 'coming-soon',
+    steps: [],
+  },
+  {
+    id: 'change-of-status',
+    title: 'Change of Status',
+    description: 'A future timeline for changing from one U.S. status to another.',
+    visaType: 'USCIS',
+    status: 'coming-soon',
+    steps: [],
+  },
+  {
+    id: 'adjustment-of-status',
+    title: 'Adjustment of Status',
+    description: 'A future roadmap for Form I-485 document and appointment milestones.',
+    visaType: 'USCIS',
+    status: 'coming-soon',
+    steps: [],
+  },
+];

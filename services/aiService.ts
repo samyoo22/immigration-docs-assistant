@@ -3,12 +3,15 @@ import {
   ChecklistItem,
   TranslatedAnalysis,
   TranslationLanguageCode,
+  UserIntent,
   VisaSituation,
 } from "../types";
 import {
+  getConfidenceForSituation,
   getDraftMessagesForSituation,
   getOfficialSourcesForSituation,
   getRecommendedNextStepForSituation,
+  getVerificationItemsForSituation,
   RESULT_DISCLAIMER,
 } from "../data/analysisSupport";
 
@@ -58,29 +61,49 @@ const findImportantDates = (text: string) => {
 const normalizeAnalysisResult = (
   result: AnalysisResult,
   situation: VisaSituation,
+  helpGoal?: UserIntent,
 ): AnalysisResult => ({
-  ...result,
-  documentType: result.documentType || result.topicLabel || "Immigration document",
-  situation: result.situation || situation,
-  recommendedNextStep: result.recommendedNextStep || getRecommendedNextStepForSituation(situation),
-  officialSources: result.officialSources?.length ? result.officialSources : getOfficialSourcesForSituation(situation),
-  draftMessages: result.draftMessages || getDraftMessagesForSituation(situation),
-  disclaimer: result.disclaimer || RESULT_DISCLAIMER,
+  ...(() => {
+    const verificationItems = result.verificationItems?.length
+      ? result.verificationItems
+      : getVerificationItemsForSituation(situation, helpGoal);
+    const confidence = result.confidenceLevel && result.confidenceNote
+      ? { confidenceLevel: result.confidenceLevel, confidenceNote: result.confidenceNote }
+      : getConfidenceForSituation(situation, verificationItems);
+
+    return {
+      ...result,
+      documentType: result.documentType || result.topicLabel || "Immigration document",
+      situation: result.situation || situation,
+      verificationItems,
+      confidenceLevel: confidence.confidenceLevel,
+      confidenceNote: confidence.confidenceNote,
+      recommendedNextStep: result.recommendedNextStep || getRecommendedNextStepForSituation(situation),
+      officialSources: result.officialSources?.length ? result.officialSources : getOfficialSourcesForSituation(situation),
+      draftMessages: result.draftMessages || getDraftMessagesForSituation(situation),
+      disclaimer: result.disclaimer || RESULT_DISCLAIMER,
+    };
+  })(),
 });
 
 export const createPreviewAnalysisResult = (
   situation: VisaSituation,
-  text: string
+  text: string,
+  helpGoal?: UserIntent,
 ): AnalysisResult => {
   const normalizedText = text.replace(/\s+/g, " ").trim();
   const excerpt = normalizedText.length > 220 ? `${normalizedText.slice(0, 220)}...` : normalizedText;
   const documentsMentioned = findMentionedDocuments(normalizedText);
   const importantDates = findImportantDates(normalizedText);
   const topicLabel = situation === VisaSituation.OTHER ? "Document Review" : `${situation} Guidance`;
+  const verificationItems = getVerificationItemsForSituation(situation, helpGoal);
+  const confidence = getConfidenceForSituation(situation, verificationItems);
 
   return {
     documentType: documentsMentioned[0]?.name || "Immigration document",
     situation,
+    confidenceLevel: confidence.confidenceLevel,
+    confidenceNote: confidence.confidenceNote,
     topic: "basic_review",
     topicLabel,
     riskAssessment: {
@@ -142,6 +165,7 @@ export const createPreviewAnalysisResult = (
       "Which deadline controls my situation?",
       "Which documents or forms should I prepare?",
     ],
+    verificationItems,
     officialSources: getOfficialSourcesForSituation(situation),
     draftMessages: getDraftMessagesForSituation(situation),
     disclaimer: RESULT_DISCLAIMER,
@@ -167,6 +191,8 @@ export const createPreviewAnalysisResult = (
 export const createMockAnalysisResult = (warning?: string): AnalysisResult => ({
   documentType: "OPT or STEM OPT instructions",
   situation: VisaSituation.F1_OPT_APPLY,
+  confidenceLevel: "medium",
+  confidenceNote: "The document appears related to F-1 OPT, but deadlines and eligibility should be confirmed with your DSO or USCIS.",
   topic: "post_completion_opt",
   topicLabel: "OPT or STEM OPT Instructions",
   riskAssessment: {
@@ -246,6 +272,7 @@ export const createMockAnalysisResult = (warning?: string): AnalysisResult => ({
     "Which documents are required by my school before filing?",
     "Is there anything in this document that does not apply to my case?",
   ],
+  verificationItems: getVerificationItemsForSituation(VisaSituation.F1_OPT_APPLY, UserIntent.ASK_DSO),
   officialSources: getOfficialSourcesForSituation(VisaSituation.F1_OPT_APPLY),
   draftMessages: getDraftMessagesForSituation(VisaSituation.F1_OPT_APPLY),
   disclaimer: RESULT_DISCLAIMER,
@@ -304,11 +331,12 @@ const postJson = async <T>(url: string, body: unknown): Promise<T> => {
 
 export const analyzeDocument = async (
   situation: VisaSituation,
-  text: string
+  text: string,
+  helpGoal?: UserIntent,
 ): Promise<AnalysisResult> => {
   try {
-    const result = await postJson<AnalysisResult>("/api/analyze", { situation, text });
-    return normalizeAnalysisResult(result, situation);
+    const result = await postJson<AnalysisResult>("/api/analyze", { situation, text, helpGoal });
+    return normalizeAnalysisResult(result, situation, helpGoal);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     const statusCode = error instanceof ApiRequestError ? error.statusCode : undefined;
@@ -328,7 +356,7 @@ export const analyzeDocument = async (
       message.toLowerCase().includes("access was denied");
 
     if (canUsePreview) {
-      return normalizeAnalysisResult(createPreviewAnalysisResult(situation, text), situation);
+      return normalizeAnalysisResult(createPreviewAnalysisResult(situation, text, helpGoal), situation, helpGoal);
     }
 
     throw error;

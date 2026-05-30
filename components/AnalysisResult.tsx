@@ -37,6 +37,18 @@ const confidenceStyles = {
   low: 'bg-slate-100 text-slate-600',
 };
 
+const reviewConfidenceStyles = {
+  high: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  medium: 'border-amber-200 bg-amber-50 text-amber-700',
+  needs_verification: 'border-sky-200 bg-sky-50 text-sky-700',
+};
+
+const reviewConfidenceLabels = {
+  high: 'This review looks straightforward',
+  medium: 'Some details need verification',
+  needs_verification: 'This document may need official review',
+};
+
 const simpleHash = (str: string) => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -195,6 +207,40 @@ const OfficialSourcesSection = ({ result }: { result: AnalysisResultType }) => {
   );
 };
 
+const WhatToVerifySection = ({ result }: { result: AnalysisResultType }) => {
+  const verificationItems = result.verificationItems || [];
+  if (verificationItems.length === 0) return null;
+
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+          <AlertTriangle className="h-4 w-4" />
+        </div>
+        <div>
+          <h2 className="text-base font-semibold text-slate-950">What to verify</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            Before taking action, confirm these details with an official source.
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-3">
+        {verificationItems.map((item) => (
+          <article key={item.title} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <h3 className="text-sm font-semibold text-slate-950">{item.title}</h3>
+              <span className={`w-fit rounded-full border px-2.5 py-1 text-xs font-semibold ${priorityStyles[item.importance]}`}>
+                {item.importance} importance
+              </span>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+};
+
 const DraftMessageSection = ({
   result,
   onCopy,
@@ -222,8 +268,13 @@ const DraftMessageSection = ({
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
           <Mail className="h-4 w-4" />
         </div>
-        <div>
-          <h2 className="text-base font-semibold text-slate-950">Draft a message</h2>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-base font-semibold text-slate-950">Draft a message</h2>
+            <a href="/templates" className="text-xs font-semibold text-sky-700 transition hover:text-sky-900">
+              Browse all templates
+            </a>
+          </div>
           <p className="mt-1 text-sm leading-6 text-slate-600">
             Use these templates to ask the right person before taking action.
           </p>
@@ -336,6 +387,14 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
               ? 'We could not create a full detailed review this time, so we generated a basic plain-language review from your provided text. You can try again or paste a clearer document excerpt.'
               : 'We found information related to your selected situation. Review the summary, action items, dates, and documents below.'}
           </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${reviewConfidenceStyles[result.confidenceLevel || 'medium']}`}>
+              {reviewConfidenceLabels[result.confidenceLevel || 'medium']}
+            </span>
+            {result.confidenceNote && (
+              <span className="max-w-xl text-xs leading-5 text-slate-500">{result.confidenceNote}</span>
+            )}
+          </div>
         </div>
         <button
           onClick={() => onCopy(copyText)}
@@ -377,6 +436,8 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
           ))}
         </ul>
       </section>
+
+      <WhatToVerifySection result={result} />
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

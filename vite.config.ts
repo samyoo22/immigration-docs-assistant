@@ -41,12 +41,12 @@ export default defineConfig(({ mode }) => {
               if (req.method !== 'POST') return sendJson(res, 405, { error: 'Method not allowed.' });
 
               try {
-                const { situation, text } = await readJsonBody(req);
+                const { situation, text, helpGoal } = await readJsonBody(req);
                 if (!situation || typeof text !== 'string' || text.trim().length < 10) {
                   return sendJson(res, 400, { error: 'Please provide document text before analyzing.' });
                 }
 
-                const result = await analyzeWithOpenAI(situation, text);
+                const result = await analyzeWithOpenAI(situation, text, helpGoal);
                 return sendJson(res, 200, result);
               } catch (error) {
                 const httpError = toHttpError(error);

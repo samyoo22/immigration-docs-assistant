@@ -7,14 +7,14 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const { situation, text } = req.body || {};
+    const { situation, text, helpGoal } = req.body || {};
 
     if (!situation || typeof text !== "string" || text.trim().length < 10) {
       res.status(400).json({ error: "Please provide document text before analyzing." });
       return;
     }
 
-    const result = await analyzeWithOpenAI(situation, text);
+    const result = await analyzeWithOpenAI(situation, text, helpGoal);
     res.status(200).json(result);
   } catch (error) {
     const httpError = toHttpError(error);

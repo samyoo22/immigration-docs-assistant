@@ -1,16 +1,16 @@
 import React, { useRef, useState } from 'react';
-import { AppState, ChecklistItem, VisaSituation } from '../types';
+import { AppState, ChecklistItem, UserIntent, VisaSituation } from '../types';
 import AnalysisResult from './AnalysisResult';
 import {
   AlertCircle,
   ArrowLeft,
-  ChevronDown,
   FileText,
   Loader2,
   ShieldCheck,
   Trash2,
   UploadCloud,
 } from 'lucide-react';
+import { sampleDocuments } from '../data/sampleDocuments';
 // @ts-ignore
 import * as pdfjsLib from 'pdfjs-dist';
 
@@ -19,6 +19,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://esm.sh/pdfjs-dist@4.10.38/buil
 interface AnalyzerScreenProps {
   appState: AppState;
   setSituation: (s: VisaSituation) => void;
+  setIntent: (intent: UserIntent) => void;
   setInputText: (t: string) => void;
   setAcceptedDisclaimer: (accepted: boolean) => void;
   onAnalyze: () => void;
@@ -29,6 +30,7 @@ interface AnalyzerScreenProps {
 const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
   appState,
   setSituation,
+  setIntent,
   setInputText,
   setAcceptedDisclaimer,
   onAnalyze,
@@ -40,6 +42,24 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
   const [pdfFileName, setPdfFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const canAnalyze = appState.inputText.trim().length >= 10 && appState.hasAcceptedDisclaimer && !appState.isAnalyzing;
+
+  const situationOptions = [
+    { label: 'F-1 student', value: VisaSituation.SCHOOL_TRANSFER },
+    { label: 'F-1 OPT', value: VisaSituation.F1_OPT_APPLY },
+    { label: 'STEM OPT', value: VisaSituation.F1_OPT_ACTIVE },
+    { label: 'H-1B', value: VisaSituation.H1B },
+    { label: 'Change of Status', value: VisaSituation.CHANGE_OF_STATUS },
+    { label: 'I received a USCIS notice', value: VisaSituation.USCIS_NOTICE },
+    { label: "I'm not sure", value: VisaSituation.OTHER },
+  ];
+
+  const helpOptions = [
+    UserIntent.EMAIL,
+    UserIntent.OPT,
+    UserIntent.ASK_DSO,
+    UserIntent.ASK_EMPLOYER,
+    UserIntent.GENERAL,
+  ];
 
   const extractTextFromPdf = async (file: File): Promise<string> => {
     const arrayBuffer = await file.arrayBuffer();
@@ -131,23 +151,78 @@ const AnalyzerScreen: React.FC<AnalyzerScreenProps> = ({
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="space-y-5">
             <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                What is this related to?
-              </label>
-              <div className="relative mt-2">
-                <select
-                  value={appState.situation}
-                  onChange={(event) => setSituation(event.target.value as VisaSituation)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100"
-                >
-                  {Object.values(VisaSituation).map((situation) => (
-                    <option key={situation} value={situation}>
-                      {situation}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                What is your current situation?
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {situationOptions.map((option) => (
+                  <button
+                    key={option.label}
+                    type="button"
+                    onClick={() => setSituation(option.value)}
+                    className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${
+                      appState.situation === option.value
+                        ? 'border-sky-700 bg-sky-700 text-white'
+                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-sky-200 hover:bg-sky-50'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
               </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                What do you need help with?
+              </p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {helpOptions.map((intent) => (
+                  <button
+                    key={intent}
+                    type="button"
+                    onClick={() => setIntent(intent)}
+                    className={`rounded-xl border px-3 py-2.5 text-left text-xs font-semibold transition ${
+                      appState.intent === intent
+                        ? 'border-sky-700 bg-sky-50 text-sky-800 ring-2 ring-sky-100'
+                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-sky-200 hover:bg-sky-50'
+                    }`}
+                  >
+                    {intent}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="mb-3">
+                <p className="text-sm font-semibold text-slate-950">Try with a sample</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Not sure what to upload? Start with a sample document type.
+                </p>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {sampleDocuments.map((sample) => (
+                  <button
+                    key={sample.title}
+                    type="button"
+                    onClick={() => {
+                      setSituation(sample.situation);
+                      setIntent(sample.helpGoal);
+                      setInputText(sample.text);
+                      setPdfFileName(null);
+                      setPdfError(null);
+                    }}
+                    className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-left transition hover:border-sky-200 hover:bg-sky-50"
+                  >
+                    <span className="block text-sm font-semibold text-slate-950">{sample.title}</span>
+                    <span className="mt-1 block text-xs leading-5 text-slate-600">{sample.description}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-3 text-xs leading-5 text-slate-500">
+                Sample text is fictional and for product demonstration only.
+              </p>
             </div>
 
             <div>

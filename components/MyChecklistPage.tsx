@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
+  ArrowRight,
   CheckCircle2,
   Circle,
   ClipboardList,
   FileText,
   ListChecks,
+  MessageSquareText,
   ShieldCheck,
   Trash2,
   UploadCloud,
@@ -22,16 +24,29 @@ const sourceLabels: Record<SavedChecklist['source'], string> = {
   template: 'From checklist template',
 };
 
+const getChecklistStats = (checklist: SavedChecklist) => {
+  const completedCount = checklist.items.filter((item) => item.completed).length;
+  const totalCount = checklist.items.length;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const nextIncompleteTask = checklist.items.find((item) => !item.completed);
+
+  return { completedCount, totalCount, progressPercent, nextIncompleteTask };
+};
+
+const getChecklistAnchorId = (checklist: SavedChecklist) => `checklist-${checklist.id.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+
 interface MyChecklistPageProps {
   onNavigateHome: (event?: React.MouseEvent<HTMLElement>) => void;
   onNavigateUpload: (event?: React.MouseEvent<HTMLElement>) => void;
   onNavigateChecklists: (event?: React.MouseEvent<HTMLElement>) => void;
+  onNavigateTemplates: (event?: React.MouseEvent<HTMLElement>) => void;
 }
 
 const MyChecklistPage: React.FC<MyChecklistPageProps> = ({
   onNavigateHome,
   onNavigateUpload,
   onNavigateChecklists,
+  onNavigateTemplates,
 }) => {
   const [savedChecklists, setSavedChecklists] = useState<SavedChecklist[]>([]);
 
@@ -48,6 +63,16 @@ const MyChecklistPage: React.FC<MyChecklistPageProps> = ({
     const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
     return { completedTasks, totalTasks, progressPercent };
+  }, [savedChecklists]);
+
+  const continueChecklist = useMemo(() => {
+    if (savedChecklists.length === 0) return null;
+
+    return [...savedChecklists].sort((a, b) => {
+      const aTime = new Date(a.updatedAt || a.createdAt).getTime();
+      const bTime = new Date(b.updatedAt || b.createdAt).getTime();
+      return bTime - aTime;
+    })[0];
   }, [savedChecklists]);
 
   const handleToggleItem = (checklistId: string, itemId: string) => {
@@ -86,9 +111,14 @@ const MyChecklistPage: React.FC<MyChecklistPageProps> = ({
       </div>
 
       {savedChecklists.length === 0 ? (
-        <EmptyState onNavigateUpload={onNavigateUpload} onNavigateChecklists={onNavigateChecklists} />
+        <EmptyState
+          onNavigateUpload={onNavigateUpload}
+          onNavigateChecklists={onNavigateChecklists}
+          onNavigateTemplates={onNavigateTemplates}
+        />
       ) : (
         <div className="mt-6 space-y-5">
+          {continueChecklist && <ContinueWhereLeftOff checklist={continueChecklist} />}
           {savedChecklists.map((checklist) => (
             <SavedChecklistCard
               key={checklist.id}
@@ -137,12 +167,46 @@ const OverallProgress = ({
   </aside>
 );
 
+const ContinueWhereLeftOff = ({ checklist }: { checklist: SavedChecklist }) => {
+  const { completedCount, totalCount, progressPercent, nextIncompleteTask } = getChecklistStats(checklist);
+  const allComplete = totalCount > 0 && completedCount === totalCount;
+
+  return (
+    <section className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Continue where you left off</p>
+          <h2 className="mt-2 text-xl font-semibold text-slate-950">{checklist.title}</h2>
+          <p className="mt-2 text-sm font-medium text-slate-700">
+            {completedCount} of {totalCount} completed
+          </p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            {allComplete ? 'All tasks completed' : `Next task: ${nextIncompleteTask?.title || 'Review remaining tasks'}`}
+          </p>
+          <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-white">
+            <div className="h-full rounded-full bg-sky-700 transition-all" style={{ width: `${progressPercent}%` }} />
+          </div>
+        </div>
+        <a
+          href={`#${getChecklistAnchorId(checklist)}`}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-800"
+        >
+          {allComplete ? 'Review checklist' : 'Continue checklist'}
+          <ArrowRight className="h-4 w-4" />
+        </a>
+      </div>
+    </section>
+  );
+};
+
 const EmptyState = ({
   onNavigateUpload,
   onNavigateChecklists,
+  onNavigateTemplates,
 }: {
   onNavigateUpload: (event?: React.MouseEvent<HTMLElement>) => void;
   onNavigateChecklists: (event?: React.MouseEvent<HTMLElement>) => void;
+  onNavigateTemplates: (event?: React.MouseEvent<HTMLElement>) => void;
 }) => (
   <section className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
@@ -169,6 +233,14 @@ const EmptyState = ({
         <ListChecks className="h-4 w-4" />
         Browse checklists
       </a>
+      <a
+        href="/templates"
+        onClick={onNavigateTemplates}
+        className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-200 hover:bg-sky-50"
+      >
+        <MessageSquareText className="h-4 w-4" />
+        Browse templates
+      </a>
     </div>
   </section>
 );
@@ -182,15 +254,14 @@ const SavedChecklistCard = ({
   onToggleItem: (checklistId: string, itemId: string) => void;
   onDeleteChecklist: (checklistId: string) => void;
 }) => {
-  const completedCount = checklist.items.filter((item) => item.completed).length;
-  const totalCount = checklist.items.length;
-  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const { completedCount, totalCount, progressPercent, nextIncompleteTask } = getChecklistStats(checklist);
   const createdDate = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(
     new Date(checklist.createdAt),
   );
+  const allComplete = totalCount > 0 && completedCount === totalCount;
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section id={getChecklistAnchorId(checklist)} className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -205,6 +276,9 @@ const SavedChecklistCard = ({
           <h2 className="mt-3 text-lg font-semibold text-slate-950">{checklist.title}</h2>
           <p className="mt-2 text-sm font-medium text-slate-600">
             {completedCount} of {totalCount} tasks completed
+          </p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            {allComplete ? 'All tasks completed' : `Next: ${nextIncompleteTask?.title || 'Review remaining tasks'}`}
           </p>
         </div>
         <button
