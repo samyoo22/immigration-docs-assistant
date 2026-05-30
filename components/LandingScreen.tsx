@@ -16,7 +16,6 @@ import {
 
 interface LandingScreenProps {
   onUploadDocument: (event?: React.MouseEvent<HTMLAnchorElement>) => void;
-  onCreateChecklist: (event?: React.MouseEvent<HTMLAnchorElement>, checklistPath?: string) => void;
 }
 
 const coreFeatures = [
@@ -55,13 +54,13 @@ const howItWorks = [
   },
   {
     icon: Sparkles,
-    title: 'Get a plain-English summary',
-    description: 'Understand what the document says without legal jargon.',
+    title: 'Understand what it means',
+    description: 'Get a plain-English explanation without legal jargon.',
   },
   {
     icon: ClipboardCheck,
-    title: 'Follow your checklist',
-    description: 'See key dates, next steps, and documents to keep or prepare.',
+    title: 'Know what to do next',
+    description: 'Follow key dates, next steps, and saved document reminders.',
   },
 ];
 
@@ -92,8 +91,8 @@ const documentTypes = [
 ];
 
 const sampleNextSteps = [
-  'Save your receipt notice',
-  'Track your case status',
+  'Save this receipt notice',
+  'Track your case with the receipt number',
   'Watch for mail from USCIS',
   'Update your address if you move',
 ];
@@ -104,8 +103,8 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onUploadDocument }) => {
       <HeroSection onUploadDocument={onUploadDocument} />
       <HowItWorksSection />
       <WhatVisaTodoExtractsSection />
-      <TrustSection />
       <DocumentTypesSection />
+      <TrustSection />
       <FinalCtaSection onUploadDocument={onUploadDocument} />
     </div>
   );
@@ -116,19 +115,19 @@ interface HomeActionProps {
 }
 
 const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument }) => (
-  <section className="grid gap-10 py-10 lg:grid-cols-[minmax(0,1fr),minmax(360px,0.82fr)] lg:items-center lg:py-16">
+  <section className="grid gap-10 py-8 lg:grid-cols-[minmax(0,1fr),minmax(380px,0.9fr)] lg:items-center lg:py-12">
     <div>
       <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-800 shadow-sm">
         <ShieldCheck className="h-3.5 w-3.5" />
         Plain-language immigration document help
       </div>
 
-      <h1 className="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-        Turn confusing immigration documents into clear next steps.
+      <h1 className="max-w-2xl text-4xl font-semibold leading-[1.05] tracking-tight text-slate-950 sm:text-5xl lg:text-[4.35rem]">
+        Don&rsquo;t guess what your immigration document means.
       </h1>
 
       <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-        VisaTodo explains USCIS, school, and visa-related documents in plain English &mdash; then turns them into key dates, next steps, and a checklist.
+        Upload a USCIS, school, or visa-related document and get a plain-English summary, key dates, and a step-by-step checklist.
       </p>
 
       <div className="mt-8 max-w-sm">
@@ -140,7 +139,8 @@ const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument }) => (
           <UploadCloud className="h-4 w-4" />
           Upload Your Document
         </a>
-        <p className="mt-3 text-xs font-medium text-slate-500">No account required to preview results.</p>
+        <p className="mt-3 text-xs font-medium text-slate-600">Preview your summary before creating an account.</p>
+        <p className="mt-1 text-xs font-medium text-slate-500">Private, plain-language help &mdash; not legal advice.</p>
       </div>
     </div>
 
@@ -149,13 +149,13 @@ const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument }) => (
         <div className="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="grid gap-3 sm:grid-cols-[1fr,auto,1fr] sm:items-center">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Original document</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Before</p>
               <h2 className="mt-1 text-base font-semibold text-slate-950">USCIS Receipt Notice</h2>
             </div>
             <div className="hidden h-px w-8 bg-slate-300 sm:block" />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">VisaTodo result</p>
-              <h2 className="mt-1 text-base font-semibold text-slate-950">Summary + Checklist</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">After VisaTodo</p>
+              <h2 className="mt-1 text-base font-semibold text-slate-950">What it means + what to do next</h2>
             </div>
           </div>
           <span className="w-fit rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Ready in seconds</span>
@@ -165,17 +165,17 @@ const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument }) => (
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
             <div className="mb-2 flex items-center gap-2">
               <FileText className="h-4 w-4 text-sky-700" />
-              <h3 className="text-sm font-semibold text-slate-950">Plain-English summary</h3>
+              <h3 className="text-sm font-semibold text-slate-950">What this means</h3>
             </div>
             <p className="text-sm leading-6 text-slate-600">
-              USCIS has received your application. Save this notice and use the receipt number to track your case status.
+              USCIS received your application and created a case record.
             </p>
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
             <div className="mb-3 flex items-center gap-2">
               <ListChecks className="h-4 w-4 text-emerald-700" />
-              <h3 className="text-sm font-semibold text-slate-950">Next steps</h3>
+              <h3 className="text-sm font-semibold text-slate-950">Your next steps</h3>
             </div>
             <div className="space-y-2">
               {sampleNextSteps.map((task) => (
@@ -188,8 +188,16 @@ const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument }) => (
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <MiniPreviewCard icon={CalendarDays} title="Key dates" description="Receipt date and next expected step are pulled out for review." />
-            <MiniPreviewCard icon={ClipboardList} title="Documents" description="The notice is added to your saved document list." />
+            <MiniPreviewCard
+              icon={CalendarDays}
+              title="Key dates"
+              items={['Receipt date: May 12, 2026', 'Check again: In 2–4 weeks']}
+            />
+            <MiniPreviewCard
+              icon={ClipboardList}
+              title="Saved"
+              items={['I-797C Receipt Notice', 'Receipt number saved']}
+            />
           </div>
         </div>
       </div>
@@ -198,8 +206,8 @@ const HeroSection: React.FC<HomeActionProps> = ({ onUploadDocument }) => (
 );
 
 const CoreFeaturesSection: React.FC = () => (
-  <section className="border-t border-slate-200 py-14">
-    <SectionIntro label="What VisaTodo extracts" title="Know exactly what you receive" />
+  <section id="outputs" className="border-t border-slate-200 py-14 scroll-mt-24">
+    <SectionIntro label="Outputs" title="What VisaTodo pulls out for you" />
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
       {coreFeatures.map(({ icon: Icon, title, description }) => (
         <div key={title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -215,8 +223,8 @@ const CoreFeaturesSection: React.FC = () => (
 );
 
 const HowItWorksSection: React.FC = () => (
-  <section className="border-t border-slate-200 py-14">
-    <SectionIntro label="How it works" title="From document to action plan" />
+  <section id="how-it-works" className="border-t border-slate-200 py-14 scroll-mt-24">
+    <SectionIntro label="How it works" title="From confusing notice to clear checklist" />
     <div className="grid gap-4 md:grid-cols-3">
       {howItWorks.map(({ icon: Icon, title, description }, index) => (
         <div key={title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -238,7 +246,7 @@ const WhatVisaTodoExtractsSection: React.FC = () => <CoreFeaturesSection />;
 
 const TrustSection: React.FC = () => (
   <section className="py-14">
-    <SectionIntro label="Trust and safety" title="Designed for sensitive immigration paperwork" />
+    <SectionIntro label="Trust and safety" title="Built for sensitive immigration paperwork" />
     <div className="grid gap-4 md:grid-cols-3">
       {trustCards.map(({ icon: Icon, title, description }) => (
         <div key={title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -254,12 +262,12 @@ const TrustSection: React.FC = () => (
 );
 
 const DocumentTypesSection: React.FC = () => (
-  <section className="py-4">
+  <section id="supported-documents" className="py-4 scroll-mt-24">
     <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
       <div className="grid gap-6 lg:grid-cols-[0.78fr,1.22fr] lg:items-center">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Made for documents like</p>
-          <h2 className="mt-3 text-2xl font-semibold text-slate-950">Recognize your document faster</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Supported documents</p>
+          <h2 className="mt-3 text-2xl font-semibold text-slate-950">Made for immigration documents like these</h2>
           <p className="mt-3 text-sm leading-6 text-slate-600">
             VisaTodo is focused on the immigration, school, and visa paperwork people actually need to understand.
           </p>
@@ -308,14 +316,18 @@ const SectionIntro: React.FC<{ label: string; title: string }> = ({ label, title
 const MiniPreviewCard: React.FC<{
   icon: typeof CalendarDays;
   title: string;
-  description: string;
-}> = ({ icon: Icon, title, description }) => (
+  items: string[];
+}> = ({ icon: Icon, title, items }) => (
   <div className="rounded-2xl border border-slate-200 bg-white p-4">
     <div className="mb-2 flex items-center gap-2">
       <Icon className="h-4 w-4 text-amber-600" />
       <h3 className="text-sm font-semibold text-slate-950">{title}</h3>
     </div>
-    <p className="text-sm leading-6 text-slate-600">{description}</p>
+    <div className="space-y-1.5">
+      {items.map((item) => (
+        <p key={item} className="text-sm leading-6 text-slate-600">{item}</p>
+      ))}
+    </div>
   </div>
 );
 

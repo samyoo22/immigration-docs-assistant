@@ -7,6 +7,12 @@ import {
   TranslationLanguageCode,
   VisaSituation,
 } from "../types";
+import {
+  getDraftMessagesForSituation,
+  getOfficialSourcesForSituation,
+  getRecommendedNextStepForSituation,
+  RESULT_DISCLAIMER,
+} from "../data/analysisSupport";
 
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
 
@@ -144,6 +150,8 @@ const analysisJsonSchema = {
   type: "object",
   additionalProperties: false,
   properties: {
+    documentType: stringField("Likely document type, such as DSO email, USCIS receipt notice, OPT I-20 instructions, RFE, or general immigration document."),
+    situation: stringField("Selected or inferred user situation."),
     topic: stringField("Classify the main topic of the document.", {
       enum: ["pre_completion_opt", "post_completion_opt", "stem_opt_extension", "travel_and_reentry", "sevis_or_i20", "general_opt_status", "unsure"],
     }),
@@ -163,6 +171,7 @@ const analysisJsonSchema = {
       items: { type: "string" },
       description: "3-6 plain-English summary bullets.",
     },
+    recommendedNextStep: stringField("One calm, action-oriented next step. Avoid legal advice."),
     detailedExplanation: stringField("Friendly detailed explanation in plain English."),
     simpleEnglishNotes: stringField("Very simple English note explaining the most important point."),
     checklist: {
@@ -215,6 +224,54 @@ const analysisJsonSchema = {
       items: { type: "string" },
       description: "Questions for a DSO, attorney, employer, school official, or official source.",
     },
+    officialSources: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          title: stringField("Official source title."),
+          description: stringField("Short explanation of why this source helps."),
+          url: stringField("Official government or school-related URL."),
+        },
+        required: ["title", "description", "url"],
+      },
+    },
+    draftMessages: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        dso: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            subject: stringField("DSO message subject, or empty string if irrelevant."),
+            body: stringField("DSO message body, or empty string if irrelevant."),
+          },
+          required: ["subject", "body"],
+        },
+        employer: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            subject: stringField("Employer or HR message subject, or empty string if irrelevant."),
+            body: stringField("Employer or HR message body, or empty string if irrelevant."),
+          },
+          required: ["subject", "body"],
+        },
+        attorney: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            subject: stringField("Attorney message subject, or empty string if irrelevant."),
+            body: stringField("Attorney message body, or empty string if irrelevant."),
+          },
+          required: ["subject", "body"],
+        },
+      },
+      required: ["dso", "employer", "attorney"],
+    },
+    disclaimer: stringField("Short disclaimer that this is general information and not legal advice."),
     warnings: {
       type: "array",
       items: { type: "string" },
@@ -248,16 +305,22 @@ const analysisJsonSchema = {
     },
   },
   required: [
+    "documentType",
+    "situation",
     "topic",
     "topicLabel",
     "riskAssessment",
     "summary",
+    "recommendedNextStep",
     "detailedExplanation",
     "simpleEnglishNotes",
     "checklist",
     "importantDates",
     "documentsMentioned",
     "questionsToAsk",
+    "officialSources",
+    "draftMessages",
+    "disclaimer",
     "warnings",
     "safetyTerms",
     "dsoEmailDraft",
@@ -321,6 +384,16 @@ const answerJsonSchema = {
   required: ["answer"],
 };
 
+const normalizeAnalysisResult = (result: AnalysisResult, situation: VisaSituation): AnalysisResult => ({
+  ...result,
+  documentType: result.documentType || result.topicLabel || "Immigration document",
+  situation: result.situation || situation,
+  recommendedNextStep: result.recommendedNextStep || getRecommendedNextStepForSituation(situation),
+  officialSources: getOfficialSourcesForSituation(situation),
+  draftMessages: getDraftMessagesForSituation(situation),
+  disclaimer: result.disclaimer || RESULT_DISCLAIMER,
+});
+
 export const analyzeWithOpenAI = async (situation: VisaSituation, text: string): Promise<AnalysisResult> => {
   const system = `
 You are VisaTodo, a friendly, careful immigration paperwork assistant.
@@ -335,6 +408,13 @@ Rules:
 - Do not invent missing dates, requirements, or legal conclusions.
 - If a document is unclear, say what to verify with a DSO, attorney, employer, school official, USCIS, or another official source.
 - Avoid repeating highly sensitive personal identifiers.
+- Always return the required structured JSON object.
+- Always identify a likely document type, even if cautious.
+- Extract important dates only when the date text is explicitly present.
+- Always provide a recommended next step, action items, questions to ask, official sources, draft message templates, and a disclaimer.
+- For F-1 OPT and I-765 documents, prioritize DSO confirmation, OPT I-20, Form I-765, USCIS receipt notice, EAD timing, SEVP/school reporting, employment start date restrictions, address updates, and case status tracking.
+- Do not present uncertain information as fact. Use "appears to", "may", and "verify with an official source" where appropriate.
+- Official source links must be official government or school-related sources. If unsure, use USCIS, USCIS Case Status, and Study in the States.
 `;
 
   const user = `
@@ -346,13 +426,15 @@ Document:
 ${text}
 `;
 
-  return requestJson<AnalysisResult>({
+  const result = await requestJson<AnalysisResult>({
     schemaName: "visa_document_analysis",
     schema: analysisJsonSchema,
     system,
     user,
     temperature: 0.2,
   });
+
+  return normalizeAnalysisResult(result, situation);
 };
 
 export const translateWithOpenAI = async (
@@ -445,6 +527,6 @@ export const toHttpError = (error: unknown) => {
   const normalized = normalizeOpenAIError(error);
   return {
     statusCode: normalized.statusCode,
-    body: { error: normalized.message },
+    body: { error: "We couldn't create a full review this time. Please try again or paste a clearer document excerpt." },
   };
 };

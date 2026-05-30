@@ -205,7 +205,7 @@ const officialResources = [
   },
   {
     title: 'USCIS Case Status',
-    href: 'https://egov.uscis.gov/',
+    href: 'https://egov.uscis.gov/casestatus/landing.do',
     description: 'Check your USCIS case status with your receipt number.',
   },
   {

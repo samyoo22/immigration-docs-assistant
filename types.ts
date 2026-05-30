@@ -51,6 +51,17 @@ export interface DsoEmailDraft {
   body: string;
 }
 
+export interface DraftMessage {
+  subject: string;
+  body: string;
+}
+
+export interface DraftMessages {
+  dso?: DraftMessage;
+  employer?: DraftMessage;
+  attorney?: DraftMessage;
+}
+
 export interface ImportantDate {
   date: string;
   meaning: string;
@@ -62,15 +73,27 @@ export interface DocumentMentioned {
   purpose: string;
 }
 
+export interface OfficialSource {
+  title: string;
+  description?: string;
+  url: string;
+}
+
 export interface AnalysisResult {
+  documentType?: string;
+  situation?: string;
   riskAssessment?: RiskAssessment;
   summary: string[]; // Generic summary (English)
+  recommendedNextStep?: string;
   detailedExplanation: string;
   simpleEnglishNotes: string;
   checklist: Omit<ChecklistItem, 'id' | 'status'>[]; 
   importantDates?: ImportantDate[];
   documentsMentioned?: DocumentMentioned[];
   questionsToAsk?: string[];
+  officialSources?: OfficialSource[];
+  draftMessages?: DraftMessages;
+  disclaimer?: string;
   warnings?: string[];
   safetyTerms: SafetyTerm[];
   dsoEmailDraft?: DsoEmailDraft;

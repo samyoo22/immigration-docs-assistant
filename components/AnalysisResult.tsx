@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { AnalysisResult as AnalysisResultType, ChecklistItem, SavedChecklist, VisaSituation } from '../types';
+import { AnalysisResult as AnalysisResultType, ChecklistItem, DraftMessage, SavedChecklist, VisaSituation } from '../types';
 import {
   AlertTriangle,
   ArrowRight,
@@ -8,12 +8,15 @@ import {
   CheckCircle2,
   ClipboardList,
   Copy,
+  ExternalLink,
   FileText,
   HelpCircle,
   ListChecks,
+  Mail,
   ShieldCheck,
 } from 'lucide-react';
 import { saveChecklist } from '../utils/savedChecklists';
+import { getRecommendedNextStepForSituation, RESULT_DISCLAIMER } from '../data/analysisSupport';
 
 interface AnalysisResultProps {
   result: AnalysisResultType;
@@ -100,26 +103,19 @@ const SectionHeader = ({
   </div>
 );
 
-const RecommendedNextStepCard = ({ situation }: { situation: VisaSituation }) => {
-  const recommendation =
-    situation === VisaSituation.F1_OPT_APPLY
-      ? 'Check this document with your DSO before submitting anything or making travel, school transfer, or employment decisions.'
-      : 'Confirm whether this document applies to your exact immigration situation before taking action.';
-
-  return (
-    <section className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
-      <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-sky-700 shadow-sm">
-          <CheckCircle2 className="h-5 w-5" />
-        </div>
-        <div>
-          <h3 className="text-sm font-semibold text-slate-950">Recommended next step</h3>
-          <p className="mt-1 text-sm leading-6 text-slate-700">{recommendation}</p>
-        </div>
+const RecommendedNextStepCard = ({ recommendation }: { recommendation: string }) => (
+  <section className="rounded-2xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
+    <div className="flex items-start gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-sky-700 shadow-sm">
+        <CheckCircle2 className="h-5 w-5" />
       </div>
-    </section>
-  );
-};
+      <div>
+        <h3 className="text-sm font-semibold text-slate-950">Recommended next step</h3>
+        <p className="mt-1 text-sm leading-6 text-slate-700">{recommendation}</p>
+      </div>
+    </div>
+  </section>
+);
 
 const ResultHelperActions = () => (
   <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
@@ -153,6 +149,112 @@ const RelatedChecklistCard = ({ situation }: { situation: VisaSituation }) => {
           {checklist.cta}
           <ArrowRight className="h-4 w-4" />
         </a>
+      </div>
+    </section>
+  );
+};
+
+const OfficialSourcesSection = ({ result }: { result: AnalysisResultType }) => {
+  const sources = (result.officialSources || []).slice(0, 5);
+  if (sources.length === 0) return null;
+
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+          <ShieldCheck className="h-4 w-4" />
+        </div>
+        <div>
+          <h2 className="text-base font-semibold text-slate-950">Official sources to verify</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            Before taking action, confirm important details with official sources.
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {sources.map((source) => (
+          <a
+            key={source.url}
+            href={source.url}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-sky-200 hover:bg-sky-50/60"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold text-slate-950">{source.title}</h3>
+              <ExternalLink className="h-4 w-4 shrink-0 text-sky-700" />
+            </div>
+            {source.description && (
+              <p className="mt-2 text-sm leading-6 text-slate-600">{source.description}</p>
+            )}
+            <span className="mt-3 inline-flex text-xs font-semibold text-sky-700">Open source</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+const DraftMessageSection = ({
+  result,
+  onCopy,
+}: {
+  result: AnalysisResultType;
+  onCopy: (text: string) => void;
+}) => {
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const messages: { key: string; label: string; message: DraftMessage }[] = [
+    { key: 'dso', label: 'DSO', message: result.draftMessages?.dso as DraftMessage },
+    { key: 'employer', label: 'Employer / HR', message: result.draftMessages?.employer as DraftMessage },
+    { key: 'attorney', label: 'Attorney', message: result.draftMessages?.attorney as DraftMessage },
+  ].filter(({ message }) => Boolean(message?.subject?.trim() && message?.body?.trim()));
+
+  if (messages.length === 0) return null;
+
+  const handleCopyMessage = (key: string, message: DraftMessage) => {
+    onCopy(`Subject: ${message.subject}\n\n${message.body}`);
+    setCopiedKey(key);
+  };
+
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+          <Mail className="h-4 w-4" />
+        </div>
+        <div>
+          <h2 className="text-base font-semibold text-slate-950">Draft a message</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            Use these templates to ask the right person before taking action.
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-3">
+        {messages.map(({ key, label, message }) => (
+          <article key={key} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">{label}</p>
+                <h3 className="mt-1 text-sm font-semibold text-slate-950">{message.subject}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleCopyMessage(key, message)}
+                className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                  copiedKey === key
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'border border-slate-200 bg-white text-slate-700 hover:border-sky-200 hover:bg-sky-50'
+                }`}
+              >
+                {copiedKey === key ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                {copiedKey === key ? 'Copied' : 'Copy message'}
+              </button>
+            </div>
+            <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3 text-sm leading-6 text-slate-700 whitespace-pre-wrap">
+              {message.body}
+            </div>
+          </article>
+        ))}
       </div>
     </section>
   );
@@ -244,21 +346,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
         </button>
       </div>
 
-      <RecommendedNextStepCard situation={situation} />
-
-      <ResultHelperActions />
-
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-        <div className="flex items-start gap-3">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
-          <div>
-            <h3 className="text-sm font-semibold text-amber-950">Before you act</h3>
-            <p className="mt-1 text-sm leading-6 text-amber-900">
-              This review is a plain-language starting point based on the document text you provided. Always verify important deadlines, eligibility, and required documents with USCIS, your DSO, employer, attorney, or another official source.
-            </p>
-          </div>
-        </div>
-      </div>
+      <RecommendedNextStepCard recommendation={result.recommendedNextStep || getRecommendedNextStepForSituation(situation)} />
 
       {safeWarnings.length > 0 && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
@@ -352,8 +440,6 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
         </div>
       </section>
 
-      <RelatedChecklistCard situation={situation} />
-
       <section className="grid gap-5 lg:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <SectionHeader icon={<CalendarDays className="h-4 w-4" />} title="Important Dates" />
@@ -408,11 +494,17 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ result, checklistItems,
         )}
       </section>
 
+      <OfficialSourcesSection result={result} />
+
+      <DraftMessageSection result={result} onCopy={onCopy} />
+
+      <RelatedChecklistCard situation={situation} />
+
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <div className="flex items-start gap-3">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-sky-700" />
           <p className="text-sm leading-6 text-slate-600">
-            General information only. Verify with an official source.
+            {result.disclaimer || RESULT_DISCLAIMER}
           </p>
         </div>
       </div>

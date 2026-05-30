@@ -5,6 +5,12 @@ import {
   TranslationLanguageCode,
   VisaSituation,
 } from "../types";
+import {
+  getDraftMessagesForSituation,
+  getOfficialSourcesForSituation,
+  getRecommendedNextStepForSituation,
+  RESULT_DISCLAIMER,
+} from "../data/analysisSupport";
 
 class ApiRequestError extends Error {
   statusCode?: number;
@@ -49,6 +55,19 @@ const findImportantDates = (text: string) => {
   }));
 };
 
+const normalizeAnalysisResult = (
+  result: AnalysisResult,
+  situation: VisaSituation,
+): AnalysisResult => ({
+  ...result,
+  documentType: result.documentType || result.topicLabel || "Immigration document",
+  situation: result.situation || situation,
+  recommendedNextStep: result.recommendedNextStep || getRecommendedNextStepForSituation(situation),
+  officialSources: result.officialSources?.length ? result.officialSources : getOfficialSourcesForSituation(situation),
+  draftMessages: result.draftMessages || getDraftMessagesForSituation(situation),
+  disclaimer: result.disclaimer || RESULT_DISCLAIMER,
+});
+
 export const createPreviewAnalysisResult = (
   situation: VisaSituation,
   text: string
@@ -60,6 +79,8 @@ export const createPreviewAnalysisResult = (
   const topicLabel = situation === VisaSituation.OTHER ? "Document Review" : `${situation} Guidance`;
 
   return {
+    documentType: documentsMentioned[0]?.name || "Immigration document",
+    situation,
     topic: "basic_review",
     topicLabel,
     riskAssessment: {
@@ -76,6 +97,7 @@ export const createPreviewAnalysisResult = (
         ? "The document includes date-like text that should be confirmed before you act."
         : "No clear date was detected, but you should still check the document for deadlines.",
     ],
+    recommendedNextStep: getRecommendedNextStepForSituation(situation),
     detailedExplanation:
       "We generated a basic plain-language review from the text you provided. Use it to identify likely next steps, documents, and questions to verify with a DSO, attorney, employer, school official, USCIS, or another official source.",
     simpleEnglishNotes:
@@ -120,6 +142,9 @@ export const createPreviewAnalysisResult = (
       "Which deadline controls my situation?",
       "Which documents or forms should I prepare?",
     ],
+    officialSources: getOfficialSourcesForSituation(situation),
+    draftMessages: getDraftMessagesForSituation(situation),
+    disclaimer: RESULT_DISCLAIMER,
     warnings: [
       "General information only. Verify with an official source.",
     ],
@@ -140,6 +165,8 @@ export const createPreviewAnalysisResult = (
 };
 
 export const createMockAnalysisResult = (warning?: string): AnalysisResult => ({
+  documentType: "OPT or STEM OPT instructions",
+  situation: VisaSituation.F1_OPT_APPLY,
   topic: "post_completion_opt",
   topicLabel: "OPT or STEM OPT Instructions",
   riskAssessment: {
@@ -152,6 +179,7 @@ export const createMockAnalysisResult = (warning?: string): AnalysisResult => ({
     "It mentions reviewing school records, preparing forms, and submitting materials before a deadline.",
     "The exact requirements may depend on your school, employer, and immigration situation.",
   ],
+  recommendedNextStep: getRecommendedNextStepForSituation(VisaSituation.F1_OPT_APPLY),
   detailedExplanation:
     "This document appears to be giving instructions for an OPT or STEM OPT process. It may be asking you to review your I-20 information, prepare immigration forms and supporting documents, and confirm filing timing with your school official. VisaTodo cannot determine eligibility or replace official guidance, so use this as a checklist starter and verify important details with your DSO, employer, attorney, or official government source.",
   simpleEnglishNotes:
@@ -218,6 +246,9 @@ export const createMockAnalysisResult = (warning?: string): AnalysisResult => ({
     "Which documents are required by my school before filing?",
     "Is there anything in this document that does not apply to my case?",
   ],
+  officialSources: getOfficialSourcesForSituation(VisaSituation.F1_OPT_APPLY),
+  draftMessages: getDraftMessagesForSituation(VisaSituation.F1_OPT_APPLY),
+  disclaimer: RESULT_DISCLAIMER,
   warnings: [
     ...(warning ? [warning] : []),
     "General information only. Verify with an official source.",
@@ -276,13 +307,14 @@ export const analyzeDocument = async (
   text: string
 ): Promise<AnalysisResult> => {
   try {
-    return await postJson<AnalysisResult>("/api/analyze", { situation, text });
+    const result = await postJson<AnalysisResult>("/api/analyze", { situation, text });
+    return normalizeAnalysisResult(result, situation);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     const statusCode = error instanceof ApiRequestError ? error.statusCode : undefined;
     const canUsePreview =
+      (typeof statusCode === "number" && statusCode >= 400) ||
       statusCode === 404 ||
-      (typeof statusCode === "number" && statusCode >= 500) ||
       message.toLowerCase().includes("api key") ||
       message.toLowerCase().includes("ai request failed") ||
       message.toLowerCase().includes("deployment configuration") ||
@@ -295,8 +327,8 @@ export const analyzeDocument = async (
       message.toLowerCase().includes("rate limit") ||
       message.toLowerCase().includes("access was denied");
 
-  if (canUsePreview) {
-      return createPreviewAnalysisResult(situation, text);
+    if (canUsePreview) {
+      return normalizeAnalysisResult(createPreviewAnalysisResult(situation, text), situation);
     }
 
     throw error;
